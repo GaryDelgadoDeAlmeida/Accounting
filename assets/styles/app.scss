@@ -1,0 +1,59 @@
+@charset "utf-8";
+
+a, a:hover {
+  text-decoration: none !important;
+}
+
+:root {
+    // Base colors
+    --c-white: #ffffff;
+    --c-gray: #a9a9a9;
+    --c-silver: #c8c8c8;
+    --c-red: #c00000;
+    --c-darkRed: #8B0000;
+    --c-green: #188038;
+    --c-orange: #ffa500;
+    --c-blue: #2962ff;
+    --c-black: #000000;
+
+    // Specific colors
+    --c-skyBlue: #60d9fa;
+    --c-skyBlueReact: #61dafb;
+    --c-blueReact: #2b81e0;
+    --c-primaryBlue: #0366d6;
+    --c-lightGray: #f2f2f2;
+    --c-greenLime: #198344;
+}
+
+@mixin tablet {
+    @media screen and (max-width: 991px) {
+        @content;
+    }
+}
+
+@mixin mobile {
+    @media screen and (max-width: 768px) {
+        @content;
+    }
+}
+
+@mixin tinyMobile {
+    @media screen and (max-width: 480px) {
+        @content;
+    }
+}
+
+/* ----------------------------------------------- *\
+    Parts
+\* ----------------------------------------------- */
+@import "./parts/badge";
+@import "./parts/button";
+@import "./parts/form";
+@import "./parts/helper";
+@import "./parts/notification";
+@import "./parts/pagination";
+@import "./parts/site";
+@import "./parts/card";
+@import "./parts/table";
+@import "./parts/client_identity";
+@import "./parts/login";

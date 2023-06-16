@@ -1,0 +1,30 @@
+.client-identity {
+    gap: 15px;
+    padding: 15px;
+    display: flex;
+    min-height: 150px;
+
+    .client-img {
+        width: 200px !important;
+
+        img {
+            width: 100%;
+        }
+    }
+
+    .client-infos {
+        gap: 5px;
+        display: flex;
+        margin: auto 0;
+        flex-direction: column;
+
+        .client-name {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .client-address {
+            // 
+        }
+    }
+}

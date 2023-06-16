@@ -1,0 +1,157 @@
+/* ---------------------------------------- *\
+    Width
+\* ---------------------------------------- */
+.w-100px {
+    width: 100px;
+    margin-bottom: 10px;
+}
+
+.w-150px {
+    width: 150px;
+}
+
+.w-250px {
+    width: 250px;
+    margin-bottom: 10px;
+}
+
+.w-33 {
+    width: calc(100% / 3);
+}
+
+.w-50 {
+    width: 50%;
+}
+
+.w-100 {
+    width: 100% !important;
+}
+
+
+/* ---------------------------------------- *\
+    Height
+\* ---------------------------------------- */
+.h-40px {
+    height: 40px;
+}
+
+.h-150px {
+    margin-bottom: 10px;
+    height: 150px !important;
+}
+
+.h-180px {
+    height: 180px;
+}
+
+.h-100 {
+    height: 100%;
+}
+
+.h-100vh {
+    height: 100vh;
+}
+
+/* ---------------------------------------- *\
+    Margin
+\* ---------------------------------------- */
+.m-auto {
+    margin: auto;
+}
+
+.mt-15px {
+    margin-top: 15px;
+}
+
+.mb-15px {
+    margin-bottom: 15px;
+}
+
+/* ---------------------------------------- *\
+    Padding
+\* ---------------------------------------- */
+.pt-15px {
+    padding-top: 15px;
+}
+
+
+/* ----------------------------------------------- *\
+    Background
+\* ----------------------------------------------- */
+.bg-white {
+    background-color: var(--c-white);
+}
+
+.bg-black {
+    background-color: rgba(0, 0, 0, 0.85) !important;
+}
+
+
+/* ---------------------------------------- *\
+    Texte
+\* ---------------------------------------- */
+.txt-left {
+    text-align: left;
+}
+
+.txt-right {
+    text-align: right;
+}
+
+.txt-center {
+    text-align: center;
+}
+
+.txt-uppercase {
+    text-transform: uppercase;
+}
+
+.f-left {
+    float: left;
+}
+
+.f-right {
+    float: right;
+}
+
+/* ---------------------------------------- *\
+    Display
+\* ---------------------------------------- */
+.d-flex {
+    display: flex;
+}
+
+.d-flex-col {
+    gap: 15px;
+    display: flex;
+    flex-direction: column;
+
+    @include tablet {
+        flex-direction: row;
+
+        .item-row {
+            height: auto;
+        }
+    }
+
+    @include mobile {
+        flex-direction: column-reverse;
+    }
+}
+
+.d-flex-row {
+    gap: 15px;
+    display: flex;
+
+    @include tablet {
+        flex-wrap: wrap;
+    }
+
+    @include tinyMobile {
+        flex-direction: column;
+    }
+
+    .item-row {
+        flex: 1 1 45%;
+    }
+}

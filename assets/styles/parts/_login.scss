@@ -1,0 +1,38 @@
+.login-block {
+    width: 100%;
+    margin: auto;
+    display: flex;
+    min-height: 500px;
+    flex-direction: row;
+    box-shadow: 0 0.46875rem 2.1875rem rgba(0,0,0,.03), 0 0.9375rem 1.40625rem rgba(0,0,0,.03), 0 0.25rem 0.53125rem rgba(0,0,0,.05), 0 0.125rem 0.1875rem rgba(0,0,0,.03);
+
+    .-hero {
+        width: 750px;
+        background-color: var(--c-blueReact);
+
+        @include tablet {
+            display: none;
+        }
+    }
+
+    .-form {
+        margin: auto;
+        width: calc(100% - 750px);
+
+        @include tablet {
+            width: 100%;
+        }
+
+        .-form-wrapper {
+            margin: auto;
+            padding: 25px;
+
+            .-form-title {
+                padding: 0;
+                font-weight: 600;
+                margin: 0 0 25px 0;
+                text-align: center;
+            }
+        }
+    }
+}

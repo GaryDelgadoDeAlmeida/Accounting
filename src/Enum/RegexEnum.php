@@ -1,0 +1,10 @@
+<?php
+
+namespace App\Enum;
+
+abstract class RegexEnum {
+    
+    public const REGEX_ONLY_NUMERIC = '/[0-9]/i';
+    public const REGEX_EMAIL = "[a-z0-9]+@[a-z]+\.[a-z]{2,3}";
+    public const REGEX_SECURE_PASSWORD = '/[\'\/~`\!@#\$%\^&\*\(\)_\-\+=\{\}\[\]\|;:"\<\>,\.\?\\\]/';
+}
