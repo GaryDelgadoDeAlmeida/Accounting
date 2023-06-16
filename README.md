@@ -2,9 +2,9 @@
 
 ## Contexte
 
-J'ai commencé à travailler à mon compte en tant que "auto-entrepreneur" dans le domaine du développement informatique. J'ai rapidement compris que je vais avoir besoin d'un système me permettant de suivre, sur le plan économique, la santé de mon activité et de pouvoir facturer mes clients tout en limitant les erreurs éventuelles de ma personne. Des solutions sur Internet m'ont été présentés mais je préfére un système qui m'appartient où je peux ajouter ou modifier des fonctionnalités qui répondent à mon besoin. L'autre motif de ce système est que ça me fait un plus value.
+J'ai commencé à travailler à mon compte en tant qu'auto-entrepreneur dans le domaine du développement informatique. J'ai rapidement compris que je vais avoir besoin d'un système me permettant de suivre, sur le plan économique, la santé de mon activité et de pouvoir facturer mes clients tout en limitant les erreurs éventuelles de ma personne. Des solutions sur Internet m'ont été présentés mais je préfère un système qui m'appartient où je peux ajouter ou modifier des fonctionnalités qui répondent à mon besoin. L'autre motif de ce système est que ça me fasse une plus-value.
 
-Ce système est donc avant tout fait pour moi.
+Ce système est donc avant tout fait pour moi et pour moi.
 
 ## Installation
 
@@ -14,6 +14,15 @@ A la racine du projet Symfony
 ```bash
     composer install
 ```
+
+### Compilation du projet React
+
+A la racine du projet et si `yarn` est installé :
+```bash
+    yarn build
+```
+
+La commande va compilé tous le répertoire `assets` (la partie front de l'application (js et sass), fait en React) et créer un sous-dossier `build` dans le dossier `public`.
 
 ### Base de données
 
