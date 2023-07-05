@@ -36,7 +36,7 @@ class InvoiceController extends AbstractController
     {
         $limit = 20;
         $offset = $request->get("offset", 1);
-        $offset = is_numeric($offset) && $offset > 1 ? $offset : 1;
+        $offset = is_numeric($offset) && $offset >= 1 ? $offset : 1;
 
         return $this->json($this->invoiceRepository->findBy([], ["id" => "ASC"], $limit, ($offset - 1) * $limit));
     }
@@ -62,7 +62,7 @@ class InvoiceController extends AbstractController
     /**
      * @Route("/invoice/{invoiceID}/update", name="update_invoice", methods={"PUT", "UPDATE"})
      */
-    public function update_company(Request $request, int $invoiceID = 0)
+    public function update_invoice(Request $request, int $invoiceID = 0)
     {
         $invoice = $this->invoiceRepository->find($invoiceID);
         if(!$invoice) {
@@ -76,6 +76,30 @@ class InvoiceController extends AbstractController
             }
         }
 
-        return $this->json(["All right"], Response::HTTP_ACCEPTED);
+        return $this->json(null, Response::HTTP_ACCEPTED);
+    }
+
+    /**
+     * @Route("/invoice/{invoiceID}/remove", name="remove_invoice", methods={"DELETE"})
+     */
+    public function remove_invoice(Request $request, int $invoiceID = 0) : JsonResponse 
+    {
+        if(empty($invoiceID)) {
+            return $this->json(["message" => "Unknown invoice identification"], Response::HTTP_FORBIDDEN);
+        }
+
+        $invoice = $this->invoiceRepository->find($invoiceID);
+        if(empty($invoice)) {
+            return $this->json(["message" => "Not found invoice"], Response::HTTP_NOT_FOUND);
+        }
+
+        // Remove the invoice
+        try {
+            $this->invoiceRepository->remove($invoice, true);
+        } catch(\Exception $e) {
+            return $this->json(["message" => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json(null, Response::HTTP_ACCEPTED);
     }
 }

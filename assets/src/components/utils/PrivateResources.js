@@ -11,6 +11,7 @@ export default function PrivateResources(url) {
         
         const response = await fetch(`${window.location.origin}/api/${url}`, {
             method: "GET",
+            credentials: 'same-origin',
             headers: {
                 "Accept": "application/ld+json",
                 "Content-Type": "application/json"

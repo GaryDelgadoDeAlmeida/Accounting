@@ -38,4 +38,45 @@ class InvoiceRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    /**
+     * Get invoice attached to an user
+     * 
+     * @param int userID
+     * @param int offset
+     * @param int limit
+     * @return Invoice[]
+     */
+    function getInvoices(int $userID, int $offset, int $limit) {
+        return $this->createQueryBuilder("invoice")
+            ->leftJoin("invoice.user", "user")
+            ->where("user.id = :userID")
+            ->orderBy("invoice.id", "DESC")
+            ->setParameter("userID", $userID)
+            ->setFirstResult(($offset - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @param int companyID
+     * @param int userID
+     * @return Invoice[]
+     */
+    function getInvoicesByClientAndUser(int $companyID, int $userID) {
+        return $this->createQueryBuilder("invoice")
+            ->leftJoin("invoice.company", "company")
+            ->leftJoin("invoice.user", "user")
+            ->where("company.id = :companyID")
+            ->where("user.id = :userID")
+            ->setParameters([
+                "companyID" => $companyID,
+                "userID" => $userID
+            ])
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }

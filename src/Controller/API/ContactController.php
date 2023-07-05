@@ -4,6 +4,7 @@ namespace App\Controller\API;
 
 use App\Manager\FormManager;
 use App\Manager\ContactManager;
+use App\Manager\SerializeManager;
 use App\Repository\ContactRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,15 +19,18 @@ class ContactController extends AbstractController
 {
     private FormManager $formManager;
     private ContactManager $contactManager;
+    private SerializeManager $serializerManager;
     private ContactRepository $contactRepository;
 
     function __construct(
         FormManager $formManager, 
         ContactManager $contactManager,
+        SerializeManager $serializerManager,
         ContactRepository $contactRepository
     ) {
         $this->formManager = $formManager;
         $this->contactManager = $contactManager;
+        $this->serializerManager = $serializerManager;
         $this->contactRepository = $contactRepository;
     }
 
@@ -39,7 +43,12 @@ class ContactController extends AbstractController
         $offset = is_numeric($offset) && $offset > 1 ? $offset : 1;
         $litmit = 20;
 
-        return $this->json($this->contactRepository->findBy([], ["id" => "ASC"], $limit, ($offset - 1) * $limit), Response::HTTP_OK);
+        $contacts = $this->contactRepository->findBy([], ["id" => "ASC"], $limit, ($offset - 1) * $limit);
+
+        return $this->json(
+            $this->serializerManager->serializeContent($contacts), 
+            Response::HTTP_OK
+        );
     }
 
     /**
@@ -104,5 +113,13 @@ class ContactController extends AbstractController
         }
 
         return $this->json($bodyContent, Response::HTTP_OK);
+    }
+
+    /**
+     * @Route("/contact/{contactID}", requirements={"contactID"="\d+"}, name="remove_single_contact", methods={"DELETE"})
+     */
+    public function remove_single_contact(Request $request, int $companyID) : JsonResponse 
+    {
+        return $this->json(["message" => "Route under construction"], Response::HTTP_OK);
     }
 }

@@ -15,21 +15,40 @@ abstract class CompanyEnum {
     public const COMPANY_PHONE = "phone";
     public const COMPANY_EMAIL = "email";
 
-    public static array $typeName = [
-        self::COMPANY_NAME,
-        self::COMPANY_SIREN,
-        self::COMPANY_SIRET,
-        self::COMPANY_NUM_DNS,
-        self::COMPANY_ADDRESS,
-        self::COMPANY_ZIPCODE,
-        self::COMPANY_CITY,
-        self::COMPANY_COUNTRY,
-        self::COMPANY_PHONE,
-        self::COMPANY_EMAIL
+    protected static array $typeName = [
+        self::COMPANY_NAME => "Name",
+        self::COMPANY_SIREN => "N° Siren",
+        self::COMPANY_SIRET => "N° Siret",
+        self::COMPANY_NUM_DNS => "N° DSN",
+        self::COMPANY_ADDRESS => "Address",
+        self::COMPANY_ZIPCODE => "Zip code",
+        self::COMPANY_CITY => "City",
+        self::COMPANY_COUNTRY => "Country",
+        self::COMPANY_PHONE => "Phone",
+        self::COMPANY_EMAIL => "Email"
     ];
 
-    function getAvailableChoice() {
+    function getAvailableChoices() {
+        return [
+            self::COMPANY_NAME,
+            self::COMPANY_SIREN,
+            self::COMPANY_SIRET,
+            self::COMPANY_NUM_DNS,
+            self::COMPANY_ADDRESS,
+            self::COMPANY_ZIPCODE,
+            self::COMPANY_CITY,
+            self::COMPANY_COUNTRY,
+            self::COMPANY_PHONE,
+            self::COMPANY_EMAIL
+        ];
+    }
+
+    public function getChoices() {
         $choices = [];
+
+        foreach(self::getAvailableChoices() as $key => $value) {
+            $choices[static::$typeName[$key]] = $value;
+        }
 
         return $choices;
     }

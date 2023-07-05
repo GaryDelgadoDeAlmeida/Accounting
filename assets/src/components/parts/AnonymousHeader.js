@@ -14,9 +14,7 @@ export default function AnonymousHeader(props) {
             </div>
 
             <div className={"page-content"}>
-                <div className={"page-wrapper"}>
-                    {props.children}
-                </div>
+                {props.children}
             </div>
 
             <div className={"page-footer"}>

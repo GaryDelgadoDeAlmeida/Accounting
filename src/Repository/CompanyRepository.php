@@ -21,21 +21,6 @@ class CompanyRepository extends ServiceEntityRepository
         parent::__construct($registry, Company::class);
     }
 
-    /**
-     * @param int offset
-     * @param int limit
-     * @return array
-     */
-    public function getCompanies(int $offset = 1, int $limit = 10)
-    {
-        return $this->createQueryBuilder("company")
-            ->setMaxResults($limit)
-            ->setFirstResult(($offset - 1) * $limit)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-
     public function save(Company $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
@@ -52,5 +37,54 @@ class CompanyRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+    /**
+     * @param int offset
+     * @param int limit
+     * @return array
+     */
+    public function getCompanies(int $offset = 1, int $limit = 10)
+    {
+        return $this->createQueryBuilder("company")
+            ->setMaxResults($limit)
+            ->setFirstResult(($offset - 1) * $limit)
+            ->orderBy("company.name", "ASC")
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @param int offset
+     * @param int limit
+     * @return array
+     */
+    public function getCompaniesByUser(int $userID, int $offset = 1, int $limit = 10)
+    {
+        return $this->createQueryBuilder("company")
+            ->leftJoin("company.users", "user")
+            ->where("user.id = :userID")
+            ->setParameter("userID", $userID)
+            ->setMaxResults($limit)
+            ->setFirstResult(($offset - 1) * $limit)
+            ->orderBy("company.name", "ASC")
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * Count all clients of an user
+     */
+    public function countCompanies(int $userID) {
+        return $this->createQueryBuilder("company")
+            ->select("COUNT(company.id) as nbrCompanies")
+            ->leftJoin("company.users", "user")
+            ->where("user.id = :userID")
+            ->setParameter("userID", $userID)
+            ->getQuery()
+            ->getSingleResult()["nbrCompanies"]
+        ;
     }
 }

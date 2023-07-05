@@ -13,8 +13,6 @@ export default function Home() {
     return (
         <UserHeader>
             <div className={"page-section"}>
-                {/* <div className={"admin-hero"}></div> */}
-
                 {/* Resume */}
                 <div className={"resume d-flex-row"}>
                     <div className={"card item-row"}>
@@ -124,7 +122,7 @@ export default function Home() {
                                         <td className={"-status txt-center"}>
                                             <span className={"badge badge-success"}>Paid</span>
                                         </td>
-                                        <td className={"-invoice-euro txt-center"}></td>
+                                        <td className={"-invoice-euro txt-center"}>EURO</td>
                                         <td className={"-action txt-right"}>
                                             <LinkButton 
                                                 classname={"btn-blue"}
@@ -139,7 +137,7 @@ export default function Home() {
                                         <td className={"status txt-center"}>
                                             <span className={"badge badge-warning"}>Ongoing</span>
                                         </td>
-                                        <td className={"-invoice-euro txt-center"}></td>
+                                        <td className={"-invoice-euro txt-center"}>EURO</td>
                                         <td className={"-action txt-right"}>
                                             <LinkButton 
                                                 classname={"btn-blue"}
@@ -166,16 +164,26 @@ export default function Home() {
                             <table className={"table"}>
                                 <thead>
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Client</th>
-                                        <th>Action</th>
+                                        <th className={"column-date txt-left"}>Date</th>
+                                        <th className={"column-client-name"}>Client</th>
+                                        <th className={"column-estimate-name"}>Devis</th>
+                                        <th className={"column-amount"}>Amounts (€)</th>
+                                        <th className={"column-action"}>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td className={"-date"}>12/07/2023</td>
+                                        <td className={"-client-name txt-center"}>VIAPROD</td>
+                                        <td className={"-estimate-name txt-center"}>Devis n°1</td>
+                                        <td className={"-amount txt-center"}>2500</td>
+                                        <td className={"-action"}>
+                                            <LinkButton 
+                                                classname={"btn-blue"}
+                                                url={"/invoice/1"}
+                                                defaultIMG={"eye"}
+                                            />
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>

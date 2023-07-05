@@ -4,6 +4,7 @@ export default async function PrivatePostRessource(url, sendBody) {
     const response = await fetch({
         url: `${window.location.origin}/api/${url}`,
         method: "POST",
+        credentials: 'same-origin',
         headers: {
             Accept: "application/ld+json",
             "Content-Type": "application/form-data"

@@ -8,6 +8,7 @@ import Register from "./screens/Register";
 // Anonymous
 import Home from "./screens/Anonymous/Home";
 import Policy from "./screens/Anonymous/Policy";
+import Disclamer from "./screens/Anonymous/Disclamer";
 
 // User
 import UserHome from "./screens/User/Home";
@@ -33,6 +34,7 @@ export default function RoutesConfig() {
                 {/* Anonymous */}
                 <Route path={"/"} element={<Home />} />
                 <Route path={"/policy"} element={<Policy />} />
+                <Route path={"/disclamer"} element={<Disclamer />} />
                 <Route path={"/login"} element={<Login />} />
                 <Route path={"/register"} element={<Register />} />
                 

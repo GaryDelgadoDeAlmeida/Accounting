@@ -1,0 +1,17 @@
+.page-hero {
+    width: 100%;
+    margin: auto;
+    height: 600px;
+    display: flex;
+    place-content: center;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: var(--c-silver);
+    background-image: url("./../../../public/content/img/background.png");
+
+    .hero-wrapper {
+        margin: auto;
+        text-align: center;
+    }
+}

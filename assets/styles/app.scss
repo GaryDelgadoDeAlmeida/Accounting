@@ -5,6 +5,10 @@ a, a:hover {
 }
 
 :root {
+    // Primary colors
+    --c-primary-one: var(--c-azure);
+    --c-primary-two: "";
+
     // Base colors
     --c-white: #ffffff;
     --c-gray: #a9a9a9;
@@ -19,10 +23,13 @@ a, a:hover {
     // Specific colors
     --c-skyBlue: #60d9fa;
     --c-skyBlueReact: #61dafb;
-    --c-blueReact: #2b81e0;
-    --c-primaryBlue: #0366d6;
+    --c-azure: #2b81e0;
+    --c-penBlue: #0A1045;
+    --c-celticBlue: #0366d6;
     --c-lightGray: #f2f2f2;
     --c-greenLime: #198344;
+    --c-lightGray: #f2f2f2;
+    --c-dimmGray: #696969;
 }
 
 @mixin tablet {
@@ -57,3 +64,7 @@ a, a:hover {
 @import "./parts/table";
 @import "./parts/client_identity";
 @import "./parts/login";
+@import "./parts/hero";
+@import "./parts/contact";
+@import "./parts/sending_status";
+@import "./parts/vertical_sub_menu";

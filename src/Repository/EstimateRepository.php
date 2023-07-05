@@ -39,28 +39,40 @@ class EstimateRepository extends ServiceEntityRepository
         }
     }
 
-//    /**
-//     * @return Estimate[] Returns an array of Estimate objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('e.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Get estimates
+     * 
+     * @param int userID
+     * @param int offset
+     * @param int limit
+     * @return Estimate[]
+     */
+    public function getEstimates(int $userID, int $offset, int $limit) {
+        return $this->createQueryBuilder("estimate")
+            ->setFirstResult(($offset - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 
-//    public function findOneBySomeField($value): ?Estimate
-//    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    /**
+     * @param int companyID
+     * @param int userID
+     * @return Estimate[]
+     */
+    public function getEstimatesByCompanyAndUser(int $companyID, int $userID) {
+        return $this->createQueryBuilder("estimate")
+            ->leftJoin("estimate.company", "company")
+            ->leftJoin("estimate.user", "user")
+            ->where("company.id = :companyID")
+            ->andWhere("user.id = :userID")
+            ->setParameters([
+                "companyID" => $companyID,
+                "userID" => $userID
+            ])
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }

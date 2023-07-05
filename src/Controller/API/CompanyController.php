@@ -5,6 +5,7 @@ namespace App\Controller\API;
 use App\Manager\FormManager;
 use App\Manager\CompanyManager;
 use App\Repository\CompanyRepository;
+use App\Repository\InvoiceRepository;
 use App\Repository\EstimateRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,6 +26,7 @@ class CompanyController extends AbstractController {
     private CompanyManager $companyManager;
     private CompanyRepository $companyRepository;
     private EstimateRepository $estimateRepository;
+    private InvoiceRepository $invoiceRepository;
 
     function __construct(
         EntityManagerInterface $em,
@@ -32,6 +34,7 @@ class CompanyController extends AbstractController {
         FormManager $formManager,
         CompanyManager $companyManager,
         CompanyRepository $companyRepository,
+        InvoiceRepository $invoiceRepository,
         EstimateRepository $estimateRepository
     ) {
         $this->em = $em;
@@ -39,6 +42,7 @@ class CompanyController extends AbstractController {
         $this->formManager = $formManager;
         $this->companyManager = $companyManager;
         $this->companyRepository = $companyRepository;
+        $this->invoiceRepository = $invoiceRepository;
         $this->estimateRepository = $estimateRepository;
     }
 
@@ -47,9 +51,9 @@ class CompanyController extends AbstractController {
      */
     public function get_companies(Request $request): JsonResponse
     {
+        $limit = 20;
         $offset = $request->get("offset", 1);
         $offset = $offset > 1 ? $offset : 1;
-        $limit = 20;
 
         $normalize = $this->serializer->normalize($this->companyRepository->getCompanies($offset, $limit), null);
 
@@ -91,23 +95,35 @@ class CompanyController extends AbstractController {
     }
 
     /**
-     * @Route("/company/{id}", requirements={"id"="\d+"}, name="get_company", methods={"GET"})
+     * @Route("/company/{companyID}", requirements={"companyID"="\d+"}, name="get_company", methods={"GET"})
      */
-    public function get_company(Request $request, $id): JsonResponse
+    public function get_company(Request $request, int $companyID): JsonResponse
     {
-        $company = $this->companyRepository->find($id);
+        $company = $this->companyRepository->find($companyID);
         if(empty($company)) {
             return $this->json(null, Response::HTTP_NOT_FOUND);
         }
 
-        return $this->json($company, Response::HTTP_OK);
+        $userID = $request->get("userID");
+        $userID = is_numeric($userID) ? $userID : null;
+        if(empty($userID)) {
+            return $this->json([
+                "message" => "The user is empty"
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        return $this->json([
+            "company" => $company,
+            "estimates" => $this->estimateRepository->getEstimatesByCompanyAndUser($companyID, $userID),
+            "invoices" => $this->invoiceRepository->getInvoicesByClientAndUser($companyID, $userID)
+        ], Response::HTTP_OK);
     }
 
     /**
-     * @Route("/company/{id}/estimates", requirements={"id"="\d+"}, name="get_estimates_form_company", methods={"GET"})
+     * @Route("/company/{companyID}/estimates", requirements={"companyID"="\d+"}, name="get_estimates_form_company", methods={"GET"})
      */
-    public function get_estimates_form_company(Request $id) : JsonResponse {
-        $company = $this->companyRepository->find($id);
+    public function get_estimates_form_company(Request $companyID) : JsonResponse {
+        $company = $this->companyRepository->find($companyID);
         if(empty($company)) {
             return $this->json(null, Response::HTTP_NOT_FOUND);
         }
@@ -123,9 +139,9 @@ class CompanyController extends AbstractController {
     }
 
     /**
-     * @Route("/company/{id}/update", requirements={"id"="\d+"}, name="update_company", methods={"PUT"})
+     * @Route("/company/{companyID}/update", requirements={"companyID"="\d+"}, name="update_company", methods={"PUT"})
      */
-    public function put_company(Request $request, $id): JsonResponse
+    public function put_company(Request $request, int $companyID): JsonResponse
     {
         // Get the body request
         $bodyContent = $request->getContent();
@@ -140,10 +156,41 @@ class CompanyController extends AbstractController {
     }
 
     /**
-     * @Route("/company/{id}/remove", requirements={"id"="\d+"}, name="remove_company", methods={"DELETE"})
+     * @Route("/company/{companyID}/remove", requirements={"companyID"="\d+"}, name="remove_company", methods={"DELETE"})
      */
-    public function remove_company(Request $request, int $id): JsonResponse
+    public function remove_company(Request $request, int $companyID): JsonResponse
     {
+        $userID = $request->get("userID");
+        $userID = is_numeric($userID) ? $userID : null;
+        if(empty($userID)) {
+            return $this->json(["message" => "Missing user id"], Response::HTTP_FORBIDDEN);
+        }
+
+        $user = $this->userRepository->find($userID);
+        if(empty($user)) {
+            return $this->json(["message" => "Not found user"], Response::HTTP_NOT_FOUND);
+        }
+
+        $company = $this->companyRepository->find($companyID);
+        if(empty($company)) {
+            return $this->json(["message" => "Not found company"], Response::HTTP_NOT_FOUND);
+        }
+
+        // Unlink the user and the company
+        $company->removeUser($user);
+
+        // Remove all invoices of the user and the company
+        $invoices = $this->invoiceRepository->getInvoicesByClientAndUser($companyID, $userID);
+        foreach($invoices as $invoice) {
+            $company->removeInvoice($invoice, true);
+        }
+
+        // Remove all estimates of the user and the company
+        $estimates = $this->estimateRepository->getEstimatesByClientAndUser($companyID, $userID);
+        foreach($estimates as $estimate) {
+            $this->estimateRepository->remove($estimate, true);
+        }
+
         return $this->json(null, Response::HTTP_ACCEPTED);
     }
 }
