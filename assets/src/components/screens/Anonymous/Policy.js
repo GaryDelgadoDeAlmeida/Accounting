@@ -7,7 +7,9 @@ export default function Policy() {
         <AnonymousHeader>
             <div className={"page-wrapper"}>
                 <div className={"page-section"}>
-                    <h1>Policy</h1>
+                    <h2 className={"page-title"}>Policy</h2>
+
+                    <div className={""}></div>
                 </div>
             </div>
         </AnonymousHeader>

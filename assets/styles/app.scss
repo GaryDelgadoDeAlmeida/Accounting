@@ -21,6 +21,7 @@ a, a:hover {
     --c-black: #000000;
 
     // Specific colors
+    --c-ghostWhite: #f3f5fa;
     --c-skyBlue: #60d9fa;
     --c-skyBlueReact: #61dafb;
     --c-azure: #2b81e0;
@@ -68,3 +69,4 @@ a, a:hover {
 @import "./parts/contact";
 @import "./parts/sending_status";
 @import "./parts/vertical_sub_menu";
+@import "./parts/box_icon";

@@ -43,7 +43,7 @@ export default function UserHeader(props) {
                     </ul>
                 </div>
 
-                <div className={"page-wrapper"}>
+                <div className={"page-wrapper mh-100vh"}>
                     {props.children}
                 </div>
 

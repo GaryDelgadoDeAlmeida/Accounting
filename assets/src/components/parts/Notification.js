@@ -15,7 +15,7 @@ export default function Notification({classname, message}) {
     return (
         <div className={`notification ${classname}`}>
             <div className={"icon"}>
-                <img src={`${window.location.host}${icon}`} alt={"icon"} />
+                <img src={`${window.location.origin}${icon}`} alt={"icon"} />
             </div>
             <div className={"message"}>
                 <span>{message}</span>
