@@ -15,6 +15,7 @@ import UserHome from "./screens/User/Home";
 import UserClient from "./screens/User/Client";
 import UserClientSingle from "./screens/User/ClientSingle";
 import UserClientNew from "./screens/User/ClientNew";
+import UserClientEdit from "./screens/User/ClientEdit";
 import UserClientInvoiceNew from "./screens/User/ClientInvoiceNew";
 import UserEstimate from "./screens/User/Estimate";
 import UserEstimateSingle from "./screens/User/EstimateSingle";
@@ -43,6 +44,7 @@ export default function RoutesConfig() {
                 <Route path={"/user/client"} element={<UserClient />} />
                 <Route path={"/user/client/new"} element={<UserClientNew />} />
                 <Route path={"/user/client/:clientID"} element={<UserClientSingle />} />
+                <Route path={"/user/client/:clientID/edit"} element={<UserClientEdit />} />
                 <Route path={"/user/client/:clientID/estimate"} element={<UserClientNew />} />
                 <Route path={"/user/client/:clientID/estimate/:estimateID"} element={"Hi"} />
                 <Route path={"/user/client/:clientID/invoice"} element={<UserClientInvoiceNew />} />

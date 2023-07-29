@@ -1,208 +1,199 @@
 import React, { useState } from "react";
 import FormControl from "../utils/FormControl";
 import Notification from "../parts/Notification";
-import PrivatePostRessource from "../utils/PrivatePostRessource";
+import axios from "axios";
 
 export default function CompanyForm() {
-    const [name, setName] = useState("")
-    const [siren, setSiren] = useState("")
-    const [siret, setSiret] = useState("")
-    const [dnsNumber, setDnsNumber] = useState("")
-    const [address, setAddress] = useState("")
-    const [city, setCity] = useState("")
-    const [zipCode, setZipCode] = useState("")
-    const [country, setCountry] = useState("")
-    const [phone, setPhone] = useState("")
-    const [email, setEmail] = useState("")
+    // Form field
+    const [credentiels, setCredentials] = useState({
+        name: "", 
+        siren: "", 
+        siret: "", 
+        duns_number: "", 
+        address: "", 
+        city: "", 
+        zip_code: "", 
+        country: "", 
+        phone: "", 
+        email: ""
+    })
 
-    const [formResponse, setFormResponse] = useState([])
+    // Form response
+    const [formResponse, setFormResponse] = useState({})
+    const formControl = new FormControl()
 
     const handleChange = (e, fieldName) => {
-        const fieldValue = e.target.value
-        setFormResponse([])
+        let fieldValue = e.target.value
+        let maxLength = e.target.maxLength !== -1 ? e.target.maxLength : 255;
+        setFormResponse({})
 
         switch(fieldName) {
             case "name":
-                if(!FormControl.checkLength(fieldValue, 1)) {
+                if(!formControl.checkLength(fieldValue, 0, maxLength)) {
                     setFormResponse({classname: "danger", message: "Le nom de la société dépasse les limites de caractères."})
                     return
                 }
-
-                setName(fieldValue)
                 break
 
             case "siren":
-                if(!FormControl.checkNumber(fieldValue) || FormControl.checkLength(value, 0, 9)) {
+                if(!formControl.checkNumber(fieldValue) || formControl.checkLength(fieldValue, 0, 9)) {
                     setFormResponse({classname: "danger", message: "Le numéro de SIREN n'est pas conforme."})
                     return
                 }
-
-                setSiren(fieldValue)
                 break
 
             case "siret":
-                if(!FormControl.checkNumber(fieldValue) || FormControl.checkLength(value, 0, 14)) {
+                if(!formControl.checkNumber(fieldValue) || formControl.checkLength(fieldValue, 0, 14)) {
                     setFormResponse({classname: "danger", message: "Le numéro de SIRET n'est pas conforme."})
                     return
                 }
-
-                setSiret(fieldValue)
                 break
 
-            case "dns_number":
-                if(!FormControl.checkNumber(fieldValue) || FormControl.checkLength(value, 0, 14)) {
-                    setFormResponse({classname: "danger", message: "Le numéro DNS n'est pas conforme."})
+            case "duns_number":
+                if(!formControl.checkNumber(fieldValue) || formControl.checkLength(fieldValue, 0, 14)) {
+                    setFormResponse({classname: "danger", message: "Le numéro DUNS n'est pas conforme."})
                     return
                 }
-
-                setDnsNumber(fieldValue)
                 break
 
             case "address":
-                if(!FormControl.checkLength(fieldValue, 1)) {
+                if(!formControl.checkLength(fieldValue, 1)) {
                     setFormResponse({classname: "danger", message: "L'adresse renseigné n'est pas conforme."})
                     return
                 }
-
-                setAddress(fieldValue)
                 break
 
             case "city":
-                if(!FormControl.checkLength(fieldValue, 1)) {
+                if(!formControl.checkLength(fieldValue, 1)) {
                     setFormResponse({classname: "danger", message: "La ville dépasse les limites de caractères"})
                     return
                 }
-
-                setCity(fieldValue)
                 break
 
             case "zip_code":
-                if(!FormControl.checkLength(fieldValue, 1, 10)) {
+                if(!formControl.checkLength(fieldValue, 1, 10)) {
                     setFormResponse({classname: "danger", message: "Le code postal dépasse les limites de caractères"})
                     return
                 }
-
-                setZipCode(fieldValue)
                 break
 
             case "country":
-                if(!FormControl.checkLength(fieldValue, 1)) {
+                if(!formControl.checkLength(fieldValue, 1)) {
                     setFormResponse({classname: "danger", message: "Le pays dépasse les limites de caractères"})
                     return
                 }
-
-                setCountry(fieldValue)
                 break
 
             case "phone":
-                if(!FormControl.checkLength(fieldValue, 1, 14)) {
+                if(!formControl.checkLength(fieldValue, 1, 14)) {
                     setFormResponse({classname: "danger", message: "Le numéro de téléphone dépasse la limite de caractères"})
                     return
                 }
 
-                if(!FormControl.checkNumber(fieldValue)) {
+                if(!formControl.checkNumber(fieldValue)) {
                     setFormResponse({classname: "danger", message: "Le numéro de téléphone n'est pas un numéro valide"})
                     return
                 }
-
-                setPhone(fieldValue)
                 break
 
             case "email":
-                if(!FormControl.checkLength(fieldValue, 1)) {
+                if(!formControl.checkLength(fieldValue, 1)) {
                     setFormResponse({classname: "danger", message: "L'adresse email dépasse les limites de caractères"})
                     return
                 }
 
-                if(!FormControl.checkEmail(fieldValue)) {
+                if(!formControl.checkEmail(fieldValue)) {
                     setFormResponse({classname: "danger", message: "L'adresse email n'est pas valide"})
                     return
                 }
-
-                setEmail(fieldValue)
                 break
 
             default:
                 setFormResponse({classname: "danger", message: `Le champ ${fieldName} n'est pas connu.`})
-                break
+                return
         }
+
+        setCredentials({
+            ...credentiels,
+            [fieldName]: fieldValue
+        })
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        if([name, siren, siret, dnsNumber, address, city, zipCode, country, phone, email].indexOf("") !== -1) {
+        if(Object.values(credentiels).indexOf("") !== -1) {
             setFormResponse({classname: "danger", message: "Une erreur a été rencontrée, veuillez vérifier que tous les champs soient bien renseigner."})
             return
         }
 
-        await PrivatePostRessource("company", {
-            company_name: name, 
-            siren: siren, 
-            siret: siret, 
-            dns_number: dnsNumber, 
-            address: address, 
-            city: city, 
-            zip_code: zipCode, 
-            country: country, 
-            phone: phone, 
-            email: email
-        })
+        if(!formControl.checkNumber(credentiels.siren) || !formControl.checkNumber(credentiels.siret) || !formControl.checkNumber(credentiels.duns_number)) {
+            setFormResponse({classname: "danger", message: ""})
+            return
+        }
+
+        axios
+            .post("/api/company", credentiels)
+            .then(res => console.log(res))
+            .catch(err => console.err(err))
+        ;
+
+        setFormResponse({classname: "information", message: "Submit under construction. Try again later"})
     }
 
     return (
         <form className={"form"} onSubmit={(e) => handleSubmit(e)}>
 
-            {formResponse.length > 0 && (<Notification {...formResponse} />)}
+            {Object.keys(formResponse).length > 0 && (<Notification {...formResponse} />)}
             
             <div className={"form-field"}>
                 <label htmlFor={"company_name"}>Corporation name</label>
-                <input id={"company_name"} type={"text"} maxLength={255} onChange={(e) => handleChange(e)} />
+                <input id={"company_name"} type={"text"} value={credentiels.name} maxLength={255} onChange={(e) => handleChange(e, "name")} />
             </div>
             
             <div className={"form-field"}>
                 <label htmlFor={"siren"}>N°Siren</label>
-                <input id={"siren"} type={"number"} maxLength={9} onChange={(e) => handleChange(e)} />
+                <input id={"siren"} type={"number"} value={credentiels.siren} maxLength={9} onChange={(e) => handleChange(e, "siren")} />
             </div>
             
             <div className={"form-field"}>
                 <label htmlFor={"siret"}>N°Siret</label>
-                <input id={"siret"} type={"number"} maxLength={14} onChange={(e) => handleChange(e)} />
+                <input id={"siret"} type={"number"} value={credentiels.siret} maxLength={14} onChange={(e) => handleChange(e, "siren")} />
             </div>
             
             <div className={"form-field"}>
-                <label htmlFor={"dns_number"}>N°DNS</label>
-                <input id={"dns_number"} type={"number"} maxLength={14} onChange={(e) => handleChange(e)} />
+                <label htmlFor={"duns_number"}>N°DUNS</label>
+                <input id={"duns_number"} type={"number"} value={credentiels.duns_number} maxLength={14} onChange={(e) => handleChange(e, "duns_number")} />
             </div>
             
             <div className={"form-field"}>
                 <label htmlFor={"address"}>Address</label>
-                <input id={"address"} type={"text"} maxLength={255} onChange={(e) => handleChange(e)} />
+                <input id={"address"} type={"text"} value={credentiels.address} maxLength={255} onChange={(e) => handleChange(e, "address")} />
             </div>
             
             <div className={"form-field"}>
                 <label htmlFor={"city"}>City</label>
-                <input id={"city"} type={"text"} maxLength={255} onChange={(e) => handleChange(e)} />
+                <input id={"city"} type={"text"} value={credentiels.city} maxLength={255} onChange={(e) => handleChange(e, "city")} />
             </div>
             
             <div className={"form-field"}>
                 <label htmlFor={"zip_code"}>Zipcode</label>
-                <input id={"zip_code"} type={"text"} maxLength={10} onChange={(e) => handleChange(e)} />
+                <input id={"zip_code"} type={"text"} value={credentiels.zip_code} maxLength={10} onChange={(e) => handleChange(e, "zip_code")} />
             </div>
             
             <div className={"form-field"}>
                 <label htmlFor={"country"}>Country</label>
-                <input id={"country"} type={"text"} maxLength={255} onChange={(e) => handleChange(e)} />
+                <input id={"country"} type={"text"} value={credentiels.country} maxLength={255} onChange={(e) => handleChange(e, "country")} />
             </div>
             
             <div className={"form-field"}>
                 <label htmlFor={"phone"}>Phone number</label>
-                <input id={"phone"} type={"tel"} maxLength={10} onChange={(e) => handleChange(e)} />
+                <input id={"phone"} type={"tel"} value={credentiels.phone} maxLength={10} onChange={(e) => handleChange(e, "phone")} />
             </div>
             
             <div className={"form-field"}>
                 <label htmlFor={"email"}>Email</label>
-                <input id={"email"} type={"email"} maxLength={255} onChange={(e) => handleChange(e)} />
+                <input id={"email"} type={"email"} value={credentiels.email} maxLength={255} onChange={(e) => handleChange(e, "email")} />
             </div>
             
             <div className={"form-button mt-15px"}>

@@ -2,10 +2,12 @@
 
 namespace App\Controller\API;
 
+use App\Entity\User;
 use App\Manager\FormManager;
 use App\Manager\InvoiceManager;
 use App\Repository\InvoiceRepository;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,22 +17,25 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class InvoiceController extends AbstractController
 {
+    private User $user;
     private FormManager $formManager;
     private InvoiceManager $invoiceManager;
     private InvoiceRepository $invoiceRepository;
 
     function __construct(
+        Security $security,
         FormManager $formManager, 
         InvoiceManager $invoiceManager, 
         InvoiceRepository $invoiceRepository
     ) {
+        $this->user = $security->getUser() ?? (new User());
         $this->formManager = $formManager;
         $this->invoiceManager = $invoiceManager;
         $this->invoiceRepository = $invoiceRepository;
     }
 
     /**
-     * @Route("/invoice", name="invoice", methods={"GET"})
+     * @Route("/invoice", name="get_invoices", methods={"GET"})
      */
     public function get_invoices(Request $request): Response
     {
@@ -42,7 +47,7 @@ class InvoiceController extends AbstractController
     }
 
     /**
-     * @Route("/invoice", name="invoice_add", methods={"POST"})
+     * @Route("/invoice", name="new_invoice", methods={"POST"})
      */
     public function post_invoice(Request $request)
     {
@@ -50,7 +55,7 @@ class InvoiceController extends AbstractController
     }
 
     /**
-     * @Route("/invoice/{invoiceID}", name="single_invoice", methods={"GET"})
+     * @Route("/invoice/{invoiceID}", name="get_invoice", methods={"GET"})
      */
     public function get_invoice(int $invoiceID = 0)
     {

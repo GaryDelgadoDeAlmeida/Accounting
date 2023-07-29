@@ -1,0 +1,27 @@
+.service-provider {
+    top: 0;
+
+    .-identity {
+        gap: 5px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .-address {
+        margin: 5px 0;
+    }
+
+    .-contact {
+        gap: 5px;
+        display: flex;
+        flex-direction: column;
+
+        .-phone {
+            // 
+        }
+
+        .-email {
+            // 
+        }
+    }
+}

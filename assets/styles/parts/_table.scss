@@ -111,7 +111,15 @@
                         content: "Label du devis";
                     }
 
+                    &.-freelance::before {
+                        content: "Freelance";
+                    }
+
                     // Client
+                    &.-client::before {
+                        content: "Client";
+                    }
+                    
                     &.-client-name::before {
                         content: "Société";
                     }

@@ -24,16 +24,16 @@ class CompanyManager {
      */
     public function newCompany($requestContent) {
         $company = (new Company())
-            ->setName($requestContent["name"])
-            ->setAddress($requestContent["address"])
-            ->setZipCode($requestContent["zip_code"])
-            ->setCity($requestContent["city"])
-            ->setCountry($requestContent["country"])
-            ->setSiren($requestContent["siren"])
-            ->setSiret($requestContent["siret"])
-            ->setDunsNumber($requestContent["dns_number"])
-            ->setPhone($requestContent["phone"])
-            ->setEmail($requestContent["email"])
+            ->setName($requestContent["name"] ?? "")
+            ->setAddress($requestContent["address"] ?? "")
+            ->setZipCode($requestContent["zip_code"] ?? "")
+            ->setCity($requestContent["city"] ?? "")
+            ->setCountry($requestContent["country"] ?? "")
+            ->setSiren($requestContent["siren"] ?? "")
+            ->setSiret($requestContent["siret"] ?? "")
+            ->setDunsNumber($requestContent["dns_number"] ?? "")
+            ->setPhone($requestContent["phone"] ?? "")
+            ->setEmail($requestContent["email"] ?? "")
         ;
 
         $this->companyRepository->save($company, true);

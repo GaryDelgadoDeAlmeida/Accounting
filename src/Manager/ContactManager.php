@@ -7,11 +7,12 @@ use App\Repository\ContactRepository;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class ContactManager {
-    private ContactRepository $contactRepository;
     private ParameterBagInterface $params;
+    private ContactRepository $contactRepository;
 
     function __construct(ContactRepository $contactRepository, ParameterBagInterface $params)
     {
+        $this->params = $params;
         $this->contactRepository = $contactRepository;
     }
 
@@ -27,9 +28,12 @@ class ContactManager {
         ;
 
         try {
-            $this->contactRepository->add($contact, true);
+            // Save the contact (message) into databse
+            $this->contactRepository->save($contact, true);
 
+            // If we have to send an email
             if($sendMail) {
+                // Send the mail
                 $this->sendEmail($subject, $message);
             }
         } catch(\Exception $e) {
@@ -41,6 +45,9 @@ class ContactManager {
 
     public function sendEmail(string $subject, string $message)
     {
-        return mail($this->params->get('email.admin', $subject, $message));
+        return mail($this->params->get('email.admin'), $subject, $message, [
+            "from" => "no-reply@freelance-accounting.com",
+            'X-Mailer' => 'PHP/' . phpversion()
+        ]);
     }
 }

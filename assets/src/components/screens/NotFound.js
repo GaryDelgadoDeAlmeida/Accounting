@@ -6,10 +6,12 @@ export default function NotFound() {
 
     return (
         <AnonymousHeader>
-            <div className={"page-section"}>
-                <h3 className={"title"}>Page not found</h3>
-                <p>The page you are looking at don't exist</p>
-                <ReturnButton path={"/"} />
+            <div className={"page-wrapper"}>
+                <div className={"page-section"}>
+                    <h3 className={"title"}>Page not found</h3>
+                    <p>The page you are looking at don't exist</p>
+                    <ReturnButton path={"/"} />
+                </div>
             </div>
         </AnonymousHeader>
     )

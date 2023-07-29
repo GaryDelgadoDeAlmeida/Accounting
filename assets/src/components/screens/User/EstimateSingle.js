@@ -45,10 +45,16 @@ export default function EstimateSingle() {
 
                     <div className={"mt-25px"}>
                         <table className={"table"}>
+                            <thead>
+                                <tr>
+                                    <th className={"column-freelance"}>Freelance</th>
+                                    <th className={"column-client"}>Client</th>
+                                </tr>
+                            </thead>
                             <tbody>
                                 <tr>
-                                    <td>
-                                        <div className={"service-provider txt-left"}>
+                                    <td className={"-freelance"}>
+                                        <div className={"service-provider"}>
                                             <div className={"-identity"}>
                                                 <span>Garry ALMEIDA</span>
                                                 <span>SIREN : 914 002 308</span>
@@ -63,8 +69,8 @@ export default function EstimateSingle() {
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
-                                        <div className={"service-provider txt-right"}>
+                                    <td className={"-client"}>
+                                        <div className={"service-provider"}>
                                             <div className={"-identity"}>
                                                 <span>VIAPROD</span>
                                                 <span>SIREN : 812 757 326</span>

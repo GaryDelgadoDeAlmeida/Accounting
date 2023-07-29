@@ -39,6 +39,10 @@
     height: 40px;
 }
 
+.h-100px {
+    height: 100px;
+}
+
 .h-150px {
     margin-bottom: 10px;
     height: 150px !important;
@@ -84,6 +88,10 @@
 \* ---------------------------------------- */
 .p-0 {
     padding: 0 !important;
+}
+
+.p-l-0 {
+    padding-left: 0 !important;
 }
 
 .pt-15px {

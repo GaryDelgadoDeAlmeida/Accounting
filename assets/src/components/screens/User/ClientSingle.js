@@ -1,22 +1,39 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import UserHeader from "../../parts/UserHeader";
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import ReturnButton from "../../parts/ReturnButton";
 import LinkButton from "../../parts/LinkButton";
 import PrivateResources from "../../utils/PrivateResources";
 import Badge from "../../parts/Badge";
+import axios from "axios";
 
 export default function ClientSingle() {
 
     const { clientID } = useParams()
-    const { loading, items: client, load } = PrivateResources("company/" + clientID)
+    const [client, setClient] = useState({})
+    const [error, setError] = useState(false)
     
     useEffect(() => {
-        load()
+        axios
+            .get("/api/company/" + clientID, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(res => {
+                setClient(res.data)
+            })
+            .catch(err => {
+                alert(err.response.data.message)
+                setError(true)
+            })
+        ;
     }, [])
     
     return (
         <UserHeader>
+            {error && <Navigate to={"/user/client"} replace={true} />}
+            
             <ReturnButton path={"/user/client"} />
 
             <div className={"page-section"}>

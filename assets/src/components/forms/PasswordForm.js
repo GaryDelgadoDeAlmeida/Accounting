@@ -3,13 +3,16 @@ import PrivateResources from "../utils/PrivateResources";
 import PrivatePostRessource from "../utils/PrivatePostRessource";
 import { useParams } from "react-router-dom";
 import Notification from "../parts/Notification";
+import FormControl from "../utils/FormControl";
+import axios from "axios";
 
 export default function PasswordForm() {
     const { userID } = useParams()
     const { loading, items: user, load } = PrivateResources("user/" + userID)
 
     // Form response
-    const [formResponse, setFormResponse] = useState([])
+    const [formResponse, setFormResponse] = useState({})
+    const formControl = new FormControl()
 
     // Form field
     const [oldPassword, setOldPassword] = useState("")
@@ -20,17 +23,23 @@ export default function PasswordForm() {
 
     const handleChange = (e, fieldName) => {
         let fieldValue = e.target.value
-        setFormResponse([])
-        
-        if(fieldName === "old-password") {
-            setOldPassword(fieldValue)
-        } else if(fieldName === "password") {
-            setPassword(fieldValue)
-        } else if(fieldName === "confirm-password") {
-            setConfirmPassword(fieldValue)
-        } else {
-            setFormResponse({classname: "danger", message: `The field name '${fieldName}' is forbidden`})
-            return
+        setFormResponse({})
+
+        switch(fieldName) {
+            case "current_password":
+                setOldPassword(fieldValue)
+                break
+
+            case "new_password":
+                setPassword(fieldValue)
+                break
+
+            case "confirm_password":
+                setConfirmPassword(fieldValue)
+                break
+
+            default:
+                setFormResponse({classname: "danger", message: `The field name '${fieldName}' is forbidden`})
         }
     }
 
@@ -57,22 +66,24 @@ export default function PasswordForm() {
     return (
         <form className={"form"} onSubmit={(e) => handleSubmit(e)}>
             
-            {formResponse.length > 0 && (<Notification {...formResponse} /> ?? null)}
+            {Object.keys(formResponse).length > 0 && (
+                <Notification {...formResponse} />
+            )}
 
             <div className={"form-field"}>
                 <label htmlFor={"old-password"}>Old password</label>
-                <input id={"old-password"} type={"password"} onChange={(e) => handleChange(e, "old-password")} />
+                <input id={"old-password"} type={"password"} onChange={(e) => handleChange(e, "current_password")} />
             </div>
             
             <div className={"form-field-inline"}>
                 <div className={"form-field"}>
                     <label htmlFor={"password"}>Password</label>
-                    <input id={"password"} type={"password"} onChange={(e) => handleChange(e, "password")} />
+                    <input id={"password"} type={"password"} onChange={(e) => handleChange(e, "new_password")} />
                 </div>
                 
                 <div className={"form-field"}>
                     <label htmlFor={"confirm-password"}>Confirm password</label>
-                    <input id={"confirm-password"} type={"password"} onChange={(e) => handleChange(e, "confirm-password")} />
+                    <input id={"confirm-password"} type={"password"} onChange={(e) => handleChange(e, "confirm_password")} />
                 </div>
             </div>
             

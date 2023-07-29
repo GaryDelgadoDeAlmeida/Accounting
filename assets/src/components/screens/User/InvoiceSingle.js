@@ -1,12 +1,14 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import PrivateResources from "../../utils/PrivateResources";
 import UserHeader from "../../parts/UserHeader";
 import LinkButton from "../../parts/LinkButton";
+import axios from "axios";
 
 export default function InvoiceSingle() {
     const { invoiceID } = useParams()
-    const { loading, items: invoice, load } = PrivateResources(`/invoice/${invoiceID}`)
+    const [error, setError] = useState(false)
+    const [invoice, setInvoice] = useState([])
     const invoiceDetails = [
         {
             id: 1,
@@ -31,6 +33,19 @@ export default function InvoiceSingle() {
         }
     ]
 
+    useEffect(() => {
+        axios
+            .get("/api/invoice/" + invoiceID)
+            .then((response) => {
+                setInvoice(response.data)
+            })
+            .catch(err => {
+                alert(err.response.data.message)
+                setError(true)
+            })
+        ;
+    }, [])
+
     const priceHT = (invoiceDetails) => {
         let price = 0
         
@@ -50,10 +65,6 @@ export default function InvoiceSingle() {
 
         return price
     }
-
-    useEffect(() => {
-        load()
-    }, [])
 
     const handleDownloadInvoice = async (e) => {
         console.log("Hi handleDownloadInvoice")

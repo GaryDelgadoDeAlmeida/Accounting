@@ -1,25 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
-import UserHeader from "../../parts/UserHeader";
-import ReturnButton from "../../parts/ReturnButton";
 import axios from "axios";
+import UserHeader from "../../parts/UserHeader";
 
-export default function ClientInvoiceNew() {
+export default function ClientEdit() {
     const { clientID } = useParams()
-    const [client, setClient] = useState({})
+    const [client, setClient] = useState("")
     const [error, setError] = useState(false)
 
     useEffect(() => {
         axios
-            .get("/client/" + clientID, {
+            .get("/api/company/" + clientID, {
                 headers: {
                     "Content-Type": "application/json"
                 }
             })
-            .then(res => {
-                console.log(res)
-                setClient(res.data)
-            })
+            .then(res => console.log(res.data))
             .catch(err => {
                 alert(err.response.data.message)
                 setError(true)
@@ -29,12 +25,11 @@ export default function ClientInvoiceNew() {
 
     return (
         <UserHeader>
-            {error && <Navigate to={"/user/client/" + clientID} replace={true} />}
-            
-            <div className={"page-section"}>
-                <ReturnButton path={"/user/client/" + clientID} />
+            {error && (<Navigate to={"/user/client"} replace={true} />)}
 
-                <div className={""}></div>
+            <div className={"card"}>
+                <div className={"-header"}></div>
+                <div className={"-body"}></div>
             </div>
         </UserHeader>
     )

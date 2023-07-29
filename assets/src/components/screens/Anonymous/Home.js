@@ -28,30 +28,38 @@ export default function Home() {
                 </div>
             </div>
 
-            <div className={"page-wrapper"}>
-                <div className={"page-section"}>
+            <div className={"page-service page-section"}>
+                <div className={"page-wrapper"}>
                     <h3 className={"page-title"}>Service</h3>
 
-                    <div className={"d-flex"}>
+                    <div className={"service-list mt-25px"}>
                         <div className={"box-icon"}>
-                            <img className={"-icon"} src={`${window.location.origin}/content/svg/`} alt={""} />
-                            <h4 className={"-title"}></h4>
-                            <div className={"-description"}></div>
+                            <img className={"-icon"} src={`${window.location.origin}/content/svg/user.svg`} alt={""} />
+                            <h4 className={"-title"}>Clients</h4>
+                            <div className={"-description"}>
+                                <span>Repertory all yours clients and simply manage them</span>
+                            </div>
                         </div>
                         <div className={"box-icon"}>
-                            <img className={"-icon"} src={`${window.location.origin}/content/svg/`} alt={""} />
-                            <h4 className={"-title"}></h4>
-                            <div className={"-description"}></div>
+                            <img className={"-icon"} src={`${window.location.origin}/content/svg/calculator.svg`} alt={""} />
+                            <h4 className={"-title"}>Estimates</h4>
+                            <div className={"-description"}>
+                                <span>Generate in a simple way yours estimates and send them to your client</span>
+                            </div>
                         </div>
                         <div className={"box-icon"}>
-                            <img className={"-icon"} src={`${window.location.origin}/content/svg/`} alt={""} />
-                            <h4 className={"-title"}></h4>
-                            <div className={"-description"}></div>
+                            <img className={"-icon"} src={`${window.location.origin}/content/svg/file-invoice.svg`} alt={""} />
+                            <h4 className={"-title"}>Invoices</h4>
+                            <div className={"-description"}>
+                                <span>Generate your invoice and send them to your client</span>
+                            </div>
                         </div>
                         <div className={"box-icon"}>
-                            <img className={"-icon"} src={`${window.location.origin}/content/svg/`} alt={""} />
-                            <h4 className={"-title"}></h4>
-                            <div className={"-description"}></div>
+                            <img className={"-icon"} src={`${window.location.origin}/content/svg/gear.svg`} alt={""} />
+                            <h4 className={"-title"}>Backoffice</h4>
+                            <div className={"-description"}>
+                                <span>See in real time all your benefit of the current month, the last month of even during the year</span>
+                            </div>
                         </div>
                     </div>
                 </div>

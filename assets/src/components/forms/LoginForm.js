@@ -1,33 +1,58 @@
 import React, { useState } from "react";
-import Notification from "../parts/Notification";
-import PrivatePostRessource from "../utils/PrivatePostRessource";
+import axios from "axios";
+import FormControl from "../utils/FormControl";
 import LinkButton from "../parts/LinkButton";
+import Notification from "../parts/Notification";
 
 export default function LoginForm() {
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
-    const [formResponse, setFormResponse] = useState([])
+    const [formResponse, setFormResponse] = useState({})
+    const formControl = new FormControl()
 
     const handleChange = (e, fieldName) => {
         let fieldValue = e.target.value
+        let maxLength = e.target.maxLength < 0 ? e.target.maxLength : 255
+        setFormResponse({})
 
-        if(fieldName === "username") {
-            setUsername(fieldValue)
-        } else if(fieldName === "password") {
-            setPassword(fieldValue)
-        } else {
-            setFormResponse({classname: "danger", message: "The field don't exist"})
+        switch(fieldName) {
+            case "username":
+                // Check if the username respect limitation
+                if(!formControl.checkLength(fieldValue, 1, maxLength)) {
+                    setFormResponse({classname: "danger", message: ""})
+                    return
+                }
+
+                setUsername(fieldValue)
+                break
+
+            case "password":
+                // Check if the password is empty
+                if(!formControl.checkMinLength(fieldValue, 1)) {
+                    setFormResponse({classname: "danger", message: "The password can't be empty"})
+                    return
+                }
+
+                setPassword(fieldValue)
+                break
+
+            default:
+                setFormResponse({classname: "danger", message: "The field don't exist"})
         }
     }
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault()
 
         // Connect the user
-        await PrivatePostRessource("login", {
-            email: username,
-            password: password
-        })
+        axios
+            .post(window.location.origin + "/api/login", {
+                username: username,
+                password: password
+            })
+            .then(res => console.log(res))
+            .catch(err => console.log(err))
+        ;
 
         // Return a response to the user
         setFormResponse({classname: "success", message: "Successfully connected"})
@@ -35,7 +60,9 @@ export default function LoginForm() {
 
     return (
         <form className={"form"} onSubmit={(e) => handleSubmit(e)}>
-            {formResponse.length > 0 && (<Notification {...formResponse} />)}
+            {Object.keys(formResponse).length > 0 && (
+                <Notification {...formResponse} />
+            )}
 
             <div className={"form-field"}>
                 <input type={"email"} placeholder={"Username ..."} onChange={(e) => handleChange(e, "username")} />

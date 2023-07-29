@@ -41,7 +41,7 @@ class ContactController extends AbstractController
     {
         $offset = $request->get("offset", 1);
         $offset = is_numeric($offset) && $offset > 1 ? $offset : 1;
-        $litmit = 20;
+        $limit = 20;
 
         $contacts = $this->contactRepository->findBy([], ["id" => "ASC"], $limit, ($offset - 1) * $limit);
 
@@ -56,34 +56,38 @@ class ContactController extends AbstractController
      */
     public function post_contact(Request $request): JsonResponse
     {
-        $requestContent = $request->getContent();
+        // Get the body content of the request
+        $bodyContent = $request->getContent();
+
+        // Decode the JSON content into an array
+        $jsonContent = json_decode($bodyContent);
 
         // Isolate fields
         $response = "";
         $isValid = true;
         $contactContent = [];
-        foreach($requestContent as $key => $value) {
-            if(in_array($key, ["email", "message"])) {
-                if($key === "email") {
-                    if(!$formManager->isEmpty($value)) {
+        foreach($jsonContent as $key => $value) {
+            if(in_array($key, ["subject", "message"])) {
+                if($key === "subject") {
+                    if(!$this->formManager->isEmpty($value)) {
                         $isValid = false;
-                        $response = "Le champ email ne peut pas être vide";
+                        $response = "L'objet du mail ne peut pas être vide";
                         break;
                     }
 
-                    if(!$formManager->isEmail($value)) {
+                    if(!$this->formManager->checkMaxLength($value)) {
                         $isValid = false;
-                        $response = "Une erreur a été rencontrée avec l'email.";
+                        $response = "L'objet du mail est trop long";
                         break;
                     }
                 } elseif($key === "message") {
-                    if(!$formManager->isEmpty($value)) {
+                    if(!$this->formManager->isEmpty($value)) {
                         $isValid = false;
                         $response = "Le message ne peut pas être vide.";
                         break;
                     }
 
-                    if(!$formManager->checkLimitLength($value, 1, 1000)) {
+                    if(!$this->formManager->checkLimitLength($value, 1, 1000)) {
                         $response = "Le message ne respecte pas les limitations de caractères.";
                         $isValid = false;
                         break;
@@ -99,7 +103,7 @@ class ContactController extends AbstractController
         }
 
         if(count($contactContent) < 2) {
-            return $this->json("Le sujet ou le message est manquant.", Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->json("The subject or the message is missing", Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         try {
@@ -112,7 +116,9 @@ class ContactController extends AbstractController
             return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        return $this->json($bodyContent, Response::HTTP_OK);
+        return $this->json([
+            "message" => "The mail has been successfully sended"
+        ], Response::HTTP_CREATED);
     }
 
     /**

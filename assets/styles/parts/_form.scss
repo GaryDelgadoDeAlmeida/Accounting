@@ -64,12 +64,17 @@ form {
         gap: 10px;
         display: flex;
         flex-wrap: wrap;
+        margin-bottom: 10px;
         flex-direction: row;
 
         .field {
             flex: 1;
             border: 1px solid var(--c-silver);
             border-radius: 0% !important;
+        }
+
+        .form-field {
+            margin-bottom: 0;
         }
     }
 

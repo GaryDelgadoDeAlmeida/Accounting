@@ -1,13 +1,21 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import UserHeader from "../../parts/UserHeader";
 import LinkButton from "../../parts/LinkButton";
 import PrivateResources from "../../utils/PrivateResources";
+import axios from "axios";
 
 export default function Home() {
 
-    const { loading, items, load } = PrivateResources("resume")
+    const [items, setItems] = useState({})
     useEffect(() => {
-        load()
+        axios
+            .get("/api/resume", {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(res => console.log(res))
+            .catch(err => console.error(err))
     }, [])
 
     return (

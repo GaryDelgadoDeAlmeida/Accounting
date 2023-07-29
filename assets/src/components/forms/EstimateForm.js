@@ -9,7 +9,7 @@ export default function EstimateForm() {
     const [description, setDescription] = useState("")
     const [budget, setBudget] = useState(0)
 
-    const [formResponse, setFormResponse] = useState([])
+    const [formResponse, setFormResponse] = useState({})
 
     const handleRemove = (e) => {
         console.log("Hi handleRemove")
@@ -23,6 +23,7 @@ export default function EstimateForm() {
 
     const handleChange = (e, fieldName) => {
         const fieldValue = e.target.value
+        setFormResponse({})
 
         switch(fieldName) {
             case "title":
@@ -76,7 +77,9 @@ export default function EstimateForm() {
             
             <div className={"card item-row"}>
                 <div className={"-content"}>
-                    {formResponse.length > 0 && (<Notification {...formResponse} />)}
+                    {Object.keys(formResponse).length > 0 && (
+                        <Notification {...formResponse} />
+                    )}
 
                     <div className={"form-field"}>
                         <label htmlFor={""}>Title</label>

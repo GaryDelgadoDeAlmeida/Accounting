@@ -263,6 +263,23 @@ html, body, .page {
             }
         }
 
+        .page-service {
+            background-color: var(--c-skyBlueReact);
+
+            .service-list {
+                gap: 15px;
+                display: flex;
+
+                @include mobile {
+                    flex-direction: column;
+                }
+
+                .box-icon {
+                    flex: 1;
+                }
+            }
+        }
+
         .page-button {
             text-align: right;
             padding-top: 15px;

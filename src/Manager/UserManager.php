@@ -3,6 +3,8 @@
 namespace App\Manager;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 
 class UserManager {
 
@@ -17,6 +19,16 @@ class UserManager {
         $this->userRepository = $userRepository;
     }
 
+    /**
+     * Add a new user
+     * 
+     * @param string firstname
+     * @param string lastname
+     * @param string email
+     * @param string password
+     * @param array roles
+     * @return User|string
+     */
     public function newUser(
         string $firstname,
         string $lastname,
@@ -32,7 +44,11 @@ class UserManager {
             ->setRoles($roles)
         ;
 
-        $this->userRepository->save($user, true);
+        try {
+            $this->userRepository->save($user, true);
+        } catch(\Exception $e) {
+            return $e->getMessage();
+        }
 
         return $user;
     }

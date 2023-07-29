@@ -28,6 +28,17 @@ class FormManager {
         return $isValid;
     }
 
+    public function isNumber($value): bool
+    {
+        $isValid = true;
+
+        if(!preg_match(RegexEnum::REGEX_ONLY_NUMERIC, $value)) {
+            $isValid = false;
+        }
+
+        return $isValid;
+    }
+
     public function isSecurePassword(string $value)
     {
         $isValid = true;
