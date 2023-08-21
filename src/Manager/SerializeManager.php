@@ -13,9 +13,15 @@ class SerializeManager {
     }
 
     /**
-     * @param array entities
+     * @param mixed entities
      */
-    public function serializeContent(array $entities) {
-        return $this->serializer->normalize($entities, null);
+    public function serializeContent($entities) {
+        return $this->serializer->normalize(
+            $entities, 
+            "json", 
+            ["circular_reference_handler" => function ($object) {
+                return $object->getId();
+            }]
+        );
     }
 }

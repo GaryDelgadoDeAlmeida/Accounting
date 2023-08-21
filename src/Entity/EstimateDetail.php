@@ -13,6 +13,9 @@ class EstimateDetail
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\ManyToOne(inversedBy: 'estimateDetails')]
+    private ?Estimate $estimate = null;
+
     #[ORM\Column(length: 255)]
     private ?string $label = null;
 
@@ -24,9 +27,6 @@ class EstimateDetail
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
-
-    #[ORM\ManyToOne(inversedBy: 'estimateDetails')]
-    private ?Estimate $estimate = null;
 
     public function getId(): ?int
     {

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import Notification from "../parts/Notification";
+import FormControl from "../utils/FormControl";
 
 export default function UserCorporationForm() {
 
@@ -12,6 +13,7 @@ export default function UserCorporationForm() {
     })
 
     // Form response
+    const formControl = new FormControl()
     const [formResponse, setFormResponse] = useState({})
 
     const handleChange = (e, fieldName) =>  {
@@ -19,9 +21,27 @@ export default function UserCorporationForm() {
 
         switch(fieldName) {
             case "siren":
+                if(!formControl.checkNumber(fieldValue)) {
+                    setFormResponse({classname: "dnager", message: `The value of the field '${fieldName}' isn't numeric.`})
+                    return
+                }
+
+                if(!formControl.checkMaxLength(fieldValue, 9)) {
+                    setFormResponse({classname: "danger", message: `The value of the field '${fieldName}' must be equal to 9`})
+                    return
+                }
                 break
 
             case "siret":
+                if(!formControl.checkNumber(fieldValue)) {
+                    setFormResponse({classname: "dnager", message: `The value of the field '${fieldName}' isn't numeric.`})
+                    return
+                }
+
+                if(!formControl.checkMaxLength(fieldValue, 14)) {
+                    setFormResponse({classname: "danger", message: `The value of the field '${fieldName}' must be equal to 14`})
+                    return
+                }
                 break
 
             case "duns_number":

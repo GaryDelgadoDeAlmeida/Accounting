@@ -2,8 +2,12 @@
 
 namespace App\Controller\API;
 
+use App\Entity\User;
+use App\Manager\SerializeManager;
 use App\Repository\EstimateRepository;
+use App\Repository\EstimateDetailRepository;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,10 +18,21 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class EstimateController extends AbstractController
 {
+    private User $user;
+    private SerializeManager $serializeManager;
     private EstimateRepository $estimateRepository;
+    private EstimateDetailRepository $estimateDetailRepository;
     
-    function __construct(EstimateRepository $estimateRepository) {
+    function __construct(
+        Security $security, 
+        SerializeManager $serializeManager, 
+        EstimateRepository $estimateRepository, 
+        EstimateDetailRepository $estimateDetailRepository
+    ) {
+        $this->user = $security->getUser() ?? (new User());
+        $this->serializeManager = $serializeManager;
         $this->estimateRepository = $estimateRepository;
+        $this->estimateDetailRepository = $estimateDetailRepository;
     }
 
     /**
@@ -25,7 +40,13 @@ class EstimateController extends AbstractController
      */
     public function get_estimates(Request $request): JsonResponse
     {
-        return $this->json(["message" => "Route under construction"], Response::HTTP_OK);
+        return $this->json(
+            $this->serializeManager->serializeContent(
+                // $this->estimateRepository->findBy(["user" => $this->user])
+                $this->estimateRepository->findAll()
+            ), 
+            Response::HTTP_OK
+        );
     }
 
     /**
@@ -42,12 +63,12 @@ class EstimateController extends AbstractController
     public function get_estimate(int $estimateID) : JsonResponse 
     {
         if(empty($estimateID)) {
-            return $this->json(["message" => "The estimate identifier is missing"], Response::HTTP_FORBIDDEN);
+            return $this->json("The estimate identifier is missing", Response::HTTP_FORBIDDEN);
         }
 
         $estimate = $this->estimateRepository->find($estimateID);
         if(empty($estimate)) {
-            return $this->json(["message" => "Not found estimate"], Response::HTTP_NOT_FOUND);
+            return $this->json("Not found estimate", Response::HTTP_NOT_FOUND);
         }
 
         return $this->json([
@@ -84,9 +105,7 @@ class EstimateController extends AbstractController
         }
 
         if(empty($fields)) {
-            return $this->json([
-                "message" => "Empty body"
-            ], Response::HTTP_FORBIDDEN);
+            return $this->json("Empty body", Response::HTTP_PRECONDITION_FAILED);
         }
 
         // Return a response to the client
@@ -98,10 +117,6 @@ class EstimateController extends AbstractController
      */
     public function remove_estimate(Request $request, int $estimateID) : JsonResponse 
     {
-        if(empty($estimateID)) {
-            return $this->json(["message" => "Missing estimate identifier"], Response::HTTP_FORBIDDEN);
-        }
-
         $estimate = $this->estimateRepository->find($estimateID);
         if(empty($estimate)) {
             return $this->json(["message" => "Not found estimate"], Response::HTTP_NOT_FOUND);
@@ -109,7 +124,12 @@ class EstimateController extends AbstractController
 
         // Remove from the database the estimate
         try {
+            foreach($estimate->getEstimateDetails() as $estimateDetail) {
+                $this->estimateDetailRepository->remove($estimateDetail);
+            }
+
             $this->estimateRepository->remove($estimate, true);
+            
         } catch(\Exception $e) {
             return $this->json(["message" => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }

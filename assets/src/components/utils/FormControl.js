@@ -78,6 +78,21 @@ export default class FormControl {
     }
 
     /**
+     * Check if the value is a positif number (greater then 0)
+     * 
+     * @param {integer} value 
+     */
+    checkPositifNumber(value) {
+        let isValid = true
+
+        if(value < 0) {
+            isValid = false
+        }
+
+        return isValid
+    }
+
+    /**
      * Check if the string is a valid phone number
      */
     checkPhone(value) {

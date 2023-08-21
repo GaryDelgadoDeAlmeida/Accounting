@@ -28,7 +28,7 @@ abstract class UserEnum {
         self::USER_ROLES => "Roles"
     ];
 
-    public function getAvailableChoices() {
+    public static function getAvailableChoices() {
         return [
             self::USER_FIRSTNAME,
             self::USER_LASTNAME,
@@ -42,7 +42,7 @@ abstract class UserEnum {
         ];
     }
 
-    public function getChoices() 
+    public static function getChoices() 
     {
         $choices = [];
 

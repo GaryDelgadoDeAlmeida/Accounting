@@ -1,19 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Notification from "../parts/Notification";
 import PrivatePostRessource from "../utils/PrivatePostRessource";
+import FormControl from "../utils/FormControl";
+import axios from "axios";
 
 export default function EstimateForm() {
-    const [estimates, setEstimates] = useState([])
+    const [estimates, setEstimates] = useState({})
+    const [companies, setCompanes] = useState({})
+    const formControl = new FormControl()
     
+    const [company, setCompany] = useState({})
+    const [date, setDate] = useState("")
     const [title, setTitle] = useState("")
     const [description, setDescription] = useState("")
     const [budget, setBudget] = useState(0)
+    const [credentials, setCredentials] = useState({})
 
     const [formResponse, setFormResponse] = useState({})
 
-    const handleRemove = (e) => {
-        console.log("Hi handleRemove")
-    }
+    useEffect(() => {
+        axios
+            .get(window.location.origin + "/api/companies")
+            .then(res => {
+                console.log(res, res.data)
+            })
+            .catch(err => console.log(err))
+        ;
+    }, [])
 
     const resetFields = () => {
         setTitle("")
@@ -21,26 +34,54 @@ export default function EstimateForm() {
         setBudget(0)
     }
 
+    const handleRemove = (e) => {
+        console.log("Hi handleRemove")
+        let estimateID = e.target.getAttribute("data-estimateid")
+    }
+
     const handleChange = (e, fieldName) => {
-        const fieldValue = e.target.value
+        let fieldValue = e.target.value
         setFormResponse({})
 
         switch(fieldName) {
             case "title":
-                setTitle(fieldValue)
+                if(!formControl.checkMaxLength(fieldValue, 255)) {
+                    setFormResponse({classname: "danger", message: ""})
+                    return
+                }
+                break
+
+            case "date":
+                console.log(
+                    Date.parse(fieldValue),
+                    Date.parse(fieldValue).toISOString(),
+                    Date.now(),
+                    Date.now().toISOString(),
+                )
                 break
             
             case "description":
-                setDescription(fieldValue)
+                if(!formControl.checkMaxLength(fieldValue, 1000)) {
+                    setFormResponse({classname: "danger", message: ""})
+                    return
+                }
                 break
             
             case "budget":
-                setBudget(fieldValue)
+                if(!formControl.checkNumber(fieldValue)) {
+                    setFormResponse({classname: "danger", message: `The field name ${fieldName}`})
+                }
                 break
             
             default:
                 setFormResponse({classname: "danger", message: `The field name ${fieldName} is forbidden.`})
+                return
         }
+
+        setCredentials({
+            ...credentials, 
+            [fieldName]: fieldValue
+        })
     }
 
     const handleSubmit = async (e) => {
@@ -51,22 +92,29 @@ export default function EstimateForm() {
             return
         }
 
-        // Update array of tasks
-        setEstimates(estimates.concat({
-            title: title,
-            description: description,
-            budget: budget
-        }))
-
-        // Reset all fields to an empty value
-        resetFields()
-
         // Send data to API
-        await PrivatePostRessource("estimate", {
-            title: title,
-            description: description,
-            budget: budget
-        })
+        axios
+            .post(window.location.origin + "/api/estimate", credentials, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(res => {
+                console.log(res.data)
+
+                // Reset all fields to an empty value
+                resetFields()
+
+                // Add a row the table
+                setEstimates({
+                    ...estimates,
+                    credentials
+                })
+            })
+            .catch(err => {
+                console.log(err)
+            })
+        ;
 
         // Return a response to the user
         setFormResponse({classname: "success", message: "Successfully added"})
@@ -82,18 +130,33 @@ export default function EstimateForm() {
                     )}
 
                     <div className={"form-field"}>
-                        <label htmlFor={""}>Title</label>
+                        <label htmlFor={"company"}>Company</label>
+                        <select id={"company"} name={"company"}>
+                            <option value={""}>Select a company</option>
+                            {companies.length > 0 && companies.map((item, index) => {
+                                <option key={index} value={item}>{item}</option>
+                            })}
+                        </select>
+                    </div>
+
+                    <div className={"form-field"}>
+                        <label htmlFor={"title"}>Title</label>
                         <input type={"text"} maxLength={"255"} value={title} onChange={(e) => handleChange(e, "title")} />
                     </div>
-                    
+
                     <div className={"form-field"}>
-                        <label htmlFor={""}>Description</label>
-                        <textarea onChange={(e) => handleChange(e, "description")}>{description}</textarea>
+                        <label htmlFor={"date"}>Date</label>
+                        <input type={"date"} min={Date.now()} onChange={(e) => handleChange(e, "date")} />
                     </div>
                     
                     <div className={"form-field"}>
-                        <label htmlFor={""}>Budget</label>
-                        <input type={"number"} min={0} value={budget} onChange={(e) => handleChange(e, "budget")} />
+                        <label htmlFor={"description"}>Description</label>
+                        <textarea id={"description"} onChange={(e) => handleChange(e, "description")}>{description}</textarea>
+                    </div>
+                    
+                    <div className={"form-field"}>
+                        <label htmlFor={"budget"}>Budget</label>
+                        <input id={"budget"} type={"number"} min={0} value={budget} onChange={(e) => handleChange(e, "budget")} />
                     </div>
                     
                     <div className={"form-button"}>
@@ -113,7 +176,7 @@ export default function EstimateForm() {
                             </tr>
                         </thead>
                         <tbody>
-                            {estimates.map((item, index) => (
+                            {estimates.length > 0 && estimates.map((item, index) => (
                                 <tr key={index}>
                                     <td>{item.title}</td>
                                     <td className={"txt-center"}>{item.budget}</td>

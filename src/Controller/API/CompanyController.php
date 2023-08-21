@@ -4,6 +4,8 @@ namespace App\Controller\API;
 
 use App\Manager\FormManager;
 use App\Manager\CompanyManager;
+use App\Manager\SerializeManager;
+use App\Repository\UserRepository;
 use App\Repository\CompanyRepository;
 use App\Repository\InvoiceRepository;
 use App\Repository\EstimateRepository;
@@ -12,7 +14,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 /**
@@ -21,26 +22,29 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class CompanyController extends AbstractController {
 
     private EntityManagerInterface $em;
-    private SerializerInterface $serializer;
     private FormManager $formManager;
     private CompanyManager $companyManager;
+    private SerializeManager $serializeManager;
+    private UserRepository $userRepository;
     private CompanyRepository $companyRepository;
     private EstimateRepository $estimateRepository;
     private InvoiceRepository $invoiceRepository;
 
     function __construct(
         EntityManagerInterface $em,
-        SerializerInterface $serializer,
         FormManager $formManager,
+        SerializeManager $serializeManager,
         CompanyManager $companyManager,
+        UserRepository $userRepository,
         CompanyRepository $companyRepository,
         InvoiceRepository $invoiceRepository,
         EstimateRepository $estimateRepository
     ) {
         $this->em = $em;
-        $this->serializer = $serializer;
         $this->formManager = $formManager;
+        $this->serializeManager = $serializeManager;
         $this->companyManager = $companyManager;
+        $this->userRepository = $userRepository;
         $this->companyRepository = $companyRepository;
         $this->invoiceRepository = $invoiceRepository;
         $this->estimateRepository = $estimateRepository;
@@ -53,11 +57,14 @@ class CompanyController extends AbstractController {
     {
         $limit = 20;
         $offset = $request->get("offset", 1);
-        $offset = $offset > 1 ? $offset : 1;
+        $offset = is_numeric($offset) && $offset > 1 ? $offset : 1;
 
-        $normalize = $this->serializer->normalize($this->companyRepository->getCompanies($offset, $limit), null);
-
-        return $this->json($normalize, Response::HTTP_OK);
+        return $this->json(
+            $this->serializeManager->serializeContent(
+                $this->companyRepository->getCompanies($offset, $limit)
+            ), 
+            Response::HTTP_OK
+        );
     }
 
     /**
@@ -86,7 +93,7 @@ class CompanyController extends AbstractController {
         }
 
         try {
-            $company = $this->companyManager->newCompany($content);
+            $company = $this->companyManager->fillCompany($content);
         } catch(\Exeception $e) {
             return $this->json($e->getMessage());
         }
@@ -104,38 +111,52 @@ class CompanyController extends AbstractController {
             return $this->json(null, Response::HTTP_NOT_FOUND);
         }
 
-        $userID = $request->get("userID");
-        $userID = is_numeric($userID) ? $userID : null;
-        if(empty($userID)) {
-            return $this->json([
-                "message" => "The user is empty"
-            ], Response::HTTP_FORBIDDEN);
+        $userID = $request->get("userID", 1);
+        $user = $this->userRepository->find($userID);
+        if(empty($user)) {
+            return $this->json("Not found user", Response::HTTP_FORBIDDEN);
         }
 
-        return $this->json([
+        return $this->json($this->serializeManager->serializeContent([
             "company" => $company,
-            "estimates" => $this->estimateRepository->getEstimatesByCompanyAndUser($companyID, $userID),
-            "invoices" => $this->invoiceRepository->getInvoicesByClientAndUser($companyID, $userID)
-        ], Response::HTTP_OK);
+            "estimates" => $this->estimateRepository->getEstimatesByCompanyAndUser($company, $user),
+            "invoices" => $this->invoiceRepository->getInvoicesByClientAndUser($company, $user)
+        ]), Response::HTTP_OK);
     }
 
     /**
      * @Route("/company/{companyID}/estimates", requirements={"companyID"="\d+"}, name="get_estimates_form_company", methods={"GET"})
      */
-    public function get_estimates_form_company(Request $companyID) : JsonResponse {
+    public function get_estimates_form_company(Request $request, int $companyID) : JsonResponse {
         $company = $this->companyRepository->find($companyID);
         if(empty($company)) {
             return $this->json(null, Response::HTTP_NOT_FOUND);
         }
 
-        // Get all estimates linked to the company
-        $estimates = $this->estimateRepository->findBy(["company" => $company]);
-
-        // Convert the object arrays into jsonable array
-        $normalize = $this->serializer->normalize($estimates, null);
-
         // Return the response to the client
-        return $this->json($$normalize, Response::HTTP_OK);
+        return $this->json(
+            $this->serializeManager->serializeContent(
+                $company->getEstimates()
+            ), 
+            Response::HTTP_OK
+        );
+    }
+
+    /**
+     * @Route("/company/{companyID}/estimate/{estimateID}/update", requirements={"companyID"="\d+", "estimateID"="\d+"}, name="update_estimate_form_company", methods={"PUT", "UPDATE"})
+     */
+    function update_estimate_form_company(Request $resquest, int $companyID) : JsonResponse
+    {
+        $jsonContent = json_decode($request->getContent());
+        if(empty($jsonContent)) {
+            return $this->json("Empty body", Response::HTTP_PRECONDITION_FAILED);
+        }
+
+        foreach($jsonContent as $key => $value) {
+            // 
+        }
+        
+        return $this->json(["message" => "Route under construction"], Response::HTTP_OK);
     }
 
     /**
@@ -143,16 +164,30 @@ class CompanyController extends AbstractController {
      */
     public function put_company(Request $request, int $companyID): JsonResponse
     {
-        // Get the body request
-        $bodyContent = $request->getContent();
-
-        // Decode the JSON content into array
-        $jsonContent = json_decode($bodyContent);
-        foreach($jsonContent as $key => $row) {
-            // 
+        $company = $this->companyRepository->find($companyID);
+        if(empty($company)) {
+            return $this->json("The company couldn't be found.", Response::HTTP_NOT_FOUND);
         }
 
-        return $this->json(["All rights"], Response::HTTP_OK);
+        // Decode the JSON content into array
+        $jsonContent = json_decode($request->getContent());
+        if(empty($jsonContent)) {
+            return $this->json("Empty body", Response::HTTP_FORBIDDEN);
+        }
+
+        $fields = [];
+
+        try {
+            // Check if all sended fields respect restriction on fields
+            $fields = $this->companyManager->checkCompanyFields($jsonContent);
+            
+            // Update certain fields of the company
+            $company = $this->companyManager->fillCompany($fields, $company);
+        } catch(\Exception $e) {
+            return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json($this->serializeManager->serialiazeContent($company), Response::HTTP_OK);
     }
 
     /**
@@ -163,30 +198,30 @@ class CompanyController extends AbstractController {
         $userID = $request->get("userID");
         $userID = is_numeric($userID) ? $userID : null;
         if(empty($userID)) {
-            return $this->json(["message" => "Missing user id"], Response::HTTP_FORBIDDEN);
+            return $this->json("Missing user id", Response::HTTP_FORBIDDEN);
         }
 
         $user = $this->userRepository->find($userID);
         if(empty($user)) {
-            return $this->json(["message" => "Not found user"], Response::HTTP_NOT_FOUND);
+            return $this->json("Not found user", Response::HTTP_NOT_FOUND);
         }
 
         $company = $this->companyRepository->find($companyID);
         if(empty($company)) {
-            return $this->json(["message" => "Not found company"], Response::HTTP_NOT_FOUND);
+            return $this->json("The company couldn't be found", Response::HTTP_NOT_FOUND);
         }
 
         // Unlink the user and the company
         $company->removeUser($user);
 
         // Remove all invoices of the user and the company
-        $invoices = $this->invoiceRepository->getInvoicesByClientAndUser($companyID, $userID);
+        $invoices = $this->invoiceRepository->getInvoicesByClientAndUser($company, $user);
         foreach($invoices as $invoice) {
             $company->removeInvoice($invoice, true);
         }
 
         // Remove all estimates of the user and the company
-        $estimates = $this->estimateRepository->getEstimatesByClientAndUser($companyID, $userID);
+        $estimates = $this->estimateRepository->getEstimatesByClientAndUser($company, $user);
         foreach($estimates as $estimate) {
             $this->estimateRepository->remove($estimate, true);
         }

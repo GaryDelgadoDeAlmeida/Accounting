@@ -16,10 +16,6 @@ export function findParent(element, className) {
 
     while(element) {
         elements.unshift(element)
-        console.log([
-            element.className,
-            className
-        ])
         element = element.parentNode
         if(element !== null && element.className === className) {
             e = element
@@ -46,7 +42,7 @@ export function findChildren(element, className, tagName) {
     
     for(let i = 0; i < childrens.length; i++) {
         if(
-            (className && childrens[i] && childrens[i].className === className) ||
+            (className && childrens[i] && childrens[i].className.includes(className)) ||
             (tagName && childrens[i] && childrens[i].tagName === tagName)
         ) {
             findElement = childrens[i]

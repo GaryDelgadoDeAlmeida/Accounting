@@ -15,14 +15,20 @@ class Estimate
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\OneToMany(mappedBy: 'estimate', targetEntity: EstimateDetail::class)]
-    private Collection $estimateDetails;
+    #[ORM\ManyToOne(inversedBy: 'estimates')]
+    private ?User $user = null;
+
+    #[ORM\ManyToOne(inversedBy: 'estimates')]
+    private ?Company $company = null;
 
     #[ORM\Column(length: 255)]
     private ?string $label = null;
 
     #[ORM\Column(length: 30)]
     private ?string $status = null;
+
+    #[ORM\OneToMany(mappedBy: 'estimate', targetEntity: EstimateDetail::class)]
+    private Collection $estimateDetails;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -37,20 +43,26 @@ class Estimate
         return $this->id;
     }
 
-    /**
-     * @return Collection<int, EstimateDetail>
-     */
-    public function getEstimateDetails(): Collection
+    public function getUser(): ?User
     {
-        return $this->estimateDetails;
+        return $this->user;
     }
 
-    public function addEstimateDetail(EstimateDetail $estimateDetail): self
+    public function setUser(?User $user): self
     {
-        if (!$this->estimateDetails->contains($estimateDetail)) {
-            $this->estimateDetails->add($estimateDetail);
-            $estimateDetail->setEstimate($this);
-        }
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getCompany(): ?Company
+    {
+        return $this->company;
+    }
+
+    public function setCompany(?Company $company): self
+    {
+        $this->company = $company;
 
         return $this;
     }
@@ -87,6 +99,24 @@ class Estimate
     public function setStatus(string $status): self
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, EstimateDetail>
+     */
+    public function getEstimateDetails(): Collection
+    {
+        return $this->estimateDetails;
+    }
+
+    public function addEstimateDetail(EstimateDetail $estimateDetail): self
+    {
+        if (!$this->estimateDetails->contains($estimateDetail)) {
+            $this->estimateDetails->add($estimateDetail);
+            $estimateDetail->setEstimate($this);
+        }
 
         return $this;
     }

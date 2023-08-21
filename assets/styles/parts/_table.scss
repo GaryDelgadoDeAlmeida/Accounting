@@ -33,12 +33,20 @@
                 word-wrap: break-word;
             }
 
+            &.column-description {
+                width: 100%;
+            }
+
             &.column-invoice-date {
                 // 
             }
 
             &.column-invoice-euro {
                 // 
+            }
+
+            &.column-quantity {
+                width: 50px;
             }
 
             &.column-estimate-name {
@@ -83,8 +91,21 @@
 
             td {
                 padding: 10px;
+
+                &.-quantity {
+                    width: 50px;
+                }
+
+                &.-price {
+                    width: 50px;
+                }
     
                 &.-action {
+                    text-align: center;
+                }
+
+                &.-new-row {
+                    width: 50px;
                     text-align: center;
                 }
 
@@ -141,6 +162,10 @@
                         content: "Devise";
                     }
 
+                    &.-tva::before {
+                        content: "TVA";
+                    }
+
                     &.-amount::before {
                         content: "Montant";
                     }
@@ -159,6 +184,14 @@
 
                         &::before {
                             content: "Action";
+                        }
+                    }
+
+                    &.-new-row {
+                        text-align: left;
+
+                        &::before {
+                            content: "New row";
                         }
                     }
                 }

@@ -2,9 +2,11 @@
 
 namespace App\Repository;
 
+use App\Entity\User;
+use App\Entity\Company;
 use App\Entity\Estimate;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<Estimate>
@@ -57,19 +59,17 @@ class EstimateRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param int companyID
-     * @param int userID
+     * @param Company company
+     * @param User user
      * @return Estimate[]
      */
-    public function getEstimatesByCompanyAndUser(int $companyID, int $userID) {
+    public function getEstimatesByCompanyAndUser(Company $company, User $user) {
         return $this->createQueryBuilder("estimate")
-            ->leftJoin("estimate.company", "company")
-            ->leftJoin("estimate.user", "user")
-            ->where("company.id = :companyID")
-            ->andWhere("user.id = :userID")
+            ->where("estimate.company = :company")
+            ->andWhere("estimate.user = :user")
             ->setParameters([
-                "companyID" => $companyID,
-                "userID" => $userID
+                "company" => $company,
+                "user" => $user
             ])
             ->getQuery()
             ->getResult()

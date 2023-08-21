@@ -19,7 +19,7 @@ export default function LoginForm() {
             case "username":
                 // Check if the username respect limitation
                 if(!formControl.checkLength(fieldValue, 1, maxLength)) {
-                    setFormResponse({classname: "danger", message: ""})
+                    setFormResponse({classname: "danger", message: "The username don't respect the caracters lenght"})
                     return
                 }
 
@@ -44,18 +44,27 @@ export default function LoginForm() {
     const handleSubmit = (e) => {
         e.preventDefault()
 
+        if(!formControl.checkEmail(username)) {
+            setFormResponse({classname: "danger", message: "The username isn't valid"})
+            return
+        }
+
         // Connect the user
         axios
             .post(window.location.origin + "/api/login", {
-                username: username,
+                email: username,
                 password: password
             })
-            .then(res => console.log(res))
-            .catch(err => console.log(err))
+            .then(res => {
+                console.log(res)
+                setFormResponse({classname: "success", message: "Successfully connected"})
+                // localStorage.setItem("token", res.data)
+            })
+            .catch(err => {
+                console.log(err)
+                setFormResponse({classname: "danger", message: "An error has been encountered"})
+            })
         ;
-
-        // Return a response to the user
-        setFormResponse({classname: "success", message: "Successfully connected"})
     }
 
     return (
@@ -65,11 +74,11 @@ export default function LoginForm() {
             )}
 
             <div className={"form-field"}>
-                <input type={"email"} placeholder={"Username ..."} onChange={(e) => handleChange(e, "username")} />
+                <input type={"email"} placeholder={"Username ..."} maxLength={255} onChange={(e) => handleChange(e, "username")} />
             </div>
 
             <div className={"form-field"}>
-                <input type={"password"} placeholder={"Password ..."} onChange={(e) => handleChange(e, "password")} />
+                <input type={"password"} placeholder={"Password ..."} maxLength={255} onChange={(e) => handleChange(e, "password")} />
             </div>
             
             <div className={"form-button"}>

@@ -42,9 +42,7 @@ class DefaultController extends AbstractController
         $userID = $request->get("userID");
         $userID = is_numeric($userID) ? $userID : null;
         if(empty($userID)) {
-            return $this->json([
-                "message" => "The user is missing"
-            ], Response::HTTP_FORBIDDEN);
+            return $this->json("The user is missing", Response::HTTP_FORBIDDEN);
         }
 
         return $this->json([

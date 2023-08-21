@@ -42,10 +42,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Invoice::class)]
     private Collection $invoices;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Estimate::class)]
+    private Collection $estimates;
+
     public function __construct()
     {
         $this->companies = new ArrayCollection();
         $this->invoices = new ArrayCollection();
+        $this->estimates = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -174,6 +178,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->companies;
     }
 
+    /**
+     * Find a company using the same siret in the list of the user
+     * 
+     * @param string siret
+     * @return Company|null
+     */
+    public function getCompany(string $siret) : Company {
+        foreach($this->companies as $company) {
+            if($company->getSiret() == $siret) {
+                return $company;
+            }
+        }
+
+        return null;
+    }
+
     public function addCompany(Company $company): self
     {
         if (!$this->companies->contains($company)) {
@@ -214,6 +234,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($invoice->getUser() === $this) {
                 $invoice->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Estimate>
+     */
+    public function getEstimates(): Collection
+    {
+        return $this->estimates;
+    }
+
+    public function addEstimate(Estimate $estimate): self
+    {
+        if (!$this->estimates->contains($estimate)) {
+            $this->estimates->add($estimate);
+            $estimate->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEstimate(Estimate $estimate): self
+    {
+        if ($this->estimates->removeElement($estimate)) {
+            // set the owning side to null (unless already changed)
+            if ($estimate->getUser() === $this) {
+                $estimate->setUser(null);
             }
         }
 

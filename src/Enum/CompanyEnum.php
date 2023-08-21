@@ -28,7 +28,7 @@ abstract class CompanyEnum {
         self::COMPANY_EMAIL => "Email"
     ];
 
-    function getAvailableChoices() {
+    public static function getAvailableChoices() {
         return [
             self::COMPANY_NAME,
             self::COMPANY_SIREN,
@@ -43,7 +43,7 @@ abstract class CompanyEnum {
         ];
     }
 
-    public function getChoices() {
+    public static function getChoices() {
         $choices = [];
 
         foreach(self::getAvailableChoices() as $key => $value) {

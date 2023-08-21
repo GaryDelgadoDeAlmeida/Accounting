@@ -3,7 +3,7 @@ import FormControl from "../utils/FormControl";
 import Notification from "../parts/Notification";
 import axios from "axios";
 
-export default function CompanyForm() {
+export default function CompanyForm({userID}) {
     // Form field
     const [credentiels, setCredentials] = useState({
         name: "", 
@@ -133,9 +133,20 @@ export default function CompanyForm() {
         }
 
         axios
-            .post("/api/company", credentiels)
-            .then(res => console.log(res))
-            .catch(err => console.err(err))
+            .post("/api/user/" + userID + "/company", credentiels, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json+ld"
+                }
+            })
+            .then(res => {
+                console.log(res)
+                setFormResponse({classname: "success", message: ""})
+            })
+            .catch(err => {
+                console.err(err)
+                setFormResponse({classname: "danger", message: "An error has been encountered. Please, retry later"})
+            })
         ;
 
         setFormResponse({classname: "information", message: "Submit under construction. Try again later"})

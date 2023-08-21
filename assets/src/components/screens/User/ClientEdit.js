@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import axios from "axios";
 import UserHeader from "../../parts/UserHeader";
+import CompanyForm from "../../forms/CompanyForm";
+import ReturnButton from "../../parts/ReturnButton";
 
 export default function ClientEdit() {
     const { clientID } = useParams()
@@ -15,7 +17,9 @@ export default function ClientEdit() {
                     "Content-Type": "application/json"
                 }
             })
-            .then(res => console.log(res.data))
+            .then(res => {
+                console.log(res.data)
+            })
             .catch(err => {
                 alert(err.response.data.message)
                 setError(true)
@@ -27,9 +31,15 @@ export default function ClientEdit() {
         <UserHeader>
             {error && (<Navigate to={"/user/client"} replace={true} />)}
 
-            <div className={"card"}>
-                <div className={"-header"}></div>
-                <div className={"-body"}></div>
+            <ReturnButton path={"/user/client/" + clientID}/>
+
+            <div className={"card mt-25px"}>
+                <div className={"-header"}>
+                    <label>Edit company</label>
+                </div>
+                <div className={"-content"}>
+                    <CompanyForm />
+                </div>
             </div>
         </UserHeader>
     )

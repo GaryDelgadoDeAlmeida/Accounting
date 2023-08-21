@@ -28,18 +28,12 @@ export default function RegisterForm() {
             .get("https://restcountries.com/v3.1/all?fields=name,cca2")
             .then(res => {
                 if(res.status === 200) {
-                    console.log(res.data)
-                    // res.data.map(item => setCountries({
-                    //     ...countries,
-                    //     [item.cca2]: item.name.commom
-                    // }))
+                    setCountries(res.data)
                 }
             })
             .catch(err => console.error(err))
         ;
-
-        console.log(countries)
-    })
+    }, [])
 
     const handleChange = (e, fieldName) => {
         let fieldValue = e.target.value
@@ -153,7 +147,11 @@ export default function RegisterForm() {
 
         // Send all data to the API in order to create a new account
         axios
-            .post("/api/register", credentials)
+            .post("/api/user", credentials, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
             .then(res => console.log(res))
             .catch(err => console.error(err))
         ;
@@ -189,13 +187,15 @@ export default function RegisterForm() {
                 <div className={"form-field"}>
                     <select onChange={(e) => handleChange(e, "country")}>
                         <option value={""}>Select a country</option>
-                        <option value={"france"}>France</option>
+                        {countries.length > 0 && countries.map((item, key) => {
+                            <option key={key} value={item.cca2}>{ item.name["common"] }</option>
+                        })}
                     </select>
                 </div>
             </div>
             
             <div className={"form-field"}>
-                <input type={"tel"} pattern="[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}" placeholder={"Phone"} onChange={(e) => handleChange(e, "phone")} />
+                <input type={"tel"} pattern="[0-9]{10}" placeholder={"Phone"} onChange={(e) => handleChange(e, "phone")} />
                 <small className={"txt-right"}>Ex: 01 00 00 00 00</small>
             </div>
             

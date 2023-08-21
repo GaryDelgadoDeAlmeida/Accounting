@@ -3,23 +3,24 @@ import { useParams } from "react-router-dom";
 import PrivateResources from "../utils/PrivateResources";
 import Notification from "../parts/Notification";
 import FormControl from "../utils/FormControl";
+import axios from "axios";
 
 export default function UserForm() {
     const { userID } = useParams()
     const { loading, items: user, load } = PrivateResources("user/" + userID)
 
-    // Form field
-    const [firstname, setFirstname] = useState("")
-    const [lastname, setLastname] = useState("")
-    const [address, setAddress] = useState("")
-    const [zipCode, setZipCode] = useState("")
-    const [city, setCity] = useState("")
-    const [country, setCountry] = useState("")
-    const [email, setEmail] = useState("")
-    const [phone, setPhone] = useState("")
-
-    // Commum
+    const formControl = new FormControl()
     const [formResponse, setFormResponse] = useState({})
+    const [credentials, setCredentials] = useState({
+        firstname: "",
+        lastname: "",
+        address: "",
+        zip_code: "",
+        city: "",
+        country: "",
+        email: "",
+        phone: ""
+    })
 
     // useEffect(() => {
     //     load()
@@ -30,14 +31,16 @@ export default function UserForm() {
     // }, [])
 
     const setAllFields = (user) => {
-        setFirstname(user.firstname)
-        setLastname(user.lastname)
-        setAddress(user.address)
-        setZipCode(user.zip_code)
-        setCity(user.city)
-        setCountry(user.country)
-        setEmail(user.email)
-        setPhone(user.phone)
+        setCredentials({
+            firstname: user.firstname,
+            lastname: user.lastname,
+            address: user.address,
+            zip_code: user.zip_code,
+            city: user.city,
+            country: user.country,
+            email: user.email,
+            phone: user.phone
+        })
     }
 
     const handleChange = (e, fieldName) => {
@@ -47,70 +50,64 @@ export default function UserForm() {
 
         switch(fieldName) {
             case "firstname":
-                if(!FormControl.checkLength(fieldValue, 1, maxLength)) {
-                    setFormResponse({classname: "danger", message: `The ${fieldName} field don't respect the length limitations`})
-                    return
-                }
-
-                setFirstname(fieldValue)
-                break
-
             case "lastname":
-                if(!FormControl.checkLength(fieldValue, 1, maxLength)) {
+            case "address":
+            case "zip_code":
+            case "city":
+            case "country":
+                if(!formControl.checkLength(fieldValue, 1, maxLength)) {
                     setFormResponse({classname: "danger", message: `The ${fieldName} field don't respect the length limitations`})
                     return
                 }
-
-                setLastname(fieldValue)
-                break
-
-            case "address":
-                if(!FormControl.checkMinLength(fieldValue, 1)) {
-                    setFormResponse({classname: "danger", message: `The ${fieldName} field can't be empty`})
-                    return
-                }
-
-                setAddress(fieldValue)
-                break
-
-            case "zip_code":
-                break
-
-            case "city":
-                break
-
-            case "country":
                 break
 
             case "email":
+                if(fieldValue !== credentials.email) {
+                    setFormResponse({classname: "danger", message: `The field '${fieldName}' is disabled. It can't be changed`})
+                    return
+                }
                 break
 
             case "phone":
                 // Remove all space in the string
                 fieldValue = fieldValue.replaceAll(" ", "")
 
-                // If phone number is empty
-                if(!FormControl.checkMinLength(fieldValue, 1)) {
-                    setPhone(fieldValue)
-                } else {
-                    // If phone number is valid
-                    if(!FormControl.checkPhone(fieldValue)) {
-                        setFormResponse({classname: "danger", message: "The phone number is invalid"})
-                        return
-                    }
-
-                    setPhone(fieldValue)
+                // If phone number is valid
+                if(!formControl.checkPhone(fieldValue) && Form) {
+                    setFormResponse({classname: "danger", message: "The phone number is invalid"})
+                    return
                 }
                 break
 
             default:
-                setFormResponse({classname: "danger", message: `The ${fieldName} field is forbidden`})
-                break
+                setFormResponse({classname: "danger", message: `The field name '${fieldName}' is forbidden`})
+                return
         }
+
+        setCredentials({
+            ...credentials,
+            [fieldName]: fieldValue
+        })
     }
 
     const handleSubmit = (e) => {
         e.preventDefault()
+
+        axios
+            .put(window.location.origin + "/api/user/" + userID, credentials, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json+ld"
+                } 
+            })
+            .then((response) => {
+                console.log(response, response.data)
+                setFormResponse({classname: "success", message: "Your account has been successfully updated"})
+            })
+            .catch((error) => {
+                setFormResponse({classname: "danger", message: "An error has been encountered. Please retry later."})
+            })
+        ;
     }
 
     return (
@@ -121,29 +118,29 @@ export default function UserForm() {
             <div className={"form-field-inline"}>
                 <div className={"form-field"}>
                     <label htmlFor={"firstname"}>Firstname</label>
-                    <input id={"firstname"} type={"text"} maxLength={100} onChange={(e) => handleChange(e, "firstname")} />
+                    <input id={"firstname"} type={"text"} value={credentials.firstname} maxLength={100} onChange={(e) => handleChange(e, "firstname")} />
                 </div>
                 
                 <div className={"form-field"}>
                     <label htmlFor={"lastname"}>Lastname</label>
-                    <input id={"lastname"} type={"text"} maxLength={150} onChange={(e) => handleChange(e, "lastname")} />
+                    <input id={"lastname"} type={"text"} value={credentials.lastname} maxLength={150} onChange={(e) => handleChange(e, "lastname")} />
                 </div>
             </div>
 
             <div className={"form-field"}>
                 <label htmlFor={"address"}>Address</label>
-                <input id={"address"} type={"text"} maxLength={255} onChange={(e) => handleChange(e, "address")} />
+                <input id={"address"} type={"text"} value={credentials.address} maxLength={255} onChange={(e) => handleChange(e, "address")} />
             </div>
 
             <div className={"form-field-inline"}>
                 <div className={"form-field"}>
                     <label htmlFor={"zip_code"}>Zip code</label>
-                    <input id={"zip_code"} type={"text"} onChange={(e) => handleChange(e, "zip_code")} />
+                    <input id={"zip_code"} type={"text"} value={credentials.zip_code} maxLength={10} onChange={(e) => handleChange(e, "zip_code")} />
                 </div>
                 
                 <div className={"form-field"}>
                     <label htmlFor={"city"}>City</label>
-                    <input id={"city"} type={"text"} onChange={(e) => handleChange(e, "city")} />
+                    <input id={"city"} type={"text"} value={credentials.city} onChange={(e) => handleChange(e, "city")} />
                 </div>
 
                 <div className={"form-field"}>
@@ -157,12 +154,12 @@ export default function UserForm() {
             
             <div className={"form-field"}>
                 <label htmlFor={"email"}>Email</label>
-                <input id={"email"} type={"email"} onChange={(e) => handleChange(e, "email")} disabled />
+                <input id={"email"} type={"email"} value={credentials.email} onChange={(e) => handleChange(e, "email")} disabled />
             </div>
             
             <div className={"form-field"}>
                 <label htmlFor={"phone"}>Phone number</label>
-                <input id={"phone"} type={"tel"} maxLength={10} onChange={(e) => handleChange(e, "phone")} />
+                <input id={"phone"} type={"tel"} value={credentials.phone} maxLength={10} onChange={(e) => handleChange(e, "phone")} />
             </div>
             
             <div className={"form-button mt-15px"}>

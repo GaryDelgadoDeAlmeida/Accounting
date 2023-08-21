@@ -17,7 +17,10 @@ class ContactManager {
     }
 
     /**
+     * @param string subject
+     * @param string message
      * @param bool send mail
+     * @return Contact|string Return a contact object or a message if an error has been encoutered
      */
     public function add(string $subject, string $message, bool $sendMail = false)
     {
@@ -33,7 +36,6 @@ class ContactManager {
 
             // If we have to send an email
             if($sendMail) {
-                // Send the mail
                 $this->sendEmail($subject, $message);
             }
         } catch(\Exception $e) {

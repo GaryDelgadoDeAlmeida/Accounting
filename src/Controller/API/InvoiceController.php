@@ -55,7 +55,7 @@ class InvoiceController extends AbstractController
     }
 
     /**
-     * @Route("/invoice/{invoiceID}", name="get_invoice", methods={"GET"})
+     * @Route("/invoice/{invoiceID}", name="get_invoice", requirements={"invoiceID"="\d+"}, methods={"GET"})
      */
     public function get_invoice(int $invoiceID = 0)
     {
@@ -65,7 +65,7 @@ class InvoiceController extends AbstractController
     }
 
     /**
-     * @Route("/invoice/{invoiceID}/update", name="update_invoice", methods={"PUT", "UPDATE"})
+     * @Route("/invoice/{invoiceID}/update", name="update_invoice", requirements={"invoiceID"="\d+"}, methods={"PUT", "UPDATE"})
      */
     public function update_invoice(Request $request, int $invoiceID = 0)
     {
@@ -76,16 +76,14 @@ class InvoiceController extends AbstractController
 
         $jsonContent = $request->getContent();
         if(!$jsonContent) {
-            if(!$invoice) {
-                return $this->json(null, Response::HTTP_FORBIDDEN);
-            }
+            return $this->json(null, Response::HTTP_PRECONDITION_FAILED);
         }
 
         return $this->json(null, Response::HTTP_ACCEPTED);
     }
 
     /**
-     * @Route("/invoice/{invoiceID}/remove", name="remove_invoice", methods={"DELETE"})
+     * @Route("/invoice/{invoiceID}/remove", name="remove_invoice", requirements={"invoiceID"="\d+"}, methods={"DELETE"})
      */
     public function remove_invoice(Request $request, int $invoiceID = 0) : JsonResponse 
     {

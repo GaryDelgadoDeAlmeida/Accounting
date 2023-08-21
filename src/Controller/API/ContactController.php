@@ -43,10 +43,10 @@ class ContactController extends AbstractController
         $offset = is_numeric($offset) && $offset > 1 ? $offset : 1;
         $limit = 20;
 
-        $contacts = $this->contactRepository->findBy([], ["id" => "ASC"], $limit, ($offset - 1) * $limit);
-
         return $this->json(
-            $this->serializerManager->serializeContent($contacts), 
+            $this->serializerManager->serializeContent(
+                $this->contactRepository->findBy([], ["id" => "ASC"], $limit, ($offset - 1) * $limit)
+            ), 
             Response::HTTP_OK
         );
     }
@@ -56,46 +56,48 @@ class ContactController extends AbstractController
      */
     public function post_contact(Request $request): JsonResponse
     {
-        // Get the body content of the request
-        $bodyContent = $request->getContent();
-
         // Decode the JSON content into an array
-        $jsonContent = json_decode($bodyContent);
+        $jsonContent = json_decode($request->getContent());
+        if(!$jsonContent) {
+            return $this->json("Empty body", Response::HTTP_PRECONDITION_FAILED);
+        }
 
         // Isolate fields
         $response = "";
         $isValid = true;
         $contactContent = [];
         foreach($jsonContent as $key => $value) {
-            if(in_array($key, ["subject", "message"])) {
-                if($key === "subject") {
-                    if(!$this->formManager->isEmpty($value)) {
-                        $isValid = false;
-                        $response = "L'objet du mail ne peut pas être vide";
-                        break;
-                    }
+            if(!in_array($key, ["subject", "message"])) {
+                continue;
+            }
 
-                    if(!$this->formManager->checkMaxLength($value)) {
-                        $isValid = false;
-                        $response = "L'objet du mail est trop long";
-                        break;
-                    }
-                } elseif($key === "message") {
-                    if(!$this->formManager->isEmpty($value)) {
-                        $isValid = false;
-                        $response = "Le message ne peut pas être vide.";
-                        break;
-                    }
-
-                    if(!$this->formManager->checkLimitLength($value, 1, 1000)) {
-                        $response = "Le message ne respecte pas les limitations de caractères.";
-                        $isValid = false;
-                        break;
-                    }
+            if($key === "subject") {
+                if(!$this->formManager->isEmpty($value)) {
+                    $isValid = false;
+                    $response = "L'objet du mail ne peut pas être vide";
+                    break;
                 }
 
-                $contactContent[$key] = $value;
+                if(!$this->formManager->checkMaxLength($value, 1, 255)) {
+                    $isValid = false;
+                    $response = "L'objet du mail est trop long";
+                    break;
+                }
+            } elseif($key === "message") {
+                if(!$this->formManager->isEmpty($value)) {
+                    $isValid = false;
+                    $response = "Le message ne peut pas être vide.";
+                    break;
+                }
+
+                if(!$this->formManager->checkLimitLength($value, 1, 1000)) {
+                    $response = "Le message ne respecte pas les limitations de caractères.";
+                    $isValid = false;
+                    break;
+                }
             }
+
+            $contactContent[$key] = $value;
         }
 
         if(!$isValid) {
@@ -116,16 +118,25 @@ class ContactController extends AbstractController
             return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        return $this->json([
-            "message" => "The mail has been successfully sended"
-        ], Response::HTTP_CREATED);
+        return $this->json("The mail has been successfully sended", Response::HTTP_CREATED);
     }
 
     /**
      * @Route("/contact/{contactID}", requirements={"contactID"="\d+"}, name="remove_single_contact", methods={"DELETE"})
      */
-    public function remove_single_contact(Request $request, int $companyID) : JsonResponse 
+    public function remove_single_contact(Request $request, int $contactID) : JsonResponse 
     {
-        return $this->json(["message" => "Route under construction"], Response::HTTP_OK);
+        $contact = $this->contactRepository->find($contactID);
+        if(!$contact) {
+            return $this->json(null, Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            $this->contactRepository->remove($contact, true);
+        } catch(\Exception $e) {
+            return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        
+        return $this->json(null, Response::HTTP_ACCEPTED);
     }
 }

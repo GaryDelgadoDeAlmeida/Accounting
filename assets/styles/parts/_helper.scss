@@ -27,6 +27,10 @@
     width: 50%;
 }
 
+.w-66 {
+    width: calc(2* (100% / 3));
+}
+
 .w-100 {
     width: 100% !important;
 }
@@ -35,6 +39,10 @@
 /* ---------------------------------------- *\
     Height
 \* ---------------------------------------- */
+.h-30px {
+    height: 30px !important;
+}
+
 .h-40px {
     height: 40px;
 }
@@ -71,6 +79,10 @@
     margin: auto;
 }
 
+.ml-15px {
+    margin-left: 15px;
+}
+
 .mt-15px {
     margin-top: 15px;
 }
@@ -92,6 +104,10 @@
 
 .p-l-0 {
     padding-left: 0 !important;
+}
+
+.p-l-10px {
+    padding-left: 10px;
 }
 
 .pt-15px {
@@ -130,12 +146,24 @@
     text-transform: uppercase;
 }
 
+.txt-bold {
+    font-weight: 700;
+}
+
 .f-left {
     float: left;
 }
 
 .f-right {
     float: right;
+}
+
+
+/* ---------------------------------------- *\
+    Border radius
+\* ---------------------------------------- */
+.no-radius {
+    border-radius: 0 !important;
 }
 
 /* ---------------------------------------- *\

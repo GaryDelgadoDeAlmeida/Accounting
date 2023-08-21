@@ -3,22 +3,23 @@ import { Navigate, useParams } from "react-router-dom";
 import UserHeader from "../../parts/UserHeader";
 import ReturnButton from "../../parts/ReturnButton";
 import axios from "axios";
+import InvoiceForm from "../../forms/InvoiceForm";
 
 export default function ClientInvoiceNew() {
     const { clientID } = useParams()
+    const userID = localStorage.getItem("user")
     const [client, setClient] = useState({})
     const [error, setError] = useState(false)
 
     useEffect(() => {
         axios
-            .get("/client/" + clientID, {
+            .get("/api/company/" + clientID, {
                 headers: {
                     "Content-Type": "application/json"
                 }
             })
-            .then(res => {
-                console.log(res)
-                setClient(res.data)
+            .then(response => {
+                setClient(response.data)
             })
             .catch(err => {
                 alert(err.response.data.message)
@@ -30,11 +31,11 @@ export default function ClientInvoiceNew() {
     return (
         <UserHeader>
             {error && <Navigate to={"/user/client/" + clientID} replace={true} />}
+
+            <ReturnButton path={"/user/client/" + clientID} />
             
             <div className={"page-section"}>
-                <ReturnButton path={"/user/client/" + clientID} />
-
-                <div className={""}></div>
+                <InvoiceForm />
             </div>
         </UserHeader>
     )

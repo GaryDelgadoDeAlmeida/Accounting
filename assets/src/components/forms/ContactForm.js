@@ -9,6 +9,11 @@ export default function ContactForm() {
     const [message, setMessage] = useState("")
     const [formResponse, setFormResponse] = useState({})
 
+    const emptifyField = () => {
+        setSubject("")
+        setMessage("")
+    }
+
     const handleChange = (e, fieldName) => {
         setFormResponse([])
         const fieldValue = e.target.value
@@ -61,7 +66,10 @@ export default function ContactForm() {
                     'Content-Type': 'application/json'
                 }
             })
-            .then(res => setFormResponse({classname: "success", message: res.data.message}))
+            .then(res => {
+                setFormResponse({classname: "success", message: res.data.message})
+                emptifyField()
+            })
             .catch(err => console.error(err))
         ;
     }
@@ -73,11 +81,11 @@ export default function ContactForm() {
             )}
 
             <div className={"form-field"}>
-                <input id={"subject"} type={"text"} maxLength={255} placeholder={"Subject"} onChange={(e) => handleChange(e, "subject")} />
+                <input id={"subject"} type={"text"} maxLength={255} placeholder={"Subject"} value={subject} onChange={(e) => handleChange(e, "subject")} />
             </div>
             
             <div className={"form-field"}>
-                <textarea className={"h-150px"} name={"message"} placeholder={"Votre message ..."} maxLength={1000} onChange={(e) => handleChange(e, "message")}></textarea>
+                <textarea className={"h-150px"} name={"message"} placeholder={"Votre message ..."} value={message} maxLength={1000} onChange={(e) => handleChange(e, "message")}></textarea>
                 <small className={"txt-right"}>{message.length} / 1000</small>
             </div>
             

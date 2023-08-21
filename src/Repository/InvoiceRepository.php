@@ -2,9 +2,11 @@
 
 namespace App\Repository;
 
+use App\Entity\User;
+use App\Entity\Company;
 use App\Entity\Invoice;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<Invoice>
@@ -61,19 +63,17 @@ class InvoiceRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param int companyID
-     * @param int userID
+     * @param Company company
+     * @param User user
      * @return Invoice[]
      */
-    function getInvoicesByClientAndUser(int $companyID, int $userID) {
+    public function getInvoicesByClientAndUser(Company $company, User $user) {
         return $this->createQueryBuilder("invoice")
-            ->leftJoin("invoice.company", "company")
-            ->leftJoin("invoice.user", "user")
-            ->where("company.id = :companyID")
-            ->where("user.id = :userID")
+            ->where("invoice.company = :company")
+            ->andWhere("invoice.user = :user")
             ->setParameters([
-                "companyID" => $companyID,
-                "userID" => $userID
+                "company" => $company,
+                "user" => $user
             ])
             ->getQuery()
             ->getResult()
