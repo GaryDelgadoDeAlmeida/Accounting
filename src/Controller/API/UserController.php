@@ -106,11 +106,16 @@ class UserController extends AbstractController
      * @Route("/user/{userID}", name="single_user", requirements={"userID"="\d+"}, methods={"GET"})
      */
     public function get_user(Request $request, int $userID) : JsonResponse {
-        // Search the user
         $user = $this->userRepository->find($userID);
+        if(empty($user)) {
+            return $this->json(null, Response::HTTP_NOT_FOUND);
+        }
 
         // Return a response to the client
-        return $this->json($user ?? [], $user ? Response::HTTP_OK : Response::HTTP_NOT_FOUND);
+        return $this->json(
+            $this->serializeManager->serializeContent($user), 
+            Response::HTTP_OK
+        );
     }
 
     /**
@@ -140,7 +145,38 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/user/{userID}", name="user_post_company", requirements={"userID"="\d+"}, methods={"POST"})
+     * @Route("/user/{userID}/freelance", name="user_get_freelance", requirements={"userID"="\d+"}, methods={"GET"})
+     */
+    public function user_get_freelance(Request $request, int $userID) : JsonResponse {
+        $user = $this->userRepository->find($userID);
+        if(!$user) {
+            return $this->json("The user coundn't be found", Response::HTTP_FORBIDDEN);
+        }
+
+        return $this->json(
+            $this->serializeManager->serializeContent($user->getFreelance()), 
+            Response::HTTP_OK
+        );
+    }
+
+    /**
+     * @Route("/user/{userID}/freelance", name="user_post_freelance", requirements={"userID"="\d+"}, methods={"POST"})
+     */
+    public function user_post_freelance(Request $request, int $userID) : JsonResponse {
+        $user = $this->userRepository->find($userID);
+        if(!$user) {
+            return $this->json("The user coundn't be found", Response::HTTP_FORBIDDEN);
+        }
+        
+        $jsonContent = json_decode($request->getContent(), true);
+        if(empty($jsonContent)) {
+            return $this->json("Empty body", Response::HTTP_PRECONDITION_FAILED);
+        }
+        // FreelanceEnum::getAvalaibleChoices
+    }
+
+    /**
+     * @Route("/user/{userID}/company", name="user_post_company", requirements={"userID"="\d+"}, methods={"POST"})
      */
     public function user_post_company(Request $request, int $userID) : JsonResponse {
         $user = $this->userRepository->find($userID);

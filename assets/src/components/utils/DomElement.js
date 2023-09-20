@@ -34,13 +34,22 @@ export function findParent(element, className) {
  * @param {*} tagName 
  * @returns 
  */
-export function findChildren(element, className, tagName) {
+export function findChildren(element, className, tagName = null) {
     let 
         childrens = element.children, 
         findElement = null
     ;
+
+    if(tagName !== null) {
+        tagName = tagName.toUpperCase()
+    }
     
     for(let i = 0; i < childrens.length; i++) {
+        console.log(
+            tagName,
+            childrens[i].tagName,
+            childrens[i].tagName === tagName
+        )
         if(
             (className && childrens[i] && childrens[i].className.includes(className)) ||
             (tagName && childrens[i] && childrens[i].tagName === tagName)

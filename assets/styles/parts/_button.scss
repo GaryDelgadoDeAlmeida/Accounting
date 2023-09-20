@@ -70,6 +70,13 @@ button {
     }
 
     &.btn-grey {
-        // 
+        color: var(--c-white);
+        border: 1px solid var(--c-gray);
+        background-color: var(--c-gray);
+    
+        &:hover {
+            color: var(--c-gray);
+            background-color: transparent;
+        }
     }
 }

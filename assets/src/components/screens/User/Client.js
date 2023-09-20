@@ -6,7 +6,7 @@ import PrivateResources from "../../utils/PrivateResources";
 
 export default function Client() {
 
-    const { loading, items: clients, load } = PrivateResources("company")
+    const { loading, items: clients, load } = PrivateResources(window.location.origin + "/api/companies")
     useEffect(() => {
         load()
     }, [])

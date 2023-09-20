@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Notification from "../parts/Notification";
 import axios from "axios";
 import FormControl from "../utils/FormControl";
-import { findParent } from "../utils/DomElement";
+import { findChildren, findParent } from "../utils/DomElement";
 
 export default function InvoiceForm({companyID}) {
     const userID = localStorage.getItem("user")
@@ -60,11 +60,6 @@ export default function InvoiceForm({companyID}) {
         inputTva.type = "checkbox"
         inputTva.onchange = (e) => handleChange(e, "tva")
 
-        // Amount (5th column)
-        let spanAmount = document.createElement("span")
-        spanAmount.classList.add("amount")
-        spanAmount.append(0)
-
         // Add/Remove row (6th column)
         let buttonRemove = document.createElement("button")
         buttonRemove.onclick = (e) => handleRemoveRow(e)
@@ -99,7 +94,7 @@ export default function InvoiceForm({companyID}) {
             createTdElement(inputTva, ["-tva", "txt-center"])
         )
         trElement.appendChild(
-            createTdElement(spanAmount, ["-amount", "txt-center"])
+            createTdElement(0, ["-amount", "txt-center"])
         )
         trElement.appendChild(
             createTdElement(buttonRemove, ["-action", "txt-center"])
@@ -135,7 +130,7 @@ export default function InvoiceForm({companyID}) {
 
             case "description":
                 if(!formControl.checkMaxLength(fieldValue, 255)) {
-                    setFormResponse({classname: "danger", message: "The description value exceed 255 caracters length"})
+                    setFormResponse({classname: "danger", message: "The description value exceed 255 characters length"})
                     return
                 }
                 break
@@ -179,6 +174,27 @@ export default function InvoiceForm({companyID}) {
             ...credentials,
             [fieldName]: fieldValue
         })
+
+        console.log(
+            findChildren(parent, "-quantity"),
+            findChildren(findChildren(parent, "-quantity"), "", "input")
+        )
+
+        // let amount = findChildren(parent, "-amount")
+        // let price = findChildren(parent, "-price").value
+        // let quantity = findChildren(findChildren(parent, "-quantity"), "", "input")
+        // let tva = findChildren(parent, "-tva").value
+
+        // console.log(
+        //     parent.children,
+        //     amount,
+        //     price,
+        //     findChildren(parent, "-quantity"),
+        //     quantity,
+        //     tva
+        // )
+
+        // amount.value = (price * quantity)
     }
 
     const handleSubmit = (e) => {
@@ -210,38 +226,35 @@ export default function InvoiceForm({companyID}) {
                 <Notification {...formResponse} />
             )}
 
-            <div className={"card"}>
-                <div className={"-content"}>
-                    <div className={"form-field"}>
-                        <label htmlFor={"invoice_date"}>Invoice date</label>
-                        <input id={"invoice_date"} type={"date"} min={Date.now()} onChange={(e) => handleChange(e, "invoice_date")} />
-                    </div>
-                    
-                    <div className={"form-field"}>
-                        <label htmlFor={"table"}>Invoice details</label>
 
-                        <table className={"table"}>
-                            <thead>
-                                <tr>
-                                    <th className={"column-description"}>Description</th>
-                                    <th className={"column-quantity"}>Quantity</th>
-                                    <th className={"column-price"}>Price</th>
-                                    <th className={"column-tva"}>TVA</th>
-                                    <th className={"column-amount"}>Amount</th>
-                                    <th className={"column-new-row"}></th>
-                                </tr>
-                            </thead>
-                            <tbody className={"table-content"}>
-                                <tr>
-                                    <td colSpan={5}></td>
-                                    <td className={"-new-row"}>
-                                        <button type={"button"} className={"btn btn-blue"} onClick={(e) => handleNewRow(e)}>+</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div className={"form-field"}>
+                <label htmlFor={"invoice_date"}>Invoice date</label>
+                <input id={"invoice_date"} type={"date"} min={Date.now()} onChange={(e) => handleChange(e, "invoice_date")} />
+            </div>
+            
+            <div className={"form-field"}>
+                <label htmlFor={"table"}>Invoice details</label>
+
+                <table className={"table"}>
+                    <thead>
+                        <tr>
+                            <th className={"column-description"}>Description</th>
+                            <th className={"column-quantity"}>Quantity</th>
+                            <th className={"column-price"}>Price</th>
+                            <th className={"column-tva"}>TVA</th>
+                            <th className={"column-amount"}>Amount</th>
+                            <th className={"column-new-row"}></th>
+                        </tr>
+                    </thead>
+                    <tbody className={"table-content"}>
+                        <tr>
+                            <td colSpan={5}></td>
+                            <td className={"-new-row"}>
+                                <button type={"button"} className={"btn btn-blue"} onClick={(e) => handleNewRow(e)}>+</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </form>
     )

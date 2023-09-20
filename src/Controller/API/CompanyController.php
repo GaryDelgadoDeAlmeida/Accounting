@@ -51,7 +51,7 @@ class CompanyController extends AbstractController {
     }
 
     /**
-     * @Route("/company", name="get_companies", methods={"GET"})
+     * @Route("/companies", name="get_companies", methods={"GET"})
      */
     public function get_companies(Request $request): JsonResponse
     {

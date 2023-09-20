@@ -26,12 +26,12 @@ export default function RegisterForm() {
     useEffect(() => {
         axios
             .get("https://restcountries.com/v3.1/all?fields=name,cca2")
-            .then(res => {
-                if(res.status === 200) {
-                    setCountries(res.data)
-                }
+            .then(response => {
+                setCountries(response.data)
             })
-            .catch(err => console.error(err))
+            .catch(err => {
+                console.error(err)
+            })
         ;
     }, [])
 
@@ -103,7 +103,7 @@ export default function RegisterForm() {
             case "password":
                 // Check if the password have a minimum length
                 if(!formControl.checkMinLength(fieldValue, 8)) {
-                    setFormResponse({classname: "danger", message: "The password should be at minimum 8 caracters"})
+                    setFormResponse({classname: "danger", message: "The password should be at minimum 8 characters"})
                     return
                 }
 
@@ -152,11 +152,15 @@ export default function RegisterForm() {
                     "Content-Type": "application/json"
                 }
             })
-            .then(res => console.log(res))
-            .catch(err => console.error(err))
+            .then(response => {
+                console.log(response, response.data)
+                setFormResponse({classname: "success", message: "The account has been successfully registered"})
+            })
+            .catch(error => {
+                console.error(error)
+                setFormResponse({classname: "danger", message: ""})
+            })
         ;
-
-        setFormResponse({classname: "success", message: "The account has been successfully registered"})
     }
 
     return (

@@ -33,7 +33,7 @@ export default function Estimate() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {estimates.length > 0 ? (
+                                {estimates.length > 0 && typeof estimates === "object" ? (
                                     estimates.map((item, index) => (
                                         <tr key={index}>
                                             <td className={"-id txt-center"}>1</td>

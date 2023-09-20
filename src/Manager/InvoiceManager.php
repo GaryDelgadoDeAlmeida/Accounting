@@ -23,6 +23,20 @@ class InvoiceManager extends AbstractController {
         $this->invoiceRepository = $invoiceRepository;
     }
 
+    public function checkFields(array $fields) {
+        foreach($fields as $field) {
+            // 
+        }
+    }
+
+    public function fillInvoice(array $fields, Invoice $invoice = new Invoice()) {
+        foreach($fields as $fieldName => $fieldValue) {
+            if($fieldName === InvoiceEnum) {
+                // 
+            }
+        }
+    }
+
     /**
      * Add a new invoice to a company
      * 
@@ -65,7 +79,7 @@ class InvoiceManager extends AbstractController {
         
         // Retrieve the HTML generated in our twig file
         $html = $this->renderView('model/invoice.html.twig', [
-            'mineral' => $article
+            'invoice' => $invoice
         ]);
         
         // Load HTML to Dompdf

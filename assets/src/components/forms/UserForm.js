@@ -4,43 +4,39 @@ import PrivateResources from "../utils/PrivateResources";
 import Notification from "../parts/Notification";
 import FormControl from "../utils/FormControl";
 import axios from "axios";
+import PublicResources from "../utils/PublicResources";
 
-export default function UserForm() {
-    const { userID } = useParams()
-    const { loading, items: user, load } = PrivateResources("user/" + userID)
+export default function UserForm({userID}) {
+    const { loading: userLoading, items: user, load: userLoad } = PrivateResources("user/" + userID)
+    const { loading: natLoading, items: nationalities, load: natLoad } = PublicResources("https://restcountries.com/v3.1/all?fields=name")
 
     const formControl = new FormControl()
     const [formResponse, setFormResponse] = useState({})
     const [credentials, setCredentials] = useState({
         firstname: "",
         lastname: "",
-        address: "",
-        zip_code: "",
-        city: "",
-        country: "",
-        email: "",
-        phone: ""
+        nationality: "",
+        birth_date: "",
     })
 
-    // useEffect(() => {
-    //     load()
+    useEffect(() => {
+        userLoad()
+        natLoad()
 
-    //     if(loading) {
-    //         setAllFields(user)
-    //     }
-    // }, [])
+        if(!userLoading) {
+            setAllFields(user)
+        }
+    }, [])
 
     const setAllFields = (user) => {
         setCredentials({
             firstname: user.firstname,
             lastname: user.lastname,
-            address: user.address,
-            zip_code: user.zip_code,
-            city: user.city,
-            country: user.country,
-            email: user.email,
-            phone: user.phone
+            nationality: user.nationality,
+            birth_date: user.birth_date
         })
+
+        console.log(credentials)
     }
 
     const handleChange = (e, fieldName) => {
@@ -51,32 +47,16 @@ export default function UserForm() {
         switch(fieldName) {
             case "firstname":
             case "lastname":
-            case "address":
-            case "zip_code":
-            case "city":
-            case "country":
                 if(!formControl.checkLength(fieldValue, 1, maxLength)) {
                     setFormResponse({classname: "danger", message: `The ${fieldName} field don't respect the length limitations`})
                     return
                 }
                 break
 
-            case "email":
-                if(fieldValue !== credentials.email) {
-                    setFormResponse({classname: "danger", message: `The field '${fieldName}' is disabled. It can't be changed`})
-                    return
-                }
+            case "nationality":
                 break
 
-            case "phone":
-                // Remove all space in the string
-                fieldValue = fieldValue.replaceAll(" ", "")
-
-                // If phone number is valid
-                if(!formControl.checkPhone(fieldValue) && Form) {
-                    setFormResponse({classname: "danger", message: "The phone number is invalid"})
-                    return
-                }
+            case "birth_date":
                 break
 
             default:
@@ -118,48 +98,30 @@ export default function UserForm() {
             <div className={"form-field-inline"}>
                 <div className={"form-field"}>
                     <label htmlFor={"firstname"}>Firstname</label>
-                    <input id={"firstname"} type={"text"} value={credentials.firstname} maxLength={100} onChange={(e) => handleChange(e, "firstname")} />
+                    <input id={"firstname"} type={"text"} value={credentials.firstname !== "" ? credentials.firstname : user.firstname} maxLength={100} onChange={(e) => handleChange(e, "firstname")} />
                 </div>
                 
                 <div className={"form-field"}>
                     <label htmlFor={"lastname"}>Lastname</label>
-                    <input id={"lastname"} type={"text"} value={credentials.lastname} maxLength={150} onChange={(e) => handleChange(e, "lastname")} />
+                    <input id={"lastname"} type={"text"} value={credentials.lastname !== "" ? credentials.lastname : user.lastname} maxLength={150} onChange={(e) => handleChange(e, "lastname")} />
                 </div>
-            </div>
-
-            <div className={"form-field"}>
-                <label htmlFor={"address"}>Address</label>
-                <input id={"address"} type={"text"} value={credentials.address} maxLength={255} onChange={(e) => handleChange(e, "address")} />
             </div>
 
             <div className={"form-field-inline"}>
                 <div className={"form-field"}>
-                    <label htmlFor={"zip_code"}>Zip code</label>
-                    <input id={"zip_code"} type={"text"} value={credentials.zip_code} maxLength={10} onChange={(e) => handleChange(e, "zip_code")} />
-                </div>
-                
-                <div className={"form-field"}>
-                    <label htmlFor={"city"}>City</label>
-                    <input id={"city"} type={"text"} value={credentials.city} onChange={(e) => handleChange(e, "city")} />
+                    <label htmlFor={"nationality"}>Nationality</label>
+                    <select id={"nationality"} onChange={(e) => handleChange(e, "nationality")}>
+                        <option value={""}>Select a nationality</option>
+                        {nationalities.length > 0 && nationalities.map((item, index) => (
+                            <option key={index} value={item.name.common} selected={credentials.nationality === item.name.common ? "selected": false}>{item.name.common}</option>
+                        ))}
+                    </select>
                 </div>
 
                 <div className={"form-field"}>
-                    <label htmlFor={"country"}>Country</label>
-                    <select id={"country"} onChange={(e) => handleChange(e, "country")}>
-                        <option>Select a country</option>
-                        <option value={"france"}>France</option>
-                    </select>
+                    <label htmlFor={"birth-date"}>Birth date</label>
+                    <input type={"date"} onChange={(e) => handleChange(e, "birth_date")} />
                 </div>
-            </div>
-            
-            <div className={"form-field"}>
-                <label htmlFor={"email"}>Email</label>
-                <input id={"email"} type={"email"} value={credentials.email} onChange={(e) => handleChange(e, "email")} disabled />
-            </div>
-            
-            <div className={"form-field"}>
-                <label htmlFor={"phone"}>Phone number</label>
-                <input id={"phone"} type={"tel"} value={credentials.phone} maxLength={10} onChange={(e) => handleChange(e, "phone")} />
             </div>
             
             <div className={"form-button mt-15px"}>

@@ -32,7 +32,7 @@ export default function Invoice() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {invoices.length > 0 ? (
+                                {invoices.length > 0 && typeof invoices === "object" ? (
                                     invoices.map((item, index) => (
                                         <tr key={index}>
                                             <td className={"-invoice-date txt-center"}>2023/04</td>

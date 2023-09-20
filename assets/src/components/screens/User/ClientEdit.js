@@ -4,27 +4,15 @@ import axios from "axios";
 import UserHeader from "../../parts/UserHeader";
 import CompanyForm from "../../forms/CompanyForm";
 import ReturnButton from "../../parts/ReturnButton";
+import PrivateResources from "../../utils/PrivateResources"
 
 export default function ClientEdit() {
     const { clientID } = useParams()
-    const [client, setClient] = useState("")
     const [error, setError] = useState(false)
+    const { loading, items, load } = PrivateResources(window.location.origin + "/api/company/" + clientID)
 
     useEffect(() => {
-        axios
-            .get("/api/company/" + clientID, {
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            })
-            .then(res => {
-                console.log(res.data)
-            })
-            .catch(err => {
-                alert(err.response.data.message)
-                setError(true)
-            })
-        ;
+        load()
     }, [])
 
     return (
@@ -38,7 +26,7 @@ export default function ClientEdit() {
                     <label>Edit company</label>
                 </div>
                 <div className={"-content"}>
-                    <CompanyForm />
+                    <CompanyForm company={items.company} />
                 </div>
             </div>
         </UserHeader>

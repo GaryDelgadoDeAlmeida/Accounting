@@ -141,4 +141,24 @@ export default class FormControl {
 
         return isValid
     }
+
+    /**
+     * 
+     * @param {Object} entity 
+     * @param {string} index
+     * @param {string} value
+     * @returns {boolean}
+     */
+    checkChoiceFromObject(entities, fieldname, value) {
+        let isValid = true
+
+        for(let $i = 0; $i < entities.length; $i++) {
+            if(entities[$i][fieldname] === value) {
+                isValid = true
+                break
+            }
+        }
+
+        return isValid
+    }
 }

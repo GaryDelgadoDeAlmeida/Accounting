@@ -1,21 +1,26 @@
 import React, { useState } from "react";
+import FormControl from "../utils/FormControl";
 import Notification from "../parts/Notification";
-import PrivatePostRessource from "../utils/PrivatePostRessource";
 import axios from "axios";
 
 export default function ContactForm() {
 
-    const [subject, setSubject] = useState("")
-    const [message, setMessage] = useState("")
+    const formControl = new FormControl()
     const [formResponse, setFormResponse] = useState({})
+    const [credentials, setCredentials] = useState({
+        subject: "",
+        message: ""
+    })
 
     const emptifyField = () => {
-        setSubject("")
-        setMessage("")
+        setCredentials({
+            subject: "",
+            message: ""
+        })
     }
 
     const handleChange = (e, fieldName) => {
-        setFormResponse([])
+        setFormResponse({})
         const fieldValue = e.target.value
 
         switch(fieldName) {
@@ -24,8 +29,6 @@ export default function ContactForm() {
                     setFormResponse({classname: "danger", message: "Le champ 'subject' ne resptecte pas la limitation de caractère."})
                     return
                 }
-
-                setSubject(fieldValue)
                 break
 
             case "message":
@@ -33,35 +36,29 @@ export default function ContactForm() {
                     setFormResponse({classname: "danger", message: "Le champ 'message' ne resptecte pas la limitation de caractère."})
                     return
                 }
-
-                setMessage(fieldValue)
                 break
 
             default:
                 setFormResponse({classname: "danger", message: `Le champ ${fieldName} n'est pas un champ autorisé`})
                 break
         }
+
+        setCredentials({
+            ...credentials,
+            [fieldName]: fieldValue
+        })
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         
-        if(subject === "" || message === "") {
+        if(credentials.subject === "" || credentials.message === "") {
             setFormResponse({classname: "danger", message: "Une erreur a été rencontrée. Veuillez vérifier les champs renseignés"})
             return
         }
 
-        // Send data to API
-        // await PrivatePostRessource("contact", {
-        //     subject: subject,
-        //     message: message
-        // })
-
         axios
-            .post("/api/contact", {
-                subject: subject,
-                message: message
-            }, {
+            .post("/api/contact", credentials, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -81,12 +78,17 @@ export default function ContactForm() {
             )}
 
             <div className={"form-field"}>
-                <input id={"subject"} type={"text"} maxLength={255} placeholder={"Subject"} value={subject} onChange={(e) => handleChange(e, "subject")} />
+                <select onChange={(e) => handleChange(e, "subject")}>
+                    <option value={""}>Select a subject</option>
+                    <option value={"disclamer"}>Disclamer : Something happened ?</option>
+                    <option value={"report"}>Report : You did an error and you want to correct it ?</option>
+                    <option value={"help"}>Help : You need an information ?</option>
+                </select>
             </div>
             
             <div className={"form-field"}>
-                <textarea className={"h-150px"} name={"message"} placeholder={"Votre message ..."} value={message} maxLength={1000} onChange={(e) => handleChange(e, "message")}></textarea>
-                <small className={"txt-right"}>{message.length} / 1000</small>
+                <textarea className={"h-150px"} name={"message"} placeholder={"Votre message ..."} value={credentials.message} maxLength={1000} onChange={(e) => handleChange(e, "message")}></textarea>
+                <small className={"txt-right"}>{credentials.message.length} / 1000</small>
             </div>
             
             <div className={"form-button"}>

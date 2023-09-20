@@ -150,8 +150,20 @@
                     }
 
                     // Invoice
+                    &.-invoice-description::before {
+                        content: "Titre";
+                    }
+
                     &.-invoice-date::before {
                         content: "Date";
+                    }
+
+                    &.-quantity {
+                        width: auto;
+
+                        &::before {
+                            content: "Quantité";
+                        }
                     }
 
                     &.-status::before {
@@ -166,17 +178,85 @@
                         content: "TVA";
                     }
 
+                    &.-price {
+                        width: auto;
+                        
+                        &::before {
+                            content: "Prix";
+                        }
+                    }
+
                     &.-amount::before {
                         content: "Montant";
                     }
 
                     // Common
+                    &.-m-hidden {
+                        display: none;
+                    }
+
                     &.-id::before {
                         content: "ID";
                     }
 
                     &.-date::before {
                         content: "Date";
+                    }
+
+                    &.-january::before {
+                        content: "January";
+                    }
+
+                    &.-february::before {
+                        content: "February";
+                    }
+
+                    &.-march::before {
+                        content: "March";
+                    }
+
+                    &.-april::before {
+                        content: "April";
+                    }
+
+                    &.-may::before {
+                        content: "May";
+                    }
+
+                    &.-jun::before {
+                        content: "Jun";
+                    }
+
+                    &.-july::before {
+                        content: "July";
+                    }
+
+                    &.-august::before {
+                        content: "August";
+                    }
+
+                    &.-september::before {
+                        content: "September";
+                    }
+
+                    &.-october::before {
+                        content: "October";
+                    }
+
+                    &.-november::before {
+                        content: "November";
+                    }
+
+                    &.-december::before {
+                        content: "December";
+                    }
+
+                    &.-provider::before {
+                        content: "Prestataire";
+                    }
+
+                    &.-total::before {
+                        content: "Total";
                     }
 
                     &.-action {

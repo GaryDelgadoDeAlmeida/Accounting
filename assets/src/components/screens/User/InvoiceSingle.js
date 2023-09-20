@@ -8,7 +8,6 @@ import axios from "axios";
 export default function InvoiceSingle() {
     const { invoiceID } = useParams()
     const [error, setError] = useState(false)
-    const [invoice, setInvoice] = useState([])
     const invoiceDetails = [
         {
             id: 1,
@@ -33,17 +32,11 @@ export default function InvoiceSingle() {
         }
     ]
 
+    const { loading: userLoading, items: user, load: userLoad } = PrivateResources(window.location.origin + "/api/user/" + invoiceID)
+    const { loading: invoiceLoading, items: invoice, load } = PrivateResources(window.location.origin + "/api/invoice/" + invoiceID)
+
     useEffect(() => {
-        axios
-            .get("/api/invoice/" + invoiceID)
-            .then((response) => {
-                setInvoice(response.data)
-            })
-            .catch(err => {
-                alert(err.response.data.message)
-                setError(true)
-            })
-        ;
+        load()
     }, [])
 
     const priceHT = (invoiceDetails) => {
@@ -123,7 +116,7 @@ export default function InvoiceSingle() {
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>
+                                    <td className={"-provider"}>
                                         <div className={"service-provider"}>
                                             <div className={"-identity"}>
                                                 <label>Garry ALMEIDA</label>
@@ -137,7 +130,7 @@ export default function InvoiceSingle() {
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td className={"-client"}>
                                         <div className={"service-provider"}>
                                             <div className={"-identity"}>
                                                 <label>VIAPROD</label>
@@ -160,21 +153,21 @@ export default function InvoiceSingle() {
                         <table className={"table"}>
                             <thead>
                                 <tr>
-                                    <th>Description</th>
-                                    <th>Quantité</th>
-                                    <th>Prix</th>
-                                    <th>TVA</th>
-                                    <th>Montant TTC</th>
+                                    <th className={"column-invoice-description"}>Description</th>
+                                    <th className={"column-quantity"}>Quantité</th>
+                                    <th className={"column-price"}>Prix</th>
+                                    <th className={"column-tva"}>TVA</th>
+                                    <th className={"column-amount"}>Montant TTC</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {invoiceDetails.map((item, index) => (
                                     <tr className={"txt-center"} key={index}>
-                                        <td className={"txt-left"}>{item.label}</td>
-                                        <td>{item.quantity}</td>
-                                        <td>{item.price}</td>
-                                        <td>{item.tva}</td>
-                                        <td>{item.price * item.tva}</td>
+                                        <td className={"-invoice-description txt-left"}>{item.label}</td>
+                                        <td className={"-quantity"}>{item.quantity}</td>
+                                        <td className={"-price"}>{item.price}</td>
+                                        <td className={"-tva"}>{item.tva}</td>
+                                        <td className={"-amount"}>{item.price * item.tva}</td>
                                     </tr>
                                 ))}
                             </tbody>

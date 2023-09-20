@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import FormControl from "../utils/FormControl";
 import Notification from "../parts/Notification";
 import axios from "axios";
+import PublicResources from "../utils/PublicResources";
 
-export default function CompanyForm({userID}) {
-    // Form field
+export default function CompanyForm({userID, company = {}}) {
+    const { loading, items: countries, load } = PublicResources("https://restcountries.com/v3.1/all?fields=name")
+    const formControl = new FormControl()
+    const [formResponse, setFormResponse] = useState({})
     const [credentiels, setCredentials] = useState({
         name: "", 
         siren: "", 
@@ -18,9 +21,9 @@ export default function CompanyForm({userID}) {
         email: ""
     })
 
-    // Form response
-    const [formResponse, setFormResponse] = useState({})
-    const formControl = new FormControl()
+    useEffect(() => {
+        load()
+    }, [])
 
     const handleChange = (e, fieldName) => {
         let fieldValue = e.target.value
@@ -71,7 +74,7 @@ export default function CompanyForm({userID}) {
                 break
 
             case "zip_code":
-                if(!formControl.checkLength(fieldValue, 1, 10)) {
+                if(!formControl.checkLength(fieldValue, 0, 10)) {
                     setFormResponse({classname: "danger", message: "Le code postal dépasse les limites de caractères"})
                     return
                 }
@@ -85,7 +88,7 @@ export default function CompanyForm({userID}) {
                 break
 
             case "phone":
-                if(!formControl.checkLength(fieldValue, 1, 14)) {
+                if(!formControl.checkLength(fieldValue, 0, 14)) {
                     setFormResponse({classname: "danger", message: "Le numéro de téléphone dépasse la limite de caractères"})
                     return
                 }
@@ -141,75 +144,105 @@ export default function CompanyForm({userID}) {
             })
             .then(res => {
                 console.log(res)
-                setFormResponse({classname: "success", message: ""})
+                setFormResponse({classname: "success", message: "La société a bien été ajouté parmis vos clients"})
             })
             .catch(err => {
                 console.err(err)
                 setFormResponse({classname: "danger", message: "An error has been encountered. Please, retry later"})
             })
         ;
-
-        setFormResponse({classname: "information", message: "Submit under construction. Try again later"})
     }
 
-    return (
-        <form className={"form"} onSubmit={(e) => handleSubmit(e)}>
+    console.log(company)
 
-            {Object.keys(formResponse).length > 0 && (<Notification {...formResponse} />)}
-            
-            <div className={"form-field"}>
-                <label htmlFor={"company_name"}>Corporation name</label>
-                <input id={"company_name"} type={"text"} value={credentiels.name} maxLength={255} onChange={(e) => handleChange(e, "name")} />
-            </div>
-            
-            <div className={"form-field"}>
-                <label htmlFor={"siren"}>N°Siren</label>
-                <input id={"siren"} type={"number"} value={credentiels.siren} maxLength={9} onChange={(e) => handleChange(e, "siren")} />
-            </div>
-            
-            <div className={"form-field"}>
-                <label htmlFor={"siret"}>N°Siret</label>
-                <input id={"siret"} type={"number"} value={credentiels.siret} maxLength={14} onChange={(e) => handleChange(e, "siren")} />
-            </div>
-            
-            <div className={"form-field"}>
-                <label htmlFor={"duns_number"}>N°DUNS</label>
-                <input id={"duns_number"} type={"number"} value={credentiels.duns_number} maxLength={14} onChange={(e) => handleChange(e, "duns_number")} />
-            </div>
-            
-            <div className={"form-field"}>
-                <label htmlFor={"address"}>Address</label>
-                <input id={"address"} type={"text"} value={credentiels.address} maxLength={255} onChange={(e) => handleChange(e, "address")} />
-            </div>
-            
-            <div className={"form-field"}>
-                <label htmlFor={"city"}>City</label>
-                <input id={"city"} type={"text"} value={credentiels.city} maxLength={255} onChange={(e) => handleChange(e, "city")} />
-            </div>
-            
-            <div className={"form-field"}>
-                <label htmlFor={"zip_code"}>Zipcode</label>
-                <input id={"zip_code"} type={"text"} value={credentiels.zip_code} maxLength={10} onChange={(e) => handleChange(e, "zip_code")} />
-            </div>
-            
-            <div className={"form-field"}>
-                <label htmlFor={"country"}>Country</label>
-                <input id={"country"} type={"text"} value={credentiels.country} maxLength={255} onChange={(e) => handleChange(e, "country")} />
-            </div>
-            
-            <div className={"form-field"}>
-                <label htmlFor={"phone"}>Phone number</label>
-                <input id={"phone"} type={"tel"} value={credentiels.phone} maxLength={10} onChange={(e) => handleChange(e, "phone")} />
-            </div>
-            
-            <div className={"form-field"}>
-                <label htmlFor={"email"}>Email</label>
-                <input id={"email"} type={"email"} value={credentiels.email} maxLength={255} onChange={(e) => handleChange(e, "email")} />
-            </div>
-            
-            <div className={"form-button mt-15px"}>
-                <button className={"btn btn-green"} type={"submit"}>Valider</button>
-            </div>
-        </form>
+    return (
+        <>
+            {!loading ? (
+                <form className={"form"} onSubmit={(e) => handleSubmit(e)}>
+                    {Object.keys(formResponse).length > 0 && (<Notification {...formResponse} />)}
+                    
+                    <div className={"form-field"}>
+                        <label htmlFor={"company_name"}>Corporation name</label>
+                        <input id={"company_name"} type={"text"} value={credentiels.name !== "" ? credentiels.name : company.name } maxLength={255} onChange={(e) => handleChange(e, "name")} />
+                    </div>
+        
+                    <div className={"form-field"}>
+                        <label htmlFor={"status"}>Juridical status</label>
+                        <select id={"status"} onChange={(e) => handleChange(e, "status")}>
+                            <option value={""}>Select a juridical status</option>
+                            <option value={"ei"}>Entreprise individuelle (EI)</option>
+                            <option value={"eurl"}>Entreprise unipersonnelle à responsabilité limitée (EURL)</option>
+                            <option value={"sarl"}>Société à responsabilité limitée (SARL)</option>
+                            <option value={"sa"}>Société anonyme (SA)</option>
+                            <option value={"sas_sasu"}>Société par actions simplifiée (SAS) ou société par actions simplifiée unipersonnelle (SASU)</option>
+                        </select>
+                    </div>
+                    
+                    <div className={"form-field-inline"}>
+                        <div className={"form-field"}>
+                            <label htmlFor={"siren"}>N°SIREN</label>
+                            <input id={"siren"} type={"number"} placeholder={"EX : 914 002 308"} value={credentiels.siren !== "" ? credentiels.siren : company.siren } maxLength={9} onChange={(e) => handleChange(e, "siren")} />
+                        </div>
+                        
+                        <div className={"form-field"}>
+                            <label htmlFor={"siret"}>N°SIRET</label>
+                            <input id={"siret"} type={"number"} placeholder={"EX : 914 002 308 00015"} value={credentiels.siret !== "" ? credentiels.siret : company.siret} maxLength={14} onChange={(e) => handleChange(e, "siren")} />
+                        </div>
+                    </div>
+                    
+                    <div className={"form-field"}>
+                        <label htmlFor={"duns_number"}>N°DUNS</label>
+                        <input id={"duns_number"} type={"number"} placeholder={"EX : 15-048-3782"} value={credentiels.duns_number !== "" ? credentiels.duns_number : company.dunsNumber} maxLength={14} onChange={(e) => handleChange(e, "duns_number")} />
+                    </div>
+                    
+                    <div className={"form-field"}>
+                        <label htmlFor={"address"}>Address</label>
+                        <input id={"address"} type={"text"} value={credentiels.address !== "" ? credentiels.address : company.address} maxLength={255} onChange={(e) => handleChange(e, "address")} />
+                    </div>
+                    
+                    <div className={"form-field-inline"}>
+                        <div className={"form-field"}>
+                            <label htmlFor={"city"}>City</label>
+                            <input id={"city"} type={"text"} value={credentiels.city !== "" ? credentiels.city : company.city} maxLength={255} onChange={(e) => handleChange(e, "city")} />
+                        </div>
+                        
+                        <div className={"form-field"}>
+                            <label htmlFor={"zip_code"}>Zip code</label>
+                            <input id={"zip_code"} type={"text"} value={credentiels.zip_code !== "" ? credentiels.zip_code : company.zipCode} maxLength={10} onChange={(e) => handleChange(e, "zip_code")} />
+                        </div>
+                        
+                        <div className={"form-field"}>
+                            <label htmlFor={"country"}>Country</label>
+                            <select id={"country"} onChange={(e) => handleChange(e, "country")}>
+                                <option value={""}>Select a country</option>
+                                {countries.length > 0 && countries.map((item, index) => (
+                                    <option 
+                                        key={index} 
+                                        value={item.name.common} 
+                                        selected={(credentiels.country != "" && credentiels.country === item.name.common) || (company.country === item.name.common) ? "selected" : false}
+                                    >{item.name.common}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div className={"form-field"}>
+                        <label htmlFor={"email"}>Email</label>
+                        <input id={"email"} type={"email"} value={credentiels.email !== "" ? credentiels.email : company.email} maxLength={255} onChange={(e) => handleChange(e, "email")} />
+                    </div>
+                    
+                    <div className={"form-field"}>
+                        <label htmlFor={"phone"}>Phone number</label>
+                        <input id={"phone"} type={"tel"} value={credentiels.phone !== "" ? credentiels.phone : company.phone} maxLength={10} onChange={(e) => handleChange(e, "phone")} />
+                    </div>
+                    
+                    <div className={"form-button mt-15px"}>
+                        <button className={"btn btn-green"} type={"submit"}>Valider</button>
+                    </div>
+                </form>
+            ) : (
+                <Notification clasname={"information"} message={"Loading ..."} />
+            )}
+        </>
     )
 }

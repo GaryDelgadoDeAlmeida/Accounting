@@ -94,7 +94,7 @@ export default function ClientSingle() {
                             </thead>
                             
                             <tbody>
-                                {estimates.length > 0 && client.estimates.map((item, index) => {
+                                {estimates.length > 0 && typeof estimates === "object" && client.estimates.map((item, index) => {
                                     <tr key={index}>
                                         <td className={"-date txt-center"}>2023/04</td>
                                         <td className={"-estimate-name txt-center"}>Devis n°2</td>
@@ -144,7 +144,7 @@ export default function ClientSingle() {
                             </thead>
                             
                             <tbody>
-                                {invoices.length > 0 && client.invoices.map((item, index) => {
+                                {invoices.length > 0 && typeof invoices === "object" && client.invoices.map((item, index) => {
                                     <tr key={index}>
                                         <td className={"-invoice-date txt-center"}>2023/04</td>
                                         <td className={"-status txt-center"}>

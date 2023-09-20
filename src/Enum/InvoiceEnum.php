@@ -4,6 +4,7 @@ namespace App\Enum;
 
 abstract class InvoiceEnum {
 
+    // Status choices
     public const STATUS_UNPAID = "unpaid";
     public const STATUS_ONGOING = "ongoing";
     public const STATUS_PAID = "paid";

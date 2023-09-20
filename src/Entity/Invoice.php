@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\InvoiceRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -31,6 +33,14 @@ class Invoice
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\OneToMany(mappedBy: 'invoice', targetEntity: InvoiceDetail::class)]
+    private Collection $invoiceDetails;
+
+    public function __construct()
+    {
+        $this->invoiceDetails = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -105,6 +115,36 @@ class Invoice
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, InvoiceDetail>
+     */
+    public function getInvoiceDetails(): Collection
+    {
+        return $this->invoiceDetails;
+    }
+
+    public function addInvoiceDetail(InvoiceDetail $invoiceDetail): self
+    {
+        if (!$this->invoiceDetails->contains($invoiceDetail)) {
+            $this->invoiceDetails->add($invoiceDetail);
+            $invoiceDetail->setInvoice($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInvoiceDetail(InvoiceDetail $invoiceDetail): self
+    {
+        if ($this->invoiceDetails->removeElement($invoiceDetail)) {
+            // set the owning side to null (unless already changed)
+            if ($invoiceDetail->getInvoice() === $this) {
+                $invoiceDetail->setInvoice(null);
+            }
+        }
 
         return $this;
     }

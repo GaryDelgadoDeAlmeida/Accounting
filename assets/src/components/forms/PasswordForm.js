@@ -5,14 +5,10 @@ import Notification from "../parts/Notification";
 import FormControl from "../utils/FormControl";
 import axios from "axios";
 
-export default function PasswordForm() {
-    const { userID } = useParams()
+export default function PasswordForm({userID}) {
 
-    // Form response
-    const [formResponse, setFormResponse] = useState({})
     const formControl = new FormControl()
-
-    // Form field
+    const [formResponse, setFormResponse] = useState({})
     const [credentials, setCredentials] = useState({
         password: "",
         new_password: "",
@@ -20,8 +16,8 @@ export default function PasswordForm() {
     })
 
     const handleChange = (e, fieldName) => {
-        let fieldValue = e.target.value
         setFormResponse({})
+        let fieldValue = e.target.value
 
         switch(fieldName) {
             case "password":
@@ -29,14 +25,14 @@ export default function PasswordForm() {
 
             case "new_password":
                 if(!formControl.checkMaxLength(fieldValue, 255)) {
-                    setFormResponse({classname: "danger", message: `The value of the field '${fieldName}' exceed 255 caracters length`})
+                    setFormResponse({classname: "danger", message: `The value of the field '${fieldName}' exceed 255 characters length`})
                     return
                 }
                 break
 
             case "confirm_password":
                 if(!formControl.checkMaxLength(fieldValue, 255)) {
-                    setFormResponse({classname: "danger", message: `The value of the field '${fieldName}' exceed 255 caracters length`})
+                    setFormResponse({classname: "danger", message: `The value of the field '${fieldName}' exceed 255 characters length`})
                     return
                 }
                 break

@@ -35,19 +35,19 @@ class UserManager {
 
                 if($key === UserEnum::USER_FIRSTNAME) {
                     if(!$this->formManager->checkMaxLength($row, 100)) {
-                        throw new \Error("The firstname exceed 100 caracters length");
+                        throw new \Error("The firstname exceed 100 characters length");
                     }
                 } elseif($key === UserEnum::USER_LASTNAME) {
                     if(!$this->formManager->checkMaxLength($row, 150)) {
-                        throw new \Error("The lastname exceed 150 caracters length");
+                        throw new \Error("The lastname exceed 150 characters length");
                     }
                 } elseif($key === UserEnum::USER_ADDRESS) {
                     if(!$this->formManager->checkMaxLength($row, 255)) {
-                        throw new \Error("Address exceed 255 caracters length");
+                        throw new \Error("Address exceed 255 characters length");
                     }
                 } elseif($key === UserEnum::USER_ZIPCODE) {
                     if(!$this->formManager->checkMaxLength($row, 10)) {
-                        throw new \Error("Zip code exceed 10 caracters length");
+                        throw new \Error("Zip code exceed 10 characters length");
                     }
 
                     if(!$this->formManager->isNumber($row)) {
@@ -55,7 +55,7 @@ class UserManager {
                     }
                 } elseif($key === UserEnum::USER_CITY) {
                     if(!$this->formManager->checkMaxLength($row, 255)) {
-                        throw new \Error("The city exceed 255 caracters length");
+                        throw new \Error("The city exceed 255 characters length");
                     }
                 } elseif($key === UserEnum::USER_COUNTRY) {
                     // 
@@ -65,7 +65,7 @@ class UserManager {
 
                     // Check the length of the phone number
                     if(!$this->formManager->checkMaxLength($row, 10)) {
-                        throw new \Error("The phone number exceed 10 caracters length");
+                        throw new \Error("The phone number exceed 10 characters length");
                     }
 
                     // Check if the phone contains numbers only
@@ -75,7 +75,7 @@ class UserManager {
                 } elseif($key === UserEnum::USER_EMAIL) {
                     // Check the length of the email
                     if(!$this->formManager->checkMaxLength($row)) {
-                        throw new \Error("The email address exceed 255 caracters length");
+                        throw new \Error("The email address exceed 255 characters length");
                     }
 
                     // Check if email is valid
@@ -85,7 +85,7 @@ class UserManager {
                 } elseif($key === UserEnum::USER_PASSWORD) {
                     // Check the password min length
                     if(!$this->formManager->checkMinLength($row, 8)) {
-                        throw new \Error("The password length must be at least 8 caracters");
+                        throw new \Error("The password length must be at least 8 characters");
                     }
 
                     // Check if the password is secured

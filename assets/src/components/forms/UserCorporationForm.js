@@ -1,16 +1,48 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Notification from "../parts/Notification";
 import FormControl from "../utils/FormControl";
+import PublicResources from "../utils/PublicResources";
 
-export default function UserCorporationForm() {
+export default function UserCorporationForm({userID}) {
+
+    const { loading, items: corporation, load: corporationLoad } = PublicResources(window.location.origin + "/api/user/" + userID + "/freelance")
+    const { loading: countriesLoading, items: countries, load: countriesLoad } = PublicResources("https://restcountries.com/v3.1/all?fields=name")
+    const juridicalStatus = [
+        {
+            key: "sarl",
+            value: "SARL"
+        },
+        {
+            key: "eirl",
+            value: "EIRL",
+        },
+        {
+            key: "eurl",
+            value: "EURL",
+        }, 
+        {
+            key: "eu",
+            value: "EU"
+        }
+    ]
 
     // Form field
-    const [credentiels, setCredentials] = useState({
+    const [credentials, setCredentials] = useState({
+        name: "",
+        address: "",
+        city: "",
+        zip_code: "",
+        country: "",
         siren: "",
         siret: "",
         duns_number: ""
     })
+
+    useEffect(() => {
+        corporationLoad()
+        countriesLoad()
+    }, [])
 
     // Form response
     const formControl = new FormControl()
@@ -20,6 +52,17 @@ export default function UserCorporationForm() {
         let fieldValue = e.target.value
 
         switch(fieldName) {
+            case "name":
+            case "address":
+            case "zip_code":
+            case "city":
+            case "country":
+                if(!formControl.checkLength(fieldValue, 1, maxLength)) {
+                    setFormResponse({classname: "danger", message: `The ${fieldName} field don't respect the length limitations`})
+                    return
+                }
+                break
+
             case "siren":
                 if(!formControl.checkNumber(fieldValue)) {
                     setFormResponse({classname: "dnager", message: `The value of the field '${fieldName}' isn't numeric.`})
@@ -32,6 +75,7 @@ export default function UserCorporationForm() {
                 }
                 break
 
+            case "duns_number":
             case "siret":
                 if(!formControl.checkNumber(fieldValue)) {
                     setFormResponse({classname: "dnager", message: `The value of the field '${fieldName}' isn't numeric.`})
@@ -44,16 +88,13 @@ export default function UserCorporationForm() {
                 }
                 break
 
-            case "duns_number":
-                break
-
             default:
                 setFormResponse({classname: "danger", message: `The field '${fieldName}' is forbidden`})
                 return
         }
 
         setCredentials({
-            ...credentiels,
+            ...credentials,
             [fieldName]: fieldValue
         })
     }
@@ -62,7 +103,7 @@ export default function UserCorporationForm() {
         e.preventDefault()
 
         axios
-            .post("/api/user/corporation", credentiels)
+            .post("/api/user/corporation", credentials)
             .then(res => console.log(res))
             .catch(err => console.error(err))
         ;
@@ -73,20 +114,64 @@ export default function UserCorporationForm() {
     return (
         <form className={"form"} onSubmit={(e) => handleSubmit(e)}>
             {Object.keys(formResponse).length > 0 && (<Notification {...formResponse} />)}
-            
+
             <div className={"form-field"}>
-                <label htmlFor={"siren"}>Siren</label>
-                <input type={"text"} maxLength={9} onChange={(e) => handleChange(e, "siren")} />
+                <label htmlFor={"name"}>Name</label>
+                <input id={"name"} type={"text"} value={credentials.name != "" ? credentials.name : corporation.name} maxLength={255} onChange={(e) => handleChange(e, "name")} />
             </div>
 
             <div className={"form-field"}>
-                <label htmlFor={"siret"}>Siret</label>
-                <input type={"text"} maxLength={14} onChange={(e) => handleChange(e, "siret")} />
+                <label htmlFor={"status"}>Juridical status</label>
+                <select>
+                    <option value={""}>Select a juridical status</option>
+                    {juridicalStatus.map((item, index) => (
+                        <option key={index} value={item.key}>{item.value}</option>
+                    ))}
+                </select>
+            </div>
+
+            <div className={"form-field"}>
+                <label htmlFor={"address"}>Address</label>
+                <input id={"address"} type={"text"} value={credentials.address} onChange={(e) => handleChange(e, "address")}/>
+            </div>
+
+            <div className={"form-field-inline"}>
+                <div className={"form-field"}>
+                    <label htmlFor={"zip_code"}>Zip code</label>
+                    <input id={"zip_code"} type={"text"} value={credentials.zip_code} maxLength={10} onChange={(e) => handleChange(e, "zip_code")} />
+                </div>
+                
+                <div className={"form-field"}>
+                    <label htmlFor={"city"}>City</label>
+                    <input id={"city"} type={"text"} value={credentials.city} onChange={(e) => handleChange(e, "city")} />
+                </div>
+
+                <div className={"form-field"}>
+                    <label htmlFor={"country"}>Country</label>
+                    <select id={"country"} onChange={(e) => handleChange(e, "country")}>
+                        <option>Select a country</option>
+                        {countries.length > 0 && countries.map((item, index) => (
+                            <option key={index} value={item.name.common}>{item.name.common}</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+            
+            <div className={"form-field-inline"}>
+                <div className={"form-field"}>
+                    <label htmlFor={"siren"}>SIREN</label>
+                    <input type={"text"} placeholder={"EX : 914 002 308"} maxLength={9} onChange={(e) => handleChange(e, "siren")} />
+                </div>
+
+                <div className={"form-field"}>
+                    <label htmlFor={"siret"}>SIRET</label>
+                    <input type={"text"} placeholder={"EX : 914 002 308 00015"} maxLength={14} onChange={(e) => handleChange(e, "siret")} />
+                </div>
             </div>
 
             <div className={"form-field"}>
                 <label htmlFor={"duns_number"}>DUNS Number</label>
-                <input type={"text"} maxLength={14} onChange={(e) => handleChange(e, "duns_number")} />
+                <input type={"text"} placeholder={"EX : 15-048-3782"} maxLength={14} onChange={(e) => handleChange(e, "duns_number")} />
             </div>
 
             <div className={"form-button"}>

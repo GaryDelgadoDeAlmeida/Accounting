@@ -19,7 +19,7 @@ export default function LoginForm() {
             case "username":
                 // Check if the username respect limitation
                 if(!formControl.checkLength(fieldValue, 1, maxLength)) {
-                    setFormResponse({classname: "danger", message: "The username don't respect the caracters lenght"})
+                    setFormResponse({classname: "danger", message: "The username don't respect the characters lenght"})
                     return
                 }
 
@@ -58,7 +58,7 @@ export default function LoginForm() {
             .then(res => {
                 console.log(res)
                 setFormResponse({classname: "success", message: "Successfully connected"})
-                // localStorage.setItem("token", res.data)
+                localStorage.setItem("token", res.data)
             })
             .catch(err => {
                 console.log(err)

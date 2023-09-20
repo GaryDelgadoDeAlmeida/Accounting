@@ -185,7 +185,7 @@
     flex-direction: column;
 
     @include tablet {
-        flex-direction: row;
+        // flex-direction: row;
 
         .item-row {
             height: auto;

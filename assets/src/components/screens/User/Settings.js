@@ -7,6 +7,7 @@ import Notification from "../../parts/Notification";
 
 export default function Settings() {
 
+    const userID = localStorage.getItem("user") ?? 1
     const allowedOgnlet = ["my-account", "corporation", "security"]
     const [onglet, setOnglet] = useState("my-account")
 
@@ -24,10 +25,10 @@ export default function Settings() {
                         {onglet === "my-account" && (
                             <div className={"card"}>
                                 <div className={"-header"}>
-                                    <label>My account</label>
+                                    <label>Personal informations</label>
                                 </div>
                                 <div className={"-content"}>
-                                    <UserForm />
+                                    <UserForm userID={userID} />
                                 </div>
                             </div>
                         )}
@@ -38,7 +39,7 @@ export default function Settings() {
                                     <label>Corporation</label>
                                 </div>
                                 <div className={"-content"}>
-                                    <UserCorporationForm />
+                                    <UserCorporationForm userID={userID} />
                                 </div>
                             </div>
                         )}
@@ -49,7 +50,7 @@ export default function Settings() {
                                     <label>Change your password</label>
                                 </div>
                                 <div className={"-content"}>
-                                    <PasswordForm />
+                                    <PasswordForm userID={userID} />
                                 </div>
                             </div>
                         )}
