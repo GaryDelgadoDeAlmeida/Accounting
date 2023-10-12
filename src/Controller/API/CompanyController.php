@@ -10,6 +10,8 @@ use App\Repository\CompanyRepository;
 use App\Repository\InvoiceRepository;
 use App\Repository\EstimateRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\InvoiceDetailRepository;
+use App\Repository\EstimateDetailRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -28,7 +30,9 @@ class CompanyController extends AbstractController {
     private UserRepository $userRepository;
     private CompanyRepository $companyRepository;
     private EstimateRepository $estimateRepository;
+    private EstimateDetailRepository $estimateDetailRepository;
     private InvoiceRepository $invoiceRepository;
+    private InvoiceDetailRepository $invoiceDetailRepository;
 
     function __construct(
         EntityManagerInterface $em,
@@ -38,7 +42,9 @@ class CompanyController extends AbstractController {
         UserRepository $userRepository,
         CompanyRepository $companyRepository,
         InvoiceRepository $invoiceRepository,
-        EstimateRepository $estimateRepository
+        InvoiceDetailRepository $invoiceDetailRepository,
+        EstimateRepository $estimateRepository,
+        EstimateDetailRepository $estimateDetailRepository
     ) {
         $this->em = $em;
         $this->formManager = $formManager;
@@ -47,7 +53,9 @@ class CompanyController extends AbstractController {
         $this->userRepository = $userRepository;
         $this->companyRepository = $companyRepository;
         $this->invoiceRepository = $invoiceRepository;
+        $this->invoiceDetailRepository = $invoiceDetailRepository;
         $this->estimateRepository = $estimateRepository;
+        $this->estimateDetailRepository = $estimateDetailRepository;
     }
 
     /**
@@ -145,11 +153,21 @@ class CompanyController extends AbstractController {
     /**
      * @Route("/company/{companyID}/estimate/{estimateID}/update", requirements={"companyID"="\d+", "estimateID"="\d+"}, name="update_estimate_form_company", methods={"PUT", "UPDATE"})
      */
-    function update_estimate_form_company(Request $resquest, int $companyID) : JsonResponse
+    function update_estimate_form_company(Request $resquest, int $companyID, int $estimateID) : JsonResponse
     {
         $jsonContent = json_decode($request->getContent());
         if(empty($jsonContent)) {
             return $this->json("Empty body", Response::HTTP_PRECONDITION_FAILED);
+        }
+
+        $company = $this->companyRepository->find($companyID);
+        if(empty($company)) {
+            return $this->json("The company couldn't be found", Response::HTTP_NOT_FOUND);
+        }
+
+        $estimate = $this->estimateRepository->findBy(["id" => $estimateID, "company" => $company]);
+        if(empty($estimate)) {
+            return $this->json("The estimate couldn't be found", Response::HTTP_NOT_FOUND);
         }
 
         foreach($jsonContent as $key => $value) {
@@ -211,19 +229,31 @@ class CompanyController extends AbstractController {
             return $this->json("The company couldn't be found", Response::HTTP_NOT_FOUND);
         }
 
-        // Unlink the user and the company
-        $company->removeUser($user);
+        try {
+            // Unlink the user and the company
+            $company->removeUser($user);
 
-        // Remove all invoices of the user and the company
-        $invoices = $this->invoiceRepository->getInvoicesByClientAndUser($company, $user);
-        foreach($invoices as $invoice) {
-            $company->removeInvoice($invoice, true);
-        }
+            // Remove all invoices of the user and the company
+            $invoices = $this->invoiceRepository->getInvoicesByClientAndUser($company, $user);
+            foreach($invoices as $invoice) {
+                foreach($invoice->getInvoiceDetails() as $invoiceDetail) {
+                    $this->invoiceDetailRepository->remove($invoiceDetail);
+                }
 
-        // Remove all estimates of the user and the company
-        $estimates = $this->estimateRepository->getEstimatesByClientAndUser($company, $user);
-        foreach($estimates as $estimate) {
-            $this->estimateRepository->remove($estimate, true);
+                $this->invoiceRepository->remove($invoice, true);
+            }
+
+            // Remove all estimates of the user and the company
+            $estimates = $this->estimateRepository->getEstimatesByClientAndUser($company, $user);
+            foreach($estimates as $estimate) {
+                foreach($estimate->getEstimateDetails() as $estimateDetail) {
+                    $this->estimateDetailRepository->remove($estimateDetail);
+                }
+
+                $this->estimateRepository->remove($estimate, true);
+            }
+        } catch(\Exception $e) {
+            return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return $this->json(null, Response::HTTP_ACCEPTED);

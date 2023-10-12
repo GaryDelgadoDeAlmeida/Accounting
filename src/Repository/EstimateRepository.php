@@ -75,4 +75,24 @@ class EstimateRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+    /**
+     * 
+     * @param Company company
+     * @param User user
+     * @return int
+     */
+    public function countEstimatesByCompanyAndUser(Company $company, User $user) {
+        return $this->createQueryBuilder("estimate")
+            ->select("COUNT(estimate.id) as nbrEstimate")
+            ->where("estimate.company = :company")
+            ->andWhere("estimate.user = :user")
+            ->setParameters([
+                "company" => $company,
+                "user" => $user
+            ])
+            ->getQuery()
+            ->getOneOrNullResult()["nbrEstimate"] ?? 0
+        ;
+    }
 }

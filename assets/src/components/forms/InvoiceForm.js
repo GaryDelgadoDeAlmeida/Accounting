@@ -1,19 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Notification from "../parts/Notification";
 import axios from "axios";
 import FormControl from "../utils/FormControl";
+import PrivateResources from "../utils/PrivateResources";
 import { findChildren, findParent } from "../utils/DomElement";
 
-export default function InvoiceForm({companyID}) {
+export default function InvoiceForm({companyID, invoiceID = null}) {
     const userID = localStorage.getItem("user")
+    const { loading, items: companies, load } = PrivateResources(window.location.origin + "/api/companies")
 
+    let details = []
     const formControl = new FormControl()
     const [formResponse, setFormResponse] = useState({})
     const [credentials, setCredentials] = useState({
-        company: companyID,
+        company: parseInt(companyID),
         invoice_date: "",
         details: {}
     })
+
+    useEffect(() => {
+        load()
+    }, [])
 
     const createDivFieldElement = (element) => {
         let divElement = document.createElement("div")
@@ -37,7 +44,8 @@ export default function InvoiceForm({companyID}) {
         inputDescription.type = "text"
         inputDescription.placeholder = "Description"
         inputDescription.classList.add("no-radius", "h-30px")
-        inputDescription.onchange = (e) => handleChange(e, "quantity")
+        inputDescription.onchange = (e) => handleChange(e, "description")
+        inputDescription.required = true
 
         // Quantity (2nd column)
         let inputQuantity = document.createElement("input")
@@ -46,6 +54,7 @@ export default function InvoiceForm({companyID}) {
         inputQuantity.classList.add("no-radius", "h-30px")
         inputQuantity.min = 0
         inputQuantity.onchange = (e) => handleChange(e, "quantity")
+        inputQuantity.required = true
 
         // Price (3rd column)
         let inputPrice = document.createElement("input")
@@ -54,6 +63,7 @@ export default function InvoiceForm({companyID}) {
         inputPrice.classList.add("no-radius", "h-30px")
         inputPrice.min = 0
         inputPrice.onchange = (e) => handleChange(e, "price")
+        inputPrice.required = true
 
         // TVA (4th column)
         let inputTva = document.createElement("input")
@@ -118,14 +128,28 @@ export default function InvoiceForm({companyID}) {
     const handleChange = (e, fieldName) => {
         let fieldValue = e.target.value
         let parent = findParent(e.target, "item-cell")
+        setFormResponse({})
 
         switch(fieldName) {
             case "invoice_date":
-                console.log(
-                    fieldValue, 
-                    Date.now(), 
-                    Date.toLocaleDateString()
-                )
+            case "due_date":
+                let 
+                    currentDate = new Date(),
+                    fieldDate = new Date(fieldValue),
+                    diffDate = currentDate - fieldDate
+                ;
+
+                if( diffDate < 0 && fieldDate.toLocaleDateString() != currentDate.toLocaleDateString() ) {
+                    setFormResponse({classname: "danger", message: "The invoice date must be inferior to the current date"})
+                    return
+                }
+                break
+
+            case "company":
+                if(!formControl.checkMinLength(fieldValue, 1)) {
+                    setFormResponse({classname: "danger", message: "A company must be selected."})
+                    return
+                }
                 break
 
             case "description":
@@ -145,6 +169,8 @@ export default function InvoiceForm({companyID}) {
                     setFormResponse({classname: "danger", message: "The quantity isn't a positive number."})
                     return
                 }
+
+                fieldValue = parseInt(fieldValue)
                 break
 
             case "price":
@@ -157,6 +183,8 @@ export default function InvoiceForm({companyID}) {
                     setFormResponse({classname: "danger", message: "The price isn't a positive number."})
                     return
                 }
+
+                fieldValue = parseFloat(fieldValue)
                 break
 
             case "tva":
@@ -168,49 +196,85 @@ export default function InvoiceForm({companyID}) {
                 return
         }
 
-        // credentials.details[parent.id].[fieldName] = fieldValue
+        if(parent != null) {
+            
+            // Dynamically update the amount
+            let amount = findChildren(parent, "-amount")
+            let price = findChildren(
+                findChildren(
+                    findChildren(parent, "-price"),
+                    "form-field"
+                ),
+                "",
+                "input"
+            ).value ?? 0
+            let quantity = findChildren(
+                findChildren(
+                    findChildren(parent, "-quantity"),
+                    "form-field"
+                ), 
+                "", "input"
+            ).value ?? 0
+            let tva = findChildren(
+                findChildren(parent, "-tva"),
+                "",
+                "input"
+            ).checked ?? false
+            
+            amount.innerHTML = (price * (tva ? 1.20 : 1)) * quantity
 
-        setCredentials({
-            ...credentials,
-            [fieldName]: fieldValue
-        })
+            // Update credentials to send it to database
+            let parentID = parseInt(parent.id)
+            details = {
+                ...details,
+                [parentID]: {
+                    ...details[parentID],
+                    [fieldName]: fieldValue
+                }
+            }
 
-        console.log(
-            findChildren(parent, "-quantity"),
-            findChildren(findChildren(parent, "-quantity"), "", "input")
-        )
-
-        // let amount = findChildren(parent, "-amount")
-        // let price = findChildren(parent, "-price").value
-        // let quantity = findChildren(findChildren(parent, "-quantity"), "", "input")
-        // let tva = findChildren(parent, "-tva").value
-
-        // console.log(
-        //     parent.children,
-        //     amount,
-        //     price,
-        //     findChildren(parent, "-quantity"),
-        //     quantity,
-        //     tva
-        // )
-
-        // amount.value = (price * quantity)
+            setCredentials({
+                ...credentials,
+                details: {
+                    ...credentials.details,
+                    ...details
+                }
+            })
+        } else {
+            setCredentials({
+                ...credentials,
+                [fieldName]: fieldValue
+            })
+        }
     }
 
     const handleSubmit = (e) => {
         e.preventDefault()
 
+        // check if all fields has been filled
+        if(
+            [null, ""].indexOf(credentials.company) === false ||
+            credentials.invoice_date === "" ||
+            Object.keys(credentials.details).length < 1
+        ) {
+            setFormResponse({classname: "danger", message: "Please, fill all required fields before submit"})
+            return
+        }
+
+        let url = `${window.location.origin}/api/invoice`
+        if(invoiceID != null) {
+            url = `${window.location.origin}/api/invoice/${invoiceID}`
+        }
+
         axios
-            .post(window.location.origin +"/api/invoice/" + invoiceID, credentials, {
+            .post(url, credentials, {
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json+ld"
                 }
             })
             .then((response) => {
-                console.log(response.data)
-                
-                setFormResponse({classname: "success", message: ""})
+                setFormResponse({classname: "success", message: "The new invoice has been successfully hadded to your account"})
             })
             .catch((error) => {
                 console.log(error)
@@ -229,8 +293,25 @@ export default function InvoiceForm({companyID}) {
 
             <div className={"form-field"}>
                 <label htmlFor={"invoice_date"}>Invoice date</label>
-                <input id={"invoice_date"} type={"date"} min={Date.now()} onChange={(e) => handleChange(e, "invoice_date")} />
+                <input id={"invoice_date"} type={"date"} min={Date.now()} onChange={(e) => handleChange(e, "invoice_date")} required />
             </div>
+
+            <div className={"form-field"}>
+                <label>Due date</label>
+                <input type={"date"} onChange={(e) => handleChange(e, "due_date")} />
+            </div>
+
+            {!loading && (
+                <div className={"form-field"}>
+                    <label htmlFor={"invoice_company"}>Company</label>
+                    <select id={"invoice_company"} name={"company"} onChange={(e) => handleChange(e, "company")} required>
+                        <option value={""}>Select an organization</option>
+                        {companies.map((item, index) => (
+                            <option key={index} value={item.id} selected={item.id == companyID ? true : false}>{item.name}</option>
+                        ))}
+                    </select>
+                </div>
+            )}
             
             <div className={"form-field"}>
                 <label htmlFor={"table"}>Invoice details</label>
@@ -248,13 +329,16 @@ export default function InvoiceForm({companyID}) {
                     </thead>
                     <tbody className={"table-content"}>
                         <tr>
-                            <td colSpan={5}></td>
-                            <td className={"-new-row"}>
+                            <td colSpan={6} className={"-new-row"}>
                                 <button type={"button"} className={"btn btn-blue"} onClick={(e) => handleNewRow(e)}>+</button>
                             </td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <div className={"form-button"}>
+                <button type={"submit"} className={"btn btn-blue"}>Submit the invoice</button>
             </div>
         </form>
     )

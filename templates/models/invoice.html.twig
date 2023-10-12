@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {# <title>{{ invoice.filename }}</title> #}
+        <meta charset="UTF-8">
+        <title>Invoice Template</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="{{ asset("build/app.css") }}">
+    </head>
+    <body>
+        <div class="page invoice-pdf">
+            <div class="pdf-header">
+                {% set user = invoice.user %}
+                {# <div class="-title">{{ invoice.filename }}</div> #}
+                <div class="-title">Invoice</div>
+                
+                <div class="-freelance">
+                    {{ user.firstname }} {{ user.lastname }}
+                    {{ user.freelance.address ~ ", " ~ user.freelance.zipCode ~ " " ~ user.freelance.city ~ ", " ~ user.freelance.country }}
+                    {{ user.phone }}
+                    {{ user.email }}
+                </div>
+            </div>
+            <div class="pdf-client">
+                {% set company = invoice.company %}
+                <table class="table w-50">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="txt-bold">{{ company.name }}</span><br />
+                                <span>{{ company.address ~ ", " ~ company.zipCode ~ " " ~ company.city ~ ", " ~ company.country }}</span><br />
+                                <span>{{ company.phone }}</span><br />
+                                <span>{{ company.email }}</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pdf-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="column-description">Description</th>
+                            <th class="column-quantity">Quantity</th>
+                            <th class="column-price">Price</th>
+                            <th class="column-tva">TVA</th>
+                            <th class="column-amount">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for invoiceDetail in invoice.invoiceDetails %}
+                            <tr>
+                                <td class="-description">{{ invoiceDetail.description }}</td>
+                                <td class="-quantity">{{ invoiceDetail.quantity }}</td>
+                                <td class="-price">{{ invoiceDetail.price }}</td>
+                                <td class="-tya">{{ invoiceDetail.tva }}</td>
+                                <td class="-amount">{{ (invoiceDetail.price + (invoiceDetail.tva ? invoiceDetail.price * 0.20 : 0)) * invoiceDetail.quantity }}</td>
+                            </tr>
+                        {% endfor %}
+                        
+                        <tr>
+                            <td colspan="3"></td>
+                            <td colspan="3">
+                                <tr>
+                                    <td>Sub total</td>
+                                    <td>{{ invoice.getAmount() }}</td>
+                                </tr>
+                                <tr>
+                                    <td>TVA (20%)</td>
+                                    <td>{{ invoice.getTvaAmount() }}</td>
+                                </tr>
+                                <tr class="txt-bold">
+                                    <td>Total</td>
+                                    <td>{{ invoice.getTotalAmount() }}</td>
+                                </tr>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pdf-footer"></div>
+        </div>
+    </body>
+</html>

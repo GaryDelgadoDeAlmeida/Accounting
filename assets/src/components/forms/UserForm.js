@@ -35,8 +35,6 @@ export default function UserForm({userID}) {
             nationality: user.nationality,
             birth_date: user.birth_date
         })
-
-        console.log(credentials)
     }
 
     const handleChange = (e, fieldName) => {

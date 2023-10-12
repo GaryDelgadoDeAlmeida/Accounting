@@ -22,7 +22,7 @@ abstract class EstimateEnum {
         return static::$typeName[$status];
     }
 
-    public function getAvailableChoice() {
+    public static function getAvailableChoice() {
         return [
             self::STATUS_SEND,
             self::STATUS_ONGOING,

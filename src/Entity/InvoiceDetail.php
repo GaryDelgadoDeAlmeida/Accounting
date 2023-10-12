@@ -14,6 +14,9 @@ class InvoiceDetail
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\ManyToOne(inversedBy: 'invoiceDetails')]
+    private ?Invoice $invoice = null;
+
     #[ORM\Column(length: 255)]
     private ?string $description = null;
 
@@ -31,9 +34,6 @@ class InvoiceDetail
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
-
-    #[ORM\ManyToOne(inversedBy: 'invoiceDetails')]
-    private ?Invoice $invoice = null;
 
     public function getId(): ?int
     {

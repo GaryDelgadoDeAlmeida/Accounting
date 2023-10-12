@@ -101,6 +101,8 @@
                 }
     
                 &.-action {
+                    gap: 5px;
+                    display: flex;
                     text-align: center;
                 }
 
@@ -150,8 +152,8 @@
                     }
 
                     // Invoice
-                    &.-invoice-description::before {
-                        content: "Titre";
+                    &.-description::before {
+                        content: "Description";
                     }
 
                     &.-invoice-date::before {
@@ -199,6 +201,10 @@
                         content: "ID";
                     }
 
+                    &.-title::before {
+                        content: "Title";
+                    }
+
                     &.-date::before {
                         content: "Date";
                     }
@@ -223,8 +229,8 @@
                         content: "May";
                     }
 
-                    &.-jun::before {
-                        content: "Jun";
+                    &.-june::before {
+                        content: "June";
                     }
 
                     &.-july::before {

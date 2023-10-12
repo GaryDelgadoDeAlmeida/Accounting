@@ -1,69 +1,36 @@
-import React from "react";
-import AccountingChart from "../../parts/AccountingChart";
+import React, { useEffect, useState } from "react";
 import UserHeader from "../../parts/UserHeader";
+import AccountingChart from "../../parts/AccountingChart";
+import PrivateRessources from "../../utils/PrivateResources";
 
 // Comptabilité
 export default function Accounting() {
 
-    const year_benefit = [
-        {
-            month: "January",
-            amount: 8000
-        },
-        {
-            month: "February",
-            amount: 0
-        },
-        {
-            month: "March",
-            amount: 0
-        },
-        {
-            month: "April",
-            amount: 0
-        },
-        {
-            month: "May",
-            amount: 0
-        },
-        {
-            month: "Jun",
-            amount: 1500
-        },
-        {
-            month: "July",
-            amount: 0
-        },
-        {
-            month: "August",
-            amount: 0
-        },
-        {
-            month: "September",
-            amount: 0
-        },
-        {
-            month: "October",
-            amount: 0
-        },
-        {
-            month: "November",
-            amount: 0
-        },
-        {
-            month: "December",
-            amount: 0
-        }
-    ]
+    const { loading, items: benefits, load } = PrivateRessources(`${window.location.origin}/api/graphic-accounting`)
+    useEffect(() => {
+        load()
+    }, [])
 
-    const callYearBenefit = (year_benefits) => {
+    const callYearBenefit = (benefits) => {
         let benefit = 0
 
-        year_benefits.map(item => {
-            benefit += item.amount
+        Object.values(benefits).map(item => {
+            benefit += item
         })
 
         return benefit
+    }
+
+    const generateAllMonth = () => {
+        let date = new Date()
+        let months = []
+
+        for(let $i = 0; $i < 12; $i++) {
+            date.setMonth($i)
+            months.push((date.getMonth() + 1))
+        }
+
+        return Object.assign({}, months)
     }
 
     const handleYearBenefitClick = (e, year) => {
@@ -81,30 +48,43 @@ export default function Accounting() {
                         <button className={"btn btn-grey"} onClick={(e) => handleYearBenefitClick(e, 2023)}>2023</button>
                     </div>
                     <div className={"amount-table"}>
-                        <table className={"table"}>
-                            <thead>
-                                <tr>
-                                    <th>Month</th>
-                                    <th>Amount (€)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {year_benefit.map((item, index) => (
-                                    <tr key={index} className={"txt-center"}>
-                                        <td className={"-m-hidden"}>{item.month}</td>
-                                        <td className={`-${item.month.toLocaleLowerCase()}`}>{item.amount}</td>
+                        {!loading && (
+                            <table className={"table"}>
+                                <thead>
+                                    <tr>
+                                        <th>Month</th>
+                                        <th>Amount (€)</th>
                                     </tr>
-                                ))}
-                                
-                                <tr className={"txt-center txt-bold"}>
-                                    <td className={"-m-hidden"}>Total</td>
-                                    <td className={"-total"}>{callYearBenefit(year_benefit)}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {Object.keys(generateAllMonth()).length > 0 && typeof generateAllMonth() === "object" ? (
+                                        Object.values(generateAllMonth()).map((item, index) => {
+                                            let date = new Date()
+                                            date.setMonth(index - 1)
+
+                                            return (
+                                                <tr key={index} className={"txt-center"}>
+                                                    <td className={"-m-hidden"}>{date.toLocaleDateString("en-EN", {month: 'long'})}</td>
+                                                    <td className={`-${date.toLocaleDateString("en-EN", {month: 'long'}).toLowerCase()}`}>{benefits[index + 1] ?? 0}</td>
+                                                </tr>
+                                            )
+                                        })
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={2}>There is no registered invoice</td>
+                                        </tr>
+                                    )}
+                                    
+                                    <tr className={"txt-center txt-bold"}>
+                                        <td className={"-m-hidden"}>Total</td>
+                                        <td className={"-total"}>{callYearBenefit(benefits)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                     <div className={"amount-graph"}>
-                        <AccountingChart benefits={year_benefit}/>
+                        <AccountingChart benefits={benefits} months={Object.values(generateAllMonth())} />
                     </div>
                 </div>
             </div>

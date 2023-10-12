@@ -7,57 +7,13 @@ import axios from "axios";
 
 export default function InvoiceSingle() {
     const { invoiceID } = useParams()
-    const [error, setError] = useState(false)
-    const invoiceDetails = [
-        {
-            id: 1,
-            label: "Interface de prise de commande Pro/Traiteur",
-            quantity: 1,
-            price: 500,
-            tva: 0
-        },
-        {
-            id: 2,
-            label: "Evolution du système d’import des fichiers Paradox",
-            quantity: 1,
-            price: 500,
-            tva: 0
-        },
-        {
-            id: 3,
-            label: "Interface pour les retours magasins des produits",
-            quantity: 1,
-            price: 500,
-            tva: 0
-        }
-    ]
 
-    const { loading: userLoading, items: user, load: userLoad } = PrivateResources(window.location.origin + "/api/user/" + invoiceID)
+    // const { loading: userLoading, items: user, load: userLoad } = PrivateResources(window.location.origin + "/api/user/" + invoiceID)
     const { loading: invoiceLoading, items: invoice, load } = PrivateResources(window.location.origin + "/api/invoice/" + invoiceID)
 
     useEffect(() => {
         load()
     }, [])
-
-    const priceHT = (invoiceDetails) => {
-        let price = 0
-        
-        invoiceDetails.map((item) => {
-            price += item.price
-        })
-
-        return price
-    }
-
-    const priceTTC = (invoiceDetails) => {
-        let price = 0
-        
-        invoiceDetails.map((item) => {
-            price += item.price + (item.price * 0.2)
-        })
-
-        return price
-    }
 
     const handleDownloadInvoice = async (e) => {
         console.log("Hi handleDownloadInvoice")
@@ -73,20 +29,20 @@ export default function InvoiceSingle() {
 
     return (
         <UserHeader>
-            <div className={"page-section"}>
-                <LinkButton
-                    classname={"btn-blue"}
-                    url={"/user/invoice"}
-                    value={"Return"}
-                    defaultIMG={"arrow-left"}
-                />
+            <LinkButton
+                classname={"btn-blue"}
+                url={"/user/invoice"}
+                value={"Return"}
+                defaultIMG={"arrow-left"}
+            />
 
-                <div className={"mt-15px"}>
+            {!invoiceLoading ? (
+                <div className={"page-section"}>
                     <div className={"d-flex"}>
                         <div className={"left w-50 txt-left"}>
-                            <h3 className={"-title"}>Numéro de facture : 2023-04</h3>
+                            <h3 className={"-title"}>Numéro de facture : {(new Date(invoice.invoiceDate)).toLocaleString("en-GB")}</h3>
                             <div className={"d-column"}>
-                                <label>Date d'émission : 11/04/2023</label>
+                                <label>Date d'émission : {(new Date(invoice.createdAt).toLocaleString("en-GB"))}</label>
                                 <label>Date d'échéance : 11/05/2023</label>
                             </div>
                         </div>
@@ -99,10 +55,10 @@ export default function InvoiceSingle() {
 
                     <div className={"mt-25px"}>
                         <div className={"sending-status"}>
-                            <div className={"item"}></div>
-                            <div className={"item"}></div>
-                            <div className={"item"}></div>
-                            <div className={"item"}></div>
+                            <div className={"item"}>Envoyer</div>
+                            <div className={"item"}>En cours</div>
+                            <div className={"item"}>En cours de paiement</div>
+                            <div className={"item"}>Payer</div>
                         </div>
                     </div>
 
@@ -117,32 +73,42 @@ export default function InvoiceSingle() {
                             <tbody>
                                 <tr>
                                     <td className={"-provider"}>
-                                        <div className={"service-provider"}>
-                                            <div className={"-identity"}>
-                                                <label>Garry ALMEIDA</label>
+                                        {typeof invoice.user == "object" && (
+                                            <div className={"service-provider"}>
+                                                <div className={"-identity"}>
+                                                    <label>{invoice.user.fullname}</label>
+                                                </div>
+                                                <div className={"-address"}>
+                                                    <span>
+                                                        189, rue Vercingétorix, Paris 75014, France
+                                                        {/* {invoice.user.address}, {invoice.user.zipCode} {invoice.user.city}, {invoice.user.country} */}
+                                                    </span>
+                                                </div>
+                                                <div className={"-contact"}>
+                                                    <span className={"-phone"}>(+33) 6 52 07 39 97</span>
+                                                    <span className={"-email"}>gary.almeida.word@gmail.com</span>
+                                                </div>
                                             </div>
-                                            <div className={"-address"}>
-                                                <span>189, rue Vercingétorix, Paris 75014, France</span>
-                                            </div>
-                                            <div className={"-contact"}>
-                                                <span className={"-phone"}>(+33) 6 52 07 39 97</span>
-                                                <span className={"-email"}>gary.almeida.word@gmail.com</span>
-                                            </div>
-                                        </div>
+                                        )}
                                     </td>
                                     <td className={"-client"}>
-                                        <div className={"service-provider"}>
-                                            <div className={"-identity"}>
-                                                <label>VIAPROD</label>
+                                        {typeof invoice.company == "object" && (
+                                            <div className={"service-provider"}>
+                                                <div className={"-identity"}>
+                                                    <label>{invoice.company.name}</label>
+                                                </div>
+                                                <div className={"-address"}>
+                                                    <span>
+                                                        {invoice.company.address}, {invoice.company.zipCode} {invoice.company.city}, {invoice.company.country}
+                                                    </span>
+                                                </div>
+                                                <div className={"-contact"}>
+                                                    {invoice.company.phone != "" && (<span className={"-phone"}>{invoice.company.phone}</span>)}
+                                                    
+                                                    {invoice.company.email != "" && (<span className={"-email"}>{invoice.company.email}</span>)}
+                                                </div>
                                             </div>
-                                            <div className={"-address"}>
-                                                <span>58 Avenue Henri Barbusse, 93000 Bobigny, France</span>
-                                            </div>
-                                            <div className={"-contact"}>
-                                                <span className={"-phone"}>(+33) 6 67 91 26 26</span>
-                                                <span className={"-email"}>laurent@viaprod.fr</span>
-                                            </div>
-                                        </div>
+                                        )}
                                     </td>
                                 </tr>
                             </tbody>
@@ -155,21 +121,25 @@ export default function InvoiceSingle() {
                                 <tr>
                                     <th className={"column-invoice-description"}>Description</th>
                                     <th className={"column-quantity"}>Quantité</th>
-                                    <th className={"column-price"}>Prix</th>
+                                    <th className={"column-price"}>Montant HT</th>
                                     <th className={"column-tva"}>TVA</th>
                                     <th className={"column-amount"}>Montant TTC</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {invoiceDetails.map((item, index) => (
-                                    <tr className={"txt-center"} key={index}>
-                                        <td className={"-invoice-description txt-left"}>{item.label}</td>
-                                        <td className={"-quantity"}>{item.quantity}</td>
-                                        <td className={"-price"}>{item.price}</td>
-                                        <td className={"-tva"}>{item.tva}</td>
-                                        <td className={"-amount"}>{item.price * item.tva}</td>
-                                    </tr>
-                                ))}
+                                {[null, undefined].indexOf(invoice.invoiceDetails) == -1 && typeof invoice.invoiceDetails == "object" ? (
+                                    invoice.invoiceDetails.map((item, index) => (
+                                        <tr className={"txt-center"} key={index}>
+                                            <td className={"-invoice-description txt-left"}>{item.description}</td>
+                                            <td className={"-quantity"}>{item.quantity}</td>
+                                            <td className={"-price"}>{item.price}</td>
+                                            <td className={"-tva"}>{item.tva ? "20 %" : "0 %"}</td>
+                                            <td className={"-amount"}>{(item.price * (item.tva ? 1.2 : 1)) * item.quantity}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <p>There is nothing</p>
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -181,15 +151,15 @@ export default function InvoiceSingle() {
                                 <tbody>
                                     <tr>
                                         <td>Montant Total HT (€)</td>
-                                        <td>{priceHT(invoiceDetails)}</td>
+                                        <td>{invoice.amount}</td>
                                     </tr>
                                     <tr>
-                                        <td>TVA (%)</td>
-                                        <td>20%</td>
+                                        <td>TVA (20%)</td>
+                                        <td>{invoice.tvaAmount}</td>
                                     </tr>
                                     <tr>
                                         <td>Montant Total TTC (€)</td>
-                                        <td>{priceTTC(invoiceDetails)}</td>
+                                        <td>{invoice.totalAmount}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -200,7 +170,9 @@ export default function InvoiceSingle() {
                         <p>La loi n°92/1442 du 31 décembre 1992 nous fait l’obligation de vous indiquer que le non-respect des conditions de paiement entraîne des intérêts de retard suivant modalités et taux définis par la loi. Une indemnité forfaitaire de 40€ sera due pour frais de recouvrement en cas de retard de paiement.</p>
                     </div>
                 </div>
-            </div>
+            ) : (
+                <p>Loading ...</p>
+            )}
         </UserHeader>
     )
 }

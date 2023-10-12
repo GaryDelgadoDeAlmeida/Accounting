@@ -35,7 +35,11 @@ export default function ClientInvoiceNew() {
             <ReturnButton path={"/user/client/" + clientID} />
             
             <div className={"page-section"}>
-                <InvoiceForm />
+                <div className={"card"}>
+                    <div className={"-content"}>
+                        <InvoiceForm companyID={clientID} />
+                    </div>
+                </div>
             </div>
         </UserHeader>
     )

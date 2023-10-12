@@ -9,6 +9,11 @@ abstract class InvoiceEnum {
     public const STATUS_ONGOING = "ongoing";
     public const STATUS_PAID = "paid";
 
+    public const INVOICE_FILENAME = "filename";
+    public const INVOICE_FILEPATH = "filepath";
+    public const INVOICE_DATE = "invoice_date";
+    public const INVOICE_STATUS = "status";
+
     protected static $typeName = [
         self::STATUS_UNPAID => "Unpaid",
         self::STATUS_ONGOING => "Ongoing",
@@ -23,11 +28,20 @@ abstract class InvoiceEnum {
         return static::$typeName[$status];
     }
 
-    public function getAvailableChoices() {
+    public function getAvailableStatus() {
         return [
             self::STATUS_UNPAID,
             self::STATUS_ONGOING,
             self::STATUS_PAID
+        ];
+    }
+
+    public function getInvoiceAvailableChoices() {
+        return [
+            self::INVOICE_FILENAME,
+            self::INVOICE_FILEPATH,
+            self::INVOICE_DATE,
+            self::INVOICE_STATUS
         ];
     }
 

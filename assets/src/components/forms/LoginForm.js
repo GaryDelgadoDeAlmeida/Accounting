@@ -5,8 +5,10 @@ import LinkButton from "../parts/LinkButton";
 import Notification from "../parts/Notification";
 
 export default function LoginForm() {
-    const [username, setUsername] = useState("")
-    const [password, setPassword] = useState("")
+    const [credentials, setCredentials] = useState({
+        username: "",
+        password: ""
+    })
     const [formResponse, setFormResponse] = useState({})
     const formControl = new FormControl()
 
@@ -22,8 +24,6 @@ export default function LoginForm() {
                     setFormResponse({classname: "danger", message: "The username don't respect the characters lenght"})
                     return
                 }
-
-                setUsername(fieldValue)
                 break
 
             case "password":
@@ -32,33 +32,44 @@ export default function LoginForm() {
                     setFormResponse({classname: "danger", message: "The password can't be empty"})
                     return
                 }
-
-                setPassword(fieldValue)
                 break
 
             default:
                 setFormResponse({classname: "danger", message: "The field don't exist"})
+                return
         }
+
+        setCredentials({
+            ...credentials,
+            [fieldName]: fieldValue
+        })
     }
 
     const handleSubmit = (e) => {
         e.preventDefault()
 
-        if(!formControl.checkEmail(username)) {
+        if(!formControl.checkEmail(credentials.username)) {
             setFormResponse({classname: "danger", message: "The username isn't valid"})
             return
         }
 
         // Connect the user
         axios
-            .post(window.location.origin + "/api/login", {
-                email: username,
-                password: password
+            .post(window.location.origin + "/api/login", credentials, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json+ld"
+                }
             })
             .then(res => {
-                console.log(res)
-                setFormResponse({classname: "success", message: "Successfully connected"})
-                localStorage.setItem("token", res.data)
+                console.log(res, res.data)
+                let data = res.data
+                if(data.error != "") {
+                    setFormResponse({classname: "danger", message: data.error.messageKey})
+                } else {
+                    localStorage.setItem("token", data.last_username)
+                    setFormResponse({classname: "success", message: "Successfully connected"})
+                }
             })
             .catch(err => {
                 console.log(err)

@@ -39,7 +39,10 @@ class SecurityController extends AbstractController
         // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        return $this->json(['last_username' => $lastUsername, 'error' => $error], Response::HTTP_OK);
+        return $this->json([
+            'last_username' => $lastUsername, 
+            'error' => $error
+        ], Response::HTTP_OK);
     }
 
     #[Route(path: '/logout', name: 'logout', methods: ["GET"])]

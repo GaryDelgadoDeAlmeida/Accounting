@@ -2,11 +2,14 @@
 
 namespace App\Controller\API;
 
+use App\Entity\User;
 use App\Manager\SerializeManager;
+use App\Repository\UserRepository;
 use App\Repository\CompanyRepository;
 use App\Repository\InvoiceRepository;
 use App\Repository\EstimateRepository;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,17 +20,21 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class DefaultController extends AbstractController
 {
+    private User $user;
     private SerializeManager $serializerManager;
     private CompanyRepository $companyRepository;
     private InvoiceRepository $invoiceRepository;
     private EstimateRepository $estimateRepository;
 
     function __construct(
-        serializeManager $serializeManager,
+        Security $security,
+        UserRepository $userRepository, // Temporary : To delete after the login system has been implemented
+        SerializeManager $serializeManager,
         CompanyRepository $companyRepository,
         InvoiceRepository $invoiceRepository,
         EstimateRepository $estimateRepository
     ) {
+        $this->user = $security->getUser() ?? $userRepository->find(1); 
         $this->serializeManager = $serializeManager;
         $this->companyRepository = $companyRepository;
         $this->invoiceRepository = $invoiceRepository;
@@ -35,24 +42,25 @@ class DefaultController extends AbstractController
     }
 
     /**
-     * @Route("/", name="index", methods={"GET"})
+     * @Route("/resume", name="index", methods={"GET"})
      */
     public function index(Request $request): JsonResponse
     {
-        $userID = $request->get("userID");
-        $userID = is_numeric($userID) ? $userID : null;
-        if(empty($userID)) {
+        if(empty($this->user)) {
             return $this->json("The user is missing", Response::HTTP_FORBIDDEN);
         }
 
-        return $this->json([
+        $userID = $this->user->getId();
+        $currentDate = new \DateTime();
+
+        return $this->json($this->serializeManager->serializeContent([
             "nbrClients" => $this->companyRepository->countCompanies($userID),
-            "lastMonthAmount" => 0,
-            "ongoingMonthAmout" => 0,
-            "currentYearBenefit" => 0,
-            "clients" => $this->serializeManager->serializeContent($this->companyRepository->getCompaniesByUser($userID, 1, 3)),
+            "lastMonthAmount" => $this->invoiceRepository->getMonthBenefit($this->user, (new \DateTime())->modify("-1 month")->format("m")),
+            "ongoingMonthAmout" => $this->invoiceRepository->getMonthBenefit($this->user, $currentDate->format("Y")),
+            "currentYearBenefit" => $this->invoiceRepository->getYearBenefit($this->user, $currentDate->format("Y")),
+            "clients" => $this->companyRepository->getCompaniesByUser($userID, 1, 3),
             "invoices" => $this->invoiceRepository->getInvoices($userID, 1, 3),
             "estimates" => $this->estimateRepository->getEstimates($userID, 1, 3)
-        ], Response::HTTP_OK);
+        ]), Response::HTTP_OK);
     }
 }

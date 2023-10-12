@@ -40,8 +40,6 @@ export default function RegisterForm() {
         let maxLength = e.target.maxLength != -1 ? e.target.maxLength : 255
         setFormResponse({})
 
-        console.log(fieldName, fieldValue)
-
         switch(fieldName) {
             case "firstname":
                 if(!formControl.checkMaxLength(fieldValue, maxLength)) {

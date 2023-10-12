@@ -32,8 +32,8 @@ export default function PrivateResources(route) {
                     "Content-Type": "application/json"
                 }
             })
+            .catch((err) => console.log(err))
         ;
-        
         setItems(response)
 
         setLoading(false)

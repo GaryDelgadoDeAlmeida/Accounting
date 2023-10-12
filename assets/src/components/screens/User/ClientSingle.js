@@ -14,6 +14,8 @@ export default function ClientSingle() {
     const [invoices, setInvoices] = useState({})
     const [estimates, setEstimates] = useState({})
     const [error, setError] = useState(false)
+
+    // const { loading, items: client, load } = PrivateRessources(`${window.location.origin}/api/company/${clientID}`)
     
     useEffect(() => {
         setLoading(true)
@@ -92,27 +94,28 @@ export default function ClientSingle() {
                                     <th className={"column-action"}>Action</th>
                                 </tr>
                             </thead>
-                            
                             <tbody>
-                                {estimates.length > 0 && typeof estimates === "object" && client.estimates.map((item, index) => {
+                                {estimates.length > 0 && typeof estimates === "object" && client.estimates.map((item, index) => (
                                     <tr key={index}>
-                                        <td className={"-date txt-center"}>2023/04</td>
-                                        <td className={"-estimate-name txt-center"}>Devis n°2</td>
+                                        <td className={"-date txt-center"}>
+                                            {(new Date(item.createdAt)).toLocaleDateString(undefined, {year:"numeric", month:"numeric"})}
+                                        </td>
+                                        <td className={"-estimate-name txt-center"}>{item.label}</td>
                                         <td className={"-signed txt-center"}>
-                                            <Badge type={"success"} txtContent={"SIGNED"} />
+                                            <Badge txtContent={item.status} />
                                         </td>
                                         <td className={"-action txt-right"}>
                                             <LinkButton 
                                                 classname={"btn-blue"}
-                                                url={"/user/client/estimate/1"}
+                                                url={"/user/estimate/" + item.id}
                                                 defaultIMG={"eye"}
                                             />
                                         </td>
                                     </tr>
-                                })}
+                                ))}
 
                                 {estimates.length == 0 && (
-                                    <tr>
+                                    <tr className={"txt-center"}>
                                         <td colSpan={4}>There is no estimate registered for this client</td>
                                     </tr>
                                 )}
@@ -144,25 +147,25 @@ export default function ClientSingle() {
                             </thead>
                             
                             <tbody>
-                                {invoices.length > 0 && typeof invoices === "object" && client.invoices.map((item, index) => {
+                                {invoices.length > 0 && typeof invoices === "object" && invoices.map((item, index) => (
                                     <tr key={index}>
-                                        <td className={"-invoice-date txt-center"}>2023/04</td>
+                                        <td className={"-invoice-date txt-center"}>{(new Date(item.invoiceDate)).toLocaleDateString(undefined, {year:"numeric", month:"numeric"})}</td>
                                         <td className={"-status txt-center"}>
                                             <span className={"badge badge-success"}>Paid</span>
                                         </td>
-                                        <td className={"-invoice-euro txt-center"}>2500 €</td>
+                                        <td className={"-invoice-euro txt-center"}>{item.totalAmount} €</td>
                                         <td className={"-action"}>
                                             <LinkButton 
                                                 classname={"btn-blue"}
-                                                url={"/user/invoice/1"}
+                                                url={"/user/invoice/" + item.id}
                                                 defaultIMG={"eye"}
                                             />
                                         </td>
                                     </tr>
-                                })}
+                                ))}
 
                                 {invoices.length == 0 && (
-                                    <tr>
+                                    <tr className={"txt-center"}>
                                         <td colSpan={4}>There is no invoice registered for this client</td>
                                     </tr>
                                 )}

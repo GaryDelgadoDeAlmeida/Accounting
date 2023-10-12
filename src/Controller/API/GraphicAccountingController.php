@@ -3,7 +3,9 @@
 namespace App\Controller\API;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use App\Repository\InvoiceRepository;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,8 +20,8 @@ class GraphicAccountingController extends AbstractController
     private User $user;
     private InvoiceRepository $invoiceRepository;
 
-    function __construct(Security $security, InvoiceRepository $invoiceRepository) {
-        $this->user = $security->getUser() ?? (new User());
+    function __construct(Security $security, UserRepository $userRepository, InvoiceRepository $invoiceRepository) {
+        $this->user = $security->getUser() ?? $userRepository->find(1);
         $this->invoiceRepository = $invoiceRepository;
     }
 
@@ -28,10 +30,18 @@ class GraphicAccountingController extends AbstractController
      */
     public function index(Request $request): JsonResponse
     {
+        $yearAmount = [];
         $year = $request->get("year", (new \DateTime())->format("Y"));
+        $invoices = $this->invoiceRepository->getDetailYearBenefit($this->user, $year);
+        foreach($invoices as $invoice) {
+            $month = intval($invoice->getInvoiceDate()->format("m"));
+            if(!isset($yearAmount[$month])) {
+                $yearAmount[$month] = 0;
+            }
 
-        $invoices = $this->invoiceRepository->findBy(["user" => $this->user, "createdAt" => $year]);
+            $yearAmount[$month] += $invoice->getAmount();
+        }
         
-        return $this->json(null, Response::HTTP_OK);
+        return $this->json($yearAmount, Response::HTTP_OK);
     }
 }

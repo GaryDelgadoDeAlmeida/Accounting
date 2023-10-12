@@ -6,7 +6,7 @@ import PublicResources from "../utils/PublicResources";
 
 export default function UserCorporationForm({userID}) {
 
-    const { loading, items: corporation, load: corporationLoad } = PublicResources(window.location.origin + "/api/user/" + userID + "/freelance")
+    const { loading: userLoading, items: corporation, load: corporationLoad } = PublicResources(window.location.origin + "/api/user/" + userID + "/freelance")
     const { loading: countriesLoading, items: countries, load: countriesLoad } = PublicResources("https://restcountries.com/v3.1/all?fields=name")
     const juridicalStatus = [
         {

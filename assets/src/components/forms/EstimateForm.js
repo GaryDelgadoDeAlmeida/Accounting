@@ -4,7 +4,8 @@ import FormControl from "../utils/FormControl";
 import PrivateResources from "../utils/PrivateResources";
 import axios from "axios";
 
-export default function EstimateForm() {
+export default function EstimateForm({companyID = null}) {
+    let details = {}
     const currentDate = new Date()
     const formControl = new FormControl()
     const {loading, items: companies, load} = PrivateResources(window.location.origin + "/api/companies")
@@ -12,11 +13,13 @@ export default function EstimateForm() {
     const [credentials, setCredentials] = useState({
         date: "",
         company: "",
-        details: {}
+        details: []
     })
     const [credentialDetails, setCredentialDetails] = useState({
         title: "",
         description: "",
+        quantity: 1,
+        nbr_days: 1,
         budget: 0
     })
 
@@ -27,14 +30,24 @@ export default function EstimateForm() {
     }, [])
 
     const handleNew = (e) => {
+        let estimateDetails = document.getElementById("estimate-details")
+        let estimateDetailRow = estimateDetails.children.length
         setCredentials({
             ...credentials,
-            details: {...credentialDetails}
+            details: {
+                ...credentials.details,
+                [estimateDetailRow]: {
+                    ...credentials.details[estimateDetailRow],
+                    ...credentialDetails
+                }
+            }
         })
         
         setCredentialDetails({
             title: "",
             description: "",
+            quantity: 1,
+            nbr_days: 1,
             budget: 0
         })
     }
@@ -55,6 +68,7 @@ export default function EstimateForm() {
                     setFormResponse({classname: "danger", message: `Unknown choice option ${fieldValue}`})
                     return
                 }
+                fieldValue = parseInt(fieldValue)
                 break
 
             case "date":
@@ -83,7 +97,9 @@ export default function EstimateForm() {
                     return
                 }
                 break
-            
+
+            case "quantity":
+            case "nbr_days":
             case "budget":
                 if(!formControl.checkNumber(fieldValue)) {
                     setFormResponse({classname: "danger", message: `The field name ${fieldName}`})
@@ -96,8 +112,7 @@ export default function EstimateForm() {
                 return
         }
 
-        console.log(["title", "description", "budget"].includes(fieldName))
-        if(["title", "description", "budget"].includes(fieldName)) {
+        if(["title", "description", "quantity", "nbr_days", "budget"].includes(fieldName)) {
             setCredentialDetails({
                 ...credentialDetails,
                 [fieldName]: fieldValue
@@ -113,10 +128,10 @@ export default function EstimateForm() {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        let diff = new Date(new Date(credentials.date) - currentDate )
+        let diff = new Date( new Date(credentials.date) - currentDate )
         let 
             year = diff.getUTCFullYear() - 1970,
-            month = diff.getUTCMonth()
+            month = diff.getUTCMonth(),
             day = diff.getUTCDay() - 1
         ;
         if(year < 0 && (month > 0 || day > 0)) {
@@ -124,8 +139,15 @@ export default function EstimateForm() {
             return
         }
 
-        console.log("Under construction")
-        return
+        if(!formControl.checkMinLength(credentials.date, 1) || !formControl.checkMinLength(credentials.company, 1)) {
+            setFormResponse({classname: "danger", message: "The date or the company is missing, please fill all missing fields."})
+            return
+        }
+
+        if(Object.keys(credentials.details).length < 1) {
+            setFormResponse({classname: "danger", message: "The estimate have no details. You can't submit an estimate without any information"})
+            return
+        }
 
         // Send data to API
         axios
@@ -141,6 +163,8 @@ export default function EstimateForm() {
                 setCredentialDetails({
                     title: "",
                     description: "",
+                    quantity: 1,
+                    nbr_days: 1,
                     budget: 0
                 })
             })
@@ -157,11 +181,11 @@ export default function EstimateForm() {
         <>
             {!loading ? (
                 <form className={"form"} onSubmit={(e) => handleSubmit(e)}>
+                    {Object.keys(formResponse).length > 0 && (<Notification {...formResponse} />)}
+                    
                     <div className={"d-flex-row"}>
                         <div className={"card item-row"}>
                             <div className={"-content"}>
-                                {Object.keys(formResponse).length > 0 && (<Notification {...formResponse} />)}
-
                                 <div className={"form-field"}>
                                     <label htmlFor={"company"}>Company</label>
                                     <select id={"company"} name={"company"} onChange={(e) => handleChange(e, "company")}>
@@ -188,6 +212,16 @@ export default function EstimateForm() {
                                     <label htmlFor={"description"}>Description</label>
                                     <textarea id={"description"} onChange={(e) => handleChange(e, "description")}>{credentialDetails.description}</textarea>
                                 </div>
+
+                                <div className={"form-field"}>
+                                    <label htmlFor={"quantity"}>Quantity</label>
+                                    <input id={"quantity"} type={"number"} min={1} value={credentialDetails.quantity} onChange={(e) => handleChange(e, "quantity")} />
+                                </div>
+
+                                <div className={"form-field"}>
+                                    <label htmlFor={"daystime"}>Number of days</label>
+                                    <input id={"daystime"} type={"number"} min={1} value={credentialDetails.nbr_days} onChange={(e) => handleChange(e, "nbr_days")} />
+                                </div>
                                 
                                 <div className={"form-field"}>
                                     <label htmlFor={"budget"}>Budget</label>
@@ -206,18 +240,20 @@ export default function EstimateForm() {
                                     <thead>
                                         <tr>
                                             <th>Title</th>
-                                            <th>Amount (€)</th>
+                                            <th>Quantity</th>
+                                            <th>Amount Unit. (€)</th>
                                             <th></th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        {credentials.details.length > 0 && credentials.details.map((item, index) => (
+                                    <tbody id={"estimate-details"}>
+                                        {Object.keys(credentials.details).length > 0 && typeof credentials.details == "object" && Object.values(credentials.details).map((item, index) => (
                                             <tr key={index}>
-                                                <td>{item.title}</td>
-                                                <td className={"txt-center"}>{item.budget}</td>
-                                                <td className={"txt-right"}>
-                                                    <button className={"btn btn-red"} onClick={(e) => handleRemove(e)}>
-                                                        <img src={`${window.location.origin}/public/content/svg/trash-white.svg`} />
+                                                <td className={"-title"}>{item.title}</td>
+                                                <td className={"-quantity txt-center"}>{item.quantity}</td>
+                                                <td className={"-price txt-center"}>{item.budget}</td>
+                                                <td className={"-action txt-right"}>
+                                                    <button type={"button"} className={"btn btn-red -inline-flex"} onClick={(e) => handleRemove(e)}>
+                                                        <img src={`${window.location.origin}/content/svg/trash-white.svg`} />
                                                     </button>
                                                 </td>
                                             </tr>

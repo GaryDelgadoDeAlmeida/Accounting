@@ -154,7 +154,9 @@ class UserController extends AbstractController
         }
 
         return $this->json(
-            $this->serializeManager->serializeContent($user->getFreelance()), 
+            $this->serializeManager->serializeContent(
+                $user->getFreelance() ?? []
+            ), 
             Response::HTTP_OK
         );
     }

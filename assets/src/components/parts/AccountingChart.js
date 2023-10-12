@@ -2,14 +2,18 @@ import React from "react";
 import Chart from 'chart.js/auto';
 import { Bar } from "react-chartjs-2";
 
-export default function AccountingChart({benefits = []}) {
+export default function AccountingChart({benefits = {}, months = []}) {
     const config = {
         data: {
-            labels: benefits.map(item => item.month),
+            labels: months.map((item, index) => {
+                let month = new Date()
+                month.setMonth(index)
+                return month.toLocaleDateString("en-EN", {month: 'long'})
+            }),
             datasets: [
                 {
                     label: "Current Year Benefit",
-                    data: benefits.map(item => item.amount),
+                    data: months.map(item => benefits[item] ?? 0),
                     backgroundColor: [
                         'rgba(255, 99, 132, 0.2)',
                         'rgba(255, 159, 64, 0.2)',

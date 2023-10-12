@@ -6,6 +6,8 @@ use App\Entity\User;
 use App\Manager\FormManager;
 use App\Manager\InvoiceManager;
 use App\Manager\SerializeManager;
+use App\Repository\UserRepository;
+use App\Repository\CompanyRepository;
 use App\Repository\InvoiceRepository;
 use App\Repository\InvoiceDetailRepository;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,6 +26,7 @@ class InvoiceController extends AbstractController
     private FormManager $formManager;
     private InvoiceManager $invoiceManager;
     private SerializeManager $serializeManager;
+    private CompanyRepository $companyRepository;
     private InvoiceRepository $invoiceRepository;
     private InvoiceDetailRepository $invoiceDetailRepository;
 
@@ -32,19 +35,22 @@ class InvoiceController extends AbstractController
         FormManager $formManager, 
         InvoiceManager $invoiceManager, 
         SerializeManager $serializeManager,
+        UserRepository $userRepository,
+        CompanyRepository $companyRepository,
         InvoiceRepository $invoiceRepository,
         InvoiceDetailRepository $invoiceDetailRepository
     ) {
-        $this->user = $security->getUser() ?? (new User());
+        $this->user = $security->getUser() ?? $userRepository->find(1);
         $this->formManager = $formManager;
         $this->invoiceManager = $invoiceManager;
         $this->serializeManager = $serializeManager;
+        $this->companyRepository = $companyRepository;
         $this->invoiceRepository = $invoiceRepository;
         $this->invoiceDetailRepository = $invoiceDetailRepository;
     }
 
     /**
-     * @Route("/invoice", name="get_invoices", methods={"GET"})
+     * @Route("/invoices", name="get_invoices", methods={"GET"})
      */
     public function get_invoices(Request $request): JsonResponse
     {
@@ -53,8 +59,8 @@ class InvoiceController extends AbstractController
         $offset = is_numeric($offset) && $offset >= 1 ? $offset : 1;
 
         return $this->json(
-            $this->serializeManager->serializeConten(
-                $this->invoiceRepository->findBy([], ["id" => "ASC"], $limit, ($offset - 1) * $limit)
+            $this->serializeManager->serializeContent(
+                $this->invoiceRepository->findBy(["user" => $this->user], ["id" => "ASC"], $limit, ($offset - 1) * $limit)
             ),
             Response::HTTP_OK
         );
@@ -65,7 +71,39 @@ class InvoiceController extends AbstractController
      */
     public function post_invoice(Request $request)
     {
-        return $this->json(["All right"]);
+        $jsonContent = json_decode($request->getContent(), true);
+        if(empty($jsonContent)) {
+            return $this->json(null, Response::HTTP_FORBIDDEN);
+        }
+
+        $company = $this->companyRepository->find($jsonContent["company"]);
+        if(empty($company)) {
+            return $this->json("The company couldn't be found.", Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            $invoiceDate = \DateTimeImmutable::createFromFormat("Y-m-d", $jsonContent["invoice_date"]);
+            $invoice = $this->invoiceManager->addInvoice(
+                $this->user,
+                $company,
+                "Invoice {$invoiceDate->format("m-Y")}",
+                $invoiceDate
+            );
+
+            foreach($jsonContent["details"] as $index => $detail) {
+                $this->invoiceManager->addInvoiceDetail(
+                    $invoice, 
+                    $detail["description"],
+                    $detail["quantity"],
+                    $detail["price"],
+                    $detail["tva"] ?? false
+                );
+            }
+        } catch(\Exception $e) {
+            return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json(null, Response::HTTP_ACCEPTED);
     }
 
     /**
@@ -73,7 +111,7 @@ class InvoiceController extends AbstractController
      */
     public function get_invoice(int $invoiceID = 0): JsonResponse
     {
-        $invoice = $this->invoiceRepository->find($invoiceID);
+        $invoice = $this->invoiceRepository->findOneBy(["id" => $invoiceID, "user" => $this->user]);
         if(empty($invoice)) {
             return $this->json(null, Response::HTTP_NOT_FOUND);
         }

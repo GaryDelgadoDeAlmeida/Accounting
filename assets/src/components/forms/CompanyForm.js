@@ -153,8 +153,6 @@ export default function CompanyForm({userID, company = {}}) {
         ;
     }
 
-    console.log(company)
-
     return (
         <>
             {!loading ? (

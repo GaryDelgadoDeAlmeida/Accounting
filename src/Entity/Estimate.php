@@ -132,4 +132,34 @@ class Estimate
 
         return $this;
     }
+
+    public function getAmount() : float {
+        $amount = 0;
+
+        foreach($this->estimateDetails as $estimateDetail) {
+            $amount += ($estimateDetail->getPrice() * $estimateDetail->getQuantity());
+        }
+
+        return $amount;
+    }
+
+    public function getTvaAmount() : float {
+        $amount = 0;
+
+        foreach($this->estimateDetails as $estimateDetail) {
+            $amount += ($estimateDetail->getPrice() * $estimateDetail->getQuantity()) * 0.2;
+        }
+
+        return $amount;
+    }
+
+    public function getTotalAmount() : float {
+        $amount = 0;
+
+        foreach($this->estimateDetails as $estimateDetail) {
+            $amount += ($estimateDetail->getPrice() * $estimateDetail->getQuantity()) * 1.2;
+        }
+
+        return $amount;
+    }
 }

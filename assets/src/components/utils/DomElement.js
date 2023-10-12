@@ -45,17 +45,46 @@ export function findChildren(element, className, tagName = null) {
     }
     
     for(let i = 0; i < childrens.length; i++) {
-        console.log(
-            tagName,
-            childrens[i].tagName,
-            childrens[i].tagName === tagName
-        )
         if(
             (className && childrens[i] && childrens[i].className.includes(className)) ||
             (tagName && childrens[i] && childrens[i].tagName === tagName)
         ) {
             findElement = childrens[i]
             break
+        }
+    }
+
+    return findElement
+}
+
+/**
+ * TODO :: NEED TO BE TESTED IF IT'S WORK
+ * 
+ * @param {*} element 
+ * @param {*} className 
+ * @param {*} tagName 
+ * @returns 
+ */
+export function findRecurrentlyChildren(element, className, tagName = null) {
+    let childrens = element.children, findElement
+    
+    if(tagName !== null) {
+        tagName = tagName.toUpperCase()
+    }
+
+    for(let i = 0; i < childrens.length; i++) {
+        let elementChildrens = childrens[i].children
+        
+        if(
+            (className && childrens[i] && childrens[i].className.includes(className)) ||
+            (tagName && childrens[i] && childrens[i].tagName === tagName)
+        ) {
+            findElement = childrens[i]
+            break
+        }
+
+        if(elementChildrens.length > 0) {
+            findRecurrentlyChildren(childrens[i], className, tagName)
         }
     }
 

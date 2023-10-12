@@ -9,6 +9,10 @@ export default class FormControl {
     checkMinLength(value, minLength = 0) {
         let isValid = true
 
+        if(value === null) {
+            value = ""
+        }
+
         if(value.length < minLength) {
             isValid = false
         }
@@ -25,11 +29,6 @@ export default class FormControl {
     checkMaxLength(value, maxLength = 255) {
         let isValid = true
         
-        console.log(
-            value.length,
-            maxLength,
-            value.length > maxLength
-        )
         if(value.length > maxLength) {
             isValid = false
         }
@@ -47,14 +46,6 @@ export default class FormControl {
     checkLength(value, minLength = 0, maxLength = 255) {
         let isValid = true
         
-        console.log(
-            value,
-            minLength,
-            maxLength,
-            !this.checkMinLength(value, minLength), 
-            !this.checkMaxLength(value, maxLength),
-            !this.checkMinLength(value, minLength) || !this.checkMaxLength(value, maxLength)
-        )
         if(!this.checkMinLength(value, minLength) || !this.checkMaxLength(value, maxLength)) {
             isValid = false
         }

@@ -7,10 +7,9 @@ export default function InvoiceNew() {
 
     return (
         <UserHeader>
+            <ReturnButton path={"/user/invoice"} />
             <div className={"page-section"}>
-                <ReturnButton path={"/user/invoice"} />
-
-                <div className={"card mt-15px"}>
+                <div className={"card"}>
                     <div className={"-content"}>
                         <InvoiceForm />
                     </div>

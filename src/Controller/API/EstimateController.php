@@ -3,7 +3,11 @@
 namespace App\Controller\API;
 
 use App\Entity\User;
+use App\Entity\Estimate;
+use App\Enum\EstimateEnum;
+use App\Manager\EstimateManager;
 use App\Manager\SerializeManager;
+use App\Repository\UserRepository;
 use App\Repository\EstimateRepository;
 use App\Repository\EstimateDetailRepository;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,17 +23,21 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class EstimateController extends AbstractController
 {
     private User $user;
+    private EstimateManager $estimateManager;
     private SerializeManager $serializeManager;
     private EstimateRepository $estimateRepository;
     private EstimateDetailRepository $estimateDetailRepository;
     
     function __construct(
         Security $security, 
+        UserRepository $userRepository, // Temporary => To delete after the login process has been implemented
+        EstimateManager $estimateManager, 
         SerializeManager $serializeManager, 
         EstimateRepository $estimateRepository, 
         EstimateDetailRepository $estimateDetailRepository
     ) {
-        $this->user = $security->getUser() ?? (new User());
+        $this->user = $security->getUser() ?? $userRepository->find(1);
+        $this->estimateManager = $estimateManager;
         $this->serializeManager = $serializeManager;
         $this->estimateRepository = $estimateRepository;
         $this->estimateDetailRepository = $estimateDetailRepository;
@@ -42,8 +50,7 @@ class EstimateController extends AbstractController
     {
         return $this->json(
             $this->serializeManager->serializeContent(
-                // $this->estimateRepository->findBy(["user" => $this->user])
-                $this->estimateRepository->findAll()
+                $this->estimateRepository->findBy(["user" => $this->user])
             ), 
             Response::HTTP_OK
         );
@@ -54,7 +61,39 @@ class EstimateController extends AbstractController
      */
     public function post_estimate(Request $request) : JsonResponse 
     {
-        return $this->json(["message" => "Route under construction"], Response::HTTP_OK);
+        $jsonContent = json_decode($request->getContent(), true);
+        if(empty($jsonContent)) {
+            return $this->json("Empty body", Response::HTTP_FORBIDDEN);
+        }
+
+        try {
+            $fields = $this->estimateManager->checkFields($jsonContent);
+            if(empty($fields)) {
+                return $this->json("Empty body", Response::HTTP_FORBIDDEN);
+            }
+
+            $nbrEstimate = $this->estimateRepository->countEstimatesByCompanyAndUser($fields["company"], $this->user) + 1;
+
+            $estimate = (new Estimate())
+                ->setUser($this->user)
+                ->setCompany($fields["company"])
+                ->setLabel("Estimate n°{$nbrEstimate}")
+                ->setStatus(EstimateEnum::STATUS_SEND) // Shouldn't be in Invoice ???
+                ->setCreatedAt(new \DateTimeImmutable())
+            ;
+
+            $this->estimateRepository->save($estimate, true);
+
+            foreach($fields["details"] as $detail) {
+                $this->estimateDetailRepository->save(
+                    $this->estimateManager->fillEstimateDetail($detail, $estimate), 
+                    true
+                );
+            }
+        } catch(\Exception $e) {
+            return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        return $this->json(null, Response::HTTP_ACCEPTED);
     }
 
     /**
@@ -66,15 +105,15 @@ class EstimateController extends AbstractController
             return $this->json("The estimate identifier is missing", Response::HTTP_FORBIDDEN);
         }
 
-        $estimate = $this->estimateRepository->find($estimateID);
+        $estimate = $this->estimateRepository->findOneBy(["id" => $estimateID, "user" => $this->user]);
         if(empty($estimate)) {
             return $this->json("Not found estimate", Response::HTTP_NOT_FOUND);
         }
 
-        return $this->json([
-            "estimate" => $estimate,
-            "estimateDetails" => $estimate->getEstimateDetails()
-        ], Response::HTTP_OK);
+        return $this->json(
+            $this->serializeManager->serializeContent($estimate), 
+            Response::HTTP_OK
+        );
     }
 
     /**
@@ -83,33 +122,29 @@ class EstimateController extends AbstractController
     public function update_estimate(Request $request, int $estimateID) : JsonResponse 
     {
         // Get the body request
-        $contentBody = $request->getContent();
-
-        // Decode the body
-        $jsonContent = json_decode($contentBody);
-        
-        // If I couldn't decode the body then return an error
+        $jsonContent = json_decode($request->getContent(), true);
         if(!$jsonContent) {
             return $this->json([
                 "message" => "An error has been found when decoding the body"
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        $fields = [];
-        foreach($jsonContent as $key => $value) {
-            if(!in_array($key, ["estimate_details", "label", "status"])) {
-                continue;
-            }
-
-            $fields[$key] = $value;
+        $estimate = $this->estimateRepository->find($estimateID);
+        if(empty($estimate)) {
+            return $this->json(null, Response::HTTP_NOT_FOUND);
         }
 
-        if(empty($fields)) {
-            return $this->json("Empty body", Response::HTTP_PRECONDITION_FAILED);
+        try {
+            $fields = $this->estimateManager->checkFields($jsonContent);
+            if(empty($fields)) {
+                return $this->json("Empty body", Response::HTTP_PRECONDITION_FAILED);
+            }
+        } catch(\Exception $e) {
+            return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         // Return a response to the client
-        return $this->json(["message" => "Route under construction"], Response::HTTP_OK);
+        return $this->json("Route under construction", Response::HTTP_OK);
     }
 
     /**

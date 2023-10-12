@@ -16,26 +16,26 @@ class Invoice
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $filename = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $filepath = null;
-
     #[ORM\ManyToOne(inversedBy: 'invoices')]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'invoices')]
     private ?Company $company = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $filename = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $status = null;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $invoiceDate = null;
 
-    #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
-
     #[ORM\OneToMany(mappedBy: 'invoice', targetEntity: InvoiceDetail::class)]
     private Collection $invoiceDetails;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
 
     public function __construct()
     {
@@ -45,30 +45,6 @@ class Invoice
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getFilename(): ?string
-    {
-        return $this->filename;
-    }
-
-    public function setFilename(string $filename): self
-    {
-        $this->filename = $filename;
-
-        return $this;
-    }
-
-    public function getFilepath(): ?string
-    {
-        return $this->filepath;
-    }
-
-    public function setFilepath(string $filepath): self
-    {
-        $this->filepath = $filepath;
-
-        return $this;
     }
 
     public function getUser(): ?User
@@ -95,6 +71,30 @@ class Invoice
         return $this;
     }
 
+    public function getFilename(): ?string
+    {
+        return $this->filename;
+    }
+
+    public function setFilename(string $filename): self
+    {
+        $this->filename = $filename;
+
+        return $this;
+    }
+
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
     public function getInvoiceDate(): ?\DateTimeInterface
     {
         return $this->invoiceDate;
@@ -103,18 +103,6 @@ class Invoice
     public function setInvoiceDate(\DateTimeInterface $invoiceDate): self
     {
         $this->invoiceDate = $invoiceDate;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeImmutable $createdAt): self
-    {
-        $this->createdAt = $createdAt;
 
         return $this;
     }
@@ -147,5 +135,54 @@ class Invoice
         }
 
         return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getAmount() : float {
+        $amount = 0;
+
+        foreach($this->invoiceDetails as $invoiceDetail) {
+            $amount += $invoiceDetail->getPrice();
+        }
+
+        return $amount;
+    }
+
+    public function getTvaAmount() : float {
+        $amount = 0;
+
+        foreach($this->invoiceDetails as $invoiceDetail) {
+            if($invoiceDetail->isTva()) {
+                $amount += $invoiceDetail->getPrice() * 0.20;
+            }
+        }
+
+        return $amount;
+    }
+
+    public function getTotalAmount() : float {
+        $amount = 0;
+
+        foreach($this->invoiceDetails as $invoiceDetail) {
+            $percent = 1;
+            if($invoiceDetail->isTva()) {
+                $percent = 1.20;
+            }
+
+            $amount += $invoiceDetail->getPrice() * $percent;
+        }
+
+        return $amount;
     }
 }

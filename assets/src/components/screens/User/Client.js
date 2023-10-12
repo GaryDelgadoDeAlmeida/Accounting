@@ -13,46 +13,44 @@ export default function Client() {
 
     return (
         <UserHeader>
+            <Link 
+                to={"/user/client/new"}
+                className={"btn btn-green"} 
+            >
+                <span>Add a client</span>
+            </Link>
+
             <div className={"page-section"}>
-                <Link 
-                    to={"/user/client/new"}
-                    className={"btn btn-green"} 
-                >
-                    <span>Add a client</span>
-                </Link>
+                {!loading ? (
+                    <div className={"d-flex-col"}>
+                        {clients.map((item, index) => (
+                            <div key={index} className={"card"}>
+                                <div className={"-content"}>
+                                    <div className={"d-flex-col"}>
+                                        <span className={""}>{item.name}</span>
+                                        <span>{item.address}, {item.city} {item.zip_code}, {item.country}</span>
+                                    </div>
+                                    
+                                    <div className={"d-flex-row"}>
+                                        <LinkButton 
+                                            classname={"btn-blue"}
+                                            url={"/user/client/1"}
+                                            defaultIMG={"eye"}
+                                        />
 
-                <div className={"mt-15px"}>
-                    {!loading ? (
-                        <div className={"d-flex-col"}>
-                            {clients.map((item, index) => (
-                                <div key={index} className={"card"}>
-                                    <div className={"-content"}>
-                                        <div className={"d-flex-col"}>
-                                            <span className={""}>{item.name}</span>
-                                            <span>{item.address}, {item.city} {item.zip_code}, {item.country}</span>
-                                        </div>
-                                        
-                                        <div className={"d-flex-row"}>
-                                            <LinkButton 
-                                                classname={"btn-blue"}
-                                                url={"/user/client/1"}
-                                                defaultIMG={"eye"}
-                                            />
-
-                                            <LinkButton 
-                                                classname={"btn-blue"}
-                                                url={"/user/client/1/edit"}
-                                                defaultIMG={"pencil"}
-                                            />
-                                        </div>
+                                        <LinkButton 
+                                            classname={"btn-blue"}
+                                            url={"/user/client/1/edit"}
+                                            defaultIMG={"pencil"}
+                                        />
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <span>Loading ...</span>
-                    )}
-                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <span>Loading ...</span>
+                )}
             </div>
         </UserHeader>
     )
