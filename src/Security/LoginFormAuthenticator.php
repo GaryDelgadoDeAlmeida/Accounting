@@ -27,15 +27,18 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
     public function authenticate(Request $request): Passport
     {
-        $email = $request->request->get('email', '');
+        $jsonContent = json_decode($request->getContent(), true);
+        if(empty($jsonContent)) {
+            throw new \Error("An error has been encountered with the sended datas");
+        }
 
-        $request->getSession()->set(Security::LAST_USERNAME, $email);
+        $request->getSession()->set(Security::LAST_USERNAME, $jsonContent["username"]);
 
         return new Passport(
-            new UserBadge($email),
-            new PasswordCredentials($request->request->get('password', '')),
+            new UserBadge($jsonContent["username"]),
+            new PasswordCredentials($jsonContent["password"]),
             [
-                new CsrfTokenBadge('authenticate', $request->request->get('_csrf_token')),
+                // new CsrfTokenBadge('authenticate', $request->request->get('_csrf_token')),
             ]
         );
     }
@@ -48,7 +51,10 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
 
         // For example:
         // return new RedirectResponse($this->urlGenerator->generate('some_route'));
-        throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
+        return new Response(json_encode([
+            "token" => base64_encode($token)
+        ], JSON_UNESCAPED_UNICODE), Response::HTTP_OK);
+        // throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
     }
 
     protected function getLoginUrl(Request $request): string

@@ -1,0 +1,27 @@
+.invoice-pdf {
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+
+    .pdf-header {
+        // 
+    }
+
+    .pdf-client {
+        // 
+    }
+
+    .pdf-body {
+        padding-top: 25px;
+    }
+
+    .pdf-footer {
+        font-size: 1rem;
+        padding-top: 25px;
+
+        p {
+            margin: 0;
+            padding: 0;
+        }
+    }
+}

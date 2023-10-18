@@ -5,6 +5,7 @@ namespace App\Controller\API;
 use App\Entity\User;
 use App\Entity\Estimate;
 use App\Enum\EstimateEnum;
+use App\Manager\PdfManager;
 use App\Manager\EstimateManager;
 use App\Manager\SerializeManager;
 use App\Repository\UserRepository;
@@ -23,6 +24,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class EstimateController extends AbstractController
 {
     private User $user;
+    private PdfManager $pdfManager;
     private EstimateManager $estimateManager;
     private SerializeManager $serializeManager;
     private EstimateRepository $estimateRepository;
@@ -30,6 +32,7 @@ class EstimateController extends AbstractController
     
     function __construct(
         Security $security, 
+        PdfManager $pdfManager,
         UserRepository $userRepository, // Temporary => To delete after the login process has been implemented
         EstimateManager $estimateManager, 
         SerializeManager $serializeManager, 
@@ -37,6 +40,7 @@ class EstimateController extends AbstractController
         EstimateDetailRepository $estimateDetailRepository
     ) {
         $this->user = $security->getUser() ?? $userRepository->find(1);
+        $this->pdfManager = $pdfManager;
         $this->estimateManager = $estimateManager;
         $this->serializeManager = $serializeManager;
         $this->estimateRepository = $estimateRepository;
@@ -170,5 +174,29 @@ class EstimateController extends AbstractController
         }
 
         return $this->json(null, Response::HTTP_ACCEPTED);
+    }
+
+    /**
+     * @Route("/estimate/{estimateID}/pdf", requirements={"estimateID"="\d+"}, name="pdf_estimate", methods={"GEt"})
+     */
+    public function get_estimate_pdf(Request $request, int $estimateID) {
+        $estimate = $this->estimateRepository->find($estimateID);
+        if(empty($estimate)) {
+            return $this->json(null, Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            $this->pdfManager->generatePdf("estimate", $estimate);
+        } catch(\Exception $e) {
+            return $this->json(
+                $e->getMessage(), 
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+
+        return $this->json("", Response::HTTP_OK, [
+            "Content-Type" => "application/pdf",
+            "Content-Disposition" => "attachment; filename={$estimate->getLabel()}.pdf"
+        ]);
     }
 }

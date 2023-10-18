@@ -25,12 +25,22 @@ class SecurityController extends AbstractController
         $this->userRepository = $userRepository;
     }
 
+    /**
+     * @Route("/token", name="", methods={"POST"})
+     */
+    public function generate_csrf_token() {
+        return $this->json(["token" => ""]);
+    }
+
     #[Route(path: '/login', name: 'login')]
     public function login(AuthenticationUtils $authenticationUtils): JsonResponse
     {
         // If the user is already connected
         if ($this->getUser()) {
-            return $this->json("The user is already connected", Response::HTTP_FORBIDDEN);
+            return $this->json([
+                "last_username" => $authenticationUtils->getLastUsername(),
+                "user" => $this->getUser()->getId()
+            ], Response::HTTP_FORBIDDEN);
         }
 
         // get the login error if there is one

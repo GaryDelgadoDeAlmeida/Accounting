@@ -82,3 +82,8 @@ Compile a SASS file into a CSS file
 ```bash
     sass index.scss index.css
 ```
+
+### Générer un mot de passe hashé
+```bash
+symfony console security:hash-password
+```

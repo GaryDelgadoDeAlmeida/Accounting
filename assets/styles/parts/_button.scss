@@ -65,8 +65,15 @@ button {
         }
     }
 
-    &.btn-yellow {
-        // 
+    &.btn-orange {
+        color: var(--c-black);
+        border: 1px solid var(--c-orange);
+        background-color: var(--c-orange);
+    
+        &:hover {
+            color: var(--c-orange);
+            background-color: transparent;
+        }
     }
 
     &.btn-grey {

@@ -3,6 +3,7 @@
 namespace App\Controller\API;
 
 use App\Entity\User;
+use App\Manager\PdfManager;
 use App\Manager\FormManager;
 use App\Manager\InvoiceManager;
 use App\Manager\SerializeManager;
@@ -23,6 +24,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class InvoiceController extends AbstractController
 {
     private User $user;
+    private PdfManager $pdfManager;
     private FormManager $formManager;
     private InvoiceManager $invoiceManager;
     private SerializeManager $serializeManager;
@@ -32,6 +34,7 @@ class InvoiceController extends AbstractController
 
     function __construct(
         Security $security,
+        PdfManager $pdfManager,
         FormManager $formManager, 
         InvoiceManager $invoiceManager, 
         SerializeManager $serializeManager,
@@ -41,6 +44,7 @@ class InvoiceController extends AbstractController
         InvoiceDetailRepository $invoiceDetailRepository
     ) {
         $this->user = $security->getUser() ?? $userRepository->find(1);
+        $this->pdfManager = $pdfManager;
         $this->formManager = $formManager;
         $this->invoiceManager = $invoiceManager;
         $this->serializeManager = $serializeManager;
@@ -153,7 +157,20 @@ class InvoiceController extends AbstractController
             return $this->json(null, Response::HTTP_NOT_FOUND);
         }
 
-        return $this->invoiceManager->generateInvoice($invoice);
+        try {
+            $this->pdfManager->generatePdf("invoice", $invoice);
+        } catch(\Exception $e) {
+            return $this->json(
+                $e->getMessage(), 
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+
+        return $this->json("", Response::HTTP_OK, [
+            "Content-Type" => "application/pdf",
+            "Content-Disposition" => "attachment; filename={$invoice->getFilename()}.pdf"
+        ]);
+        // return $this->invoiceManager->generateInvoice($invoice);
     }
 
     /**

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ estimate.label }}</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{{ absolute_url(asset("build/app.css")) }}">
+    </head>
+    <body>
+        <page class="page">
+            <div class="estimate-pdf">
+                <div class="pdf-content">
+                    <div class="m-0 p-0">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Quantity</th>
+                                    <th>Nbr days</th>
+                                    <th>Unit. Price</th>
+                                    {# <th>TVA</th> #}
+                                    <th>Amount HT</th>
+                                    <th>Amount TTC</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for estimateDetail in estimate.estimateDetails %}
+                                    <tr>
+                                        <td>{{ estimateDetail.label }}</td>
+                                        <td>{{ estimateDetail.quantity }}</td>
+                                        <td>{{ estimateDetail.nbrDays }}</td>
+                                        <td>{{ estimateDetail.price }}</td>
+                                        <td>{{ (estimateDetail.price * estimateDetail.nbrDays) * estimateDetail.quantity }}</td>
+                                        <td>{{ ((estimateDetail.price * estimateDetail.nbrDays) * estimateDetail.quantity) * 1.2 }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-25px">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <td class="-m-hidden">Amount</td>
+                                    <td class="-amount">{{ estimate.getAmount() }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="-m-hidden">TVA</td>
+                                    <td class="-tva">{{ estimate.getTvaAmount() }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="-m-hidden">Total amount</td>
+                                    <td class="-total">{{ estimate.getTotalAmount() }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </page>
+    </body>
+</html>

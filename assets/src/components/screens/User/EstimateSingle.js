@@ -57,7 +57,7 @@ export default function EstimateSingle() {
                                         <td className={"-freelance"}>
                                             <div className={"service-provider"}>
                                                 <div className={"-identity"}>
-                                                    <span>{estimate.user.fullname}</span>
+                                                    <span className={"txt-bold"}>{estimate.user.fullname}</span>
                                                     <span>SIREN : 914 002 308</span>
                                                     <span>N° de TVA : FR 72914002308</span>
                                                 </div>
@@ -73,7 +73,7 @@ export default function EstimateSingle() {
                                         <td className={"-client"}>
                                             <div className={"service-provider"}>
                                                 <div className={"-identity"}>
-                                                    <span>{estimate.company.name}</span>
+                                                    <span className={"txt-bold"}>{estimate.company.name}</span>
                                                     <span>SIREN : {estimate.company.siren}</span>
                                                     <span>SIRET : {estimate.company.siret}</span>
                                                 </div>
@@ -109,15 +109,19 @@ export default function EstimateSingle() {
                                 </thead>
                                 <tbody>
                                     {estimate.estimateDetails != undefined && estimate.estimateDetails.length > 0 ?
-                                        estimate.estimateDetails.map((item, index) => (
-                                            <tr key={index}>
-                                                <td className={"-title"}>{item.label}</td>
-                                                <td className={"-nbr-days txt-center"}>{item.nbrDays}</td>
-                                                <td className={"-price txt-center"}>{item.price}</td>
-                                                <td className={"-tva txt-center"}>20</td>
-                                                <td className={"-amount txt-center"}>{item.price + (item.price * 1.2)}</td>
-                                            </tr>
-                                        ))
+                                        estimate.estimateDetails.map((item, index) => {
+                                            let budget = (item.price * item.nbrDays) * item.quantity
+
+                                            return (
+                                                <tr key={index}>
+                                                    <td className={"-title"}>{item.label}</td>
+                                                    <td className={"-nbr-days txt-center"}>{item.nbrDays}</td>
+                                                    <td className={"-price txt-center"}>{item.price}</td>
+                                                    <td className={"-tva txt-center"}>20</td>
+                                                    <td className={"-amount txt-center"}>{budget * 1.2}</td>
+                                                </tr>
+                                            )
+                                        })
                                     : (
                                         <tr className={"txt-center"}>
                                             <td colSpan={5}>There is no details for this estimate</td>

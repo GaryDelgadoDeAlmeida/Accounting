@@ -29,7 +29,8 @@ export default function PrivateResources(route) {
         const {data: response} = await axios
             .get(route, {
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Credentials": "same-origin"
                 }
             })
             .catch((err) => console.log(err))

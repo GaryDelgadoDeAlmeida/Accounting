@@ -137,7 +137,7 @@ class Estimate
         $amount = 0;
 
         foreach($this->estimateDetails as $estimateDetail) {
-            $amount += ($estimateDetail->getPrice() * $estimateDetail->getQuantity());
+            $amount += ($estimateDetail->getPrice() * $estimateDetail->getNbrDays()) * $estimateDetail->getQuantity();
         }
 
         return $amount;
@@ -147,7 +147,7 @@ class Estimate
         $amount = 0;
 
         foreach($this->estimateDetails as $estimateDetail) {
-            $amount += ($estimateDetail->getPrice() * $estimateDetail->getQuantity()) * 0.2;
+            $amount += (($estimateDetail->getPrice() * $estimateDetail->getNbrDays()) * $estimateDetail->getQuantity()) * 0.2;
         }
 
         return $amount;
@@ -157,7 +157,7 @@ class Estimate
         $amount = 0;
 
         foreach($this->estimateDetails as $estimateDetail) {
-            $amount += ($estimateDetail->getPrice() * $estimateDetail->getQuantity()) * 1.2;
+            $amount += (($estimateDetail->getPrice() * $estimateDetail->getNbrDays()) * $estimateDetail->getQuantity()) * 1.2;
         }
 
         return $amount;

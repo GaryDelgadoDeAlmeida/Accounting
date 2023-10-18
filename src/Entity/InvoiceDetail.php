@@ -40,6 +40,18 @@ class InvoiceDetail
         return $this->id;
     }
 
+    public function getInvoice(): ?Invoice
+    {
+        return $this->invoice;
+    }
+
+    public function setInvoice(?Invoice $invoice): self
+    {
+        $this->invoice = $invoice;
+
+        return $this;
+    }
+
     public function getDescription(): ?string
     {
         return $this->description;
@@ -108,18 +120,6 @@ class InvoiceDetail
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getInvoice(): ?Invoice
-    {
-        return $this->invoice;
-    }
-
-    public function setInvoice(?Invoice $invoice): self
-    {
-        $this->invoice = $invoice;
 
         return $this;
     }

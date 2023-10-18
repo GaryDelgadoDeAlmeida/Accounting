@@ -41,6 +41,9 @@ export default function Estimate() {
                                         <td className={"-date txt-center"}>2023/05</td>
                                         <td className={"-action txt-right"}>
                                             <SeeMoreButton url={"/user/estimate/" + item.id} />
+                                            <Link className={"btn btn-orange -inline-flex"} to={"/user/estimate/" + item.id + "/edit"}>
+                                                <img src={`${window.location.origin}/public/content/svg/pencil.svg`} alt={""} />
+                                            </Link>
                                         </td>
                                     </tr>
                                 ))

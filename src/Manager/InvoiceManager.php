@@ -240,6 +240,10 @@ class InvoiceManager extends AbstractController {
         // Instantiate Dompdf with our options
         $dompdf = new Dompdf($pdfOptions);
         $html = null;
+
+        return $this->render('models/invoice.html.twig', [
+            'invoice' => $invoice
+        ]);
         
         // Retrieve the HTML generated in our twig file
         $html = $this->renderView('models/invoice.html.twig', [
@@ -256,7 +260,7 @@ class InvoiceManager extends AbstractController {
         $dompdf->render();
 
         // Output the generated PDF to Browser (force download)
-        return $dompdf->stream("{$articleName}.pdf", [
+        $dompdf->stream("{$invoice->getFilename()}.pdf", [
             "Attachment" => false
         ]);
     }
