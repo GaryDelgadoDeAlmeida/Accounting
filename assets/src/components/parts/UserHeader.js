@@ -5,7 +5,7 @@ import { Link, Navigate } from "react-router-dom";
 export default function UserHeader(props) {
 
     const [logged, setLogged] = useState(
-        [null, "null", undefined, "undefined"].indexOf(localStorage.getItem("token")) !== -1
+        localStorage.getItem("token") && ["null", "undefined"].indexOf(localStorage.getItem("token")) === -1 ? true : false
     )
 
     const handleLogout = (e) => {

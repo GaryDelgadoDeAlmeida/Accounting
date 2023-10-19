@@ -12,7 +12,7 @@ export default function LoginForm() {
     })
     const [formResponse, setFormResponse] = useState({})
     const [logged, setLogged] = useState(
-        localStorage.getItem("token") ? true : false
+        localStorage.getItem("token") && ["null", "undefined"].indexOf(localStorage.getItem("token")) === -1 ? true : false
     )
     const formControl = new FormControl()
 
