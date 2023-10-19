@@ -115,7 +115,7 @@ class InvoiceRepository extends ServiceEntityRepository
             ->innerJoin("App\Entity\InvoiceDetail", "invoiceDetail", Join::WITH, "invoice.id = invoiceDetail.invoice")
             ->leftJoin("invoice.user", "user")
             ->select("SUM(invoiceDetail.price) as benefits")
-            ->where("invoice.createdAt = :year")
+            ->where("YEAR(invoice.createdAt) = :year")
             ->andWhere("user.id = :user")
             ->setParameters([
                 "year" => $year,

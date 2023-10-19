@@ -3,26 +3,21 @@ import UserHeader from "../../parts/UserHeader";
 import SeeMoreButton from "../../parts/SeeMoreButton";
 import PrivateResources from "../../utils/PrivateResources";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import FormControl from "../../utils/FormControl";
-import Notification from "../../parts/Notification";
-import { findParent } from "../../utils/DomElement";
+import RemoveButton from "../../parts/RemoveButton";
+import axios from "axios";
 
 export default function Invoice() {
 
     const formControl = new FormControl()
-    const [ responseMessage, setResponseMessage ] = useState({})
     const { loading, items: invoices, load } = PrivateResources(`${window.location.origin}/api/invoices`)
     useEffect(() => {
         load()
     }, [])
 
-    const handleRemove = (e) => {
-        if(!confirm("Are you sure you want to delete this invoice ?")) {
-            return
-        }
-        
-        setResponseMessage({})
+    const handleDownload = (e) => {
+        console.log("Hi handleDownload")
+
         let invoiceID = e.currentTarget.getAttribute("data-invoice")
         if(!formControl.checkMinLength(invoiceID, 1)) {
             setResponseMessage({classname: "danger", message: "A necessary information is missing. Please check that you didn't change anything."})
@@ -34,23 +29,19 @@ export default function Invoice() {
             return
         }
 
-        const trElement = e.currentTarget.parentNode.parentNode
-        
         axios
-            .delete(`${window.location.origin}/api/invoice/${invoiceID}/remove`, {
+            .get(`${window.location.origin}/api/invoice/${invoiceID}/pdf`, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Accept": "application/json+ld"
+                    "Accept": "application/pdf"
                 }
             })
             .then(response => {
-                if(trElement.tagName == "TR") {
-                    trElement.remove()
-                }
+                console.log(response, response.data, response.status)
+                // window.open("url", "_blank")
             })
             .catch(error => {
                 console.log(error)
-                setResponseMessage({classname: "danger", message: "An error has been encountered during the delete process"})
             })
         ;
     }
@@ -62,8 +53,6 @@ export default function Invoice() {
             </Link>
 
             <div className={"page-section"}>
-                {Object.keys(responseMessage).length > 0 && (<Notification {...responseMessage} />)}
-
                 {!loading ? (
                     <table className={"table"}>
                         <thead>
@@ -78,7 +67,7 @@ export default function Invoice() {
                         <tbody>
                             {invoices.length > 0 && typeof invoices === "object" ? (
                                 invoices.map((item, index) => (
-                                    <tr key={index}>
+                                    <tr id={`-invoice-row-${index + 1}`} key={index}>
                                         <td className={"-invoice-date txt-center"}>{item.filename}</td>
                                         <td className={"-client-name txt-center"}>{item.company.name}</td>
                                         <td className={"-status txt-center"}>
@@ -87,17 +76,18 @@ export default function Invoice() {
                                         <td className={"-amount txt-center"}>{item.totalAmount}</td>
                                         <td className={"-action txt-right"}>
                                             <SeeMoreButton url={"/user/invoice/" + item.id} />
-                                            
-                                            <button 
-                                                className={"btn btn-red -inline-flex"} 
-                                                data-invoice={item.id} 
-                                                onClick={(e) => handleRemove(e)}
-                                            >
-                                                <img src={`${window.location.origin}/content/svg/trash.svg`} alt={""} />
-                                            </button>
 
-                                            <button className={"btn btn-blue -inline-flex"}>
-                                                <img src={`${window.location.origin}/content/svg/download.svg`} alt={""} />
+                                            <RemoveButton
+                                                removeUrl={`${window.location.origin}/api/invoice/${item.id}/remove`}
+                                                parentElementId={`-invoice-row-${index + 1}`}
+                                            />
+
+                                            <button 
+                                                className={"btn btn-blue -inline-flex"} 
+                                                onClick={(e) => handleDownload(e)}
+                                                data-invoice={item.id}
+                                            >
+                                                <img src={`${window.location.origin}/content/svg/download-white.svg`} alt={""} />
                                             </button>
                                         </td>
                                     </tr>

@@ -1,24 +1,43 @@
+import axios from "axios";
 import React, { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
 export default function UserHeader(props) {
 
     const [logged, setLogged] = useState(
-        localStorage.getItem("token") ? true : false
+        [null, "null", undefined, "undefined"].indexOf(localStorage.getItem("token")) !== -1
     )
 
     const handleLogout = (e) => {
         e.preventDefault()
         
         if(localStorage.getItem("token")) {
-            localStorage.setItem("token", null)
-            setLogged(false)
+            axios
+                .get(`${window.location.origin}/api/logout`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json+ld"
+                    }
+                })
+                .then(response => {
+                    if(response.status == 200) {
+                        localStorage.setItem("token", null)
+                        setLogged(false)
+                    } else {
+                        alert("An error has been encountered during the logout process")
+                    }
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+            ;
         }
     }
 
     return (
         <>
             {!logged && (<Navigate to={"/"} />)}
+            
             <div className={"page -admin"}>
                 <div className={"page-header -admin"}>
                     <ul className={"horizontal-menu"}>

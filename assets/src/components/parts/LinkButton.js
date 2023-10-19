@@ -20,6 +20,10 @@ export default function LinkButton({classname, value, url, defaultIMG}) {
             case "btn-yellow":
                 setColorIMG("yellow")
                 break
+            
+            case "btn-orange":
+                setColorIMG("orange")
+                break
     
             case "btn-grey":
                 setColorIMG("grey")

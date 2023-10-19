@@ -3,7 +3,8 @@ import UserHeader from "../../parts/UserHeader";
 import SeeMoreButton from "../../parts/SeeMoreButton";
 import PrivateResources from "../../utils/PrivateResources";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import LinkButton from "../../parts/LinkButton";
+import RemoveButton from "../../parts/RemoveButton";
 
 export default function Estimate() {
 
@@ -34,16 +35,24 @@ export default function Estimate() {
                         <tbody>
                             {estimates.length > 0 && typeof estimates === "object" ? (
                                 estimates.map((item, index) => (
-                                    <tr key={index}>
+                                    <tr id={`-estimate-row-${index + 1}`} key={index}>
                                         <td className={"-id txt-center"}>{item.id}</td>
                                         <td className={"-client-name txt-center"}>{item.company.name}</td>
                                         <td className={"-estimate-name txt-center"}>{item.label}</td>
                                         <td className={"-date txt-center"}>2023/05</td>
                                         <td className={"-action txt-right"}>
                                             <SeeMoreButton url={"/user/estimate/" + item.id} />
-                                            <Link className={"btn btn-orange -inline-flex"} to={"/user/estimate/" + item.id + "/edit"}>
-                                                <img src={`${window.location.origin}/public/content/svg/pencil.svg`} alt={""} />
-                                            </Link>
+
+                                            <LinkButton
+                                                classname={"btn-orange"}
+                                                url={`/user/estimate/${item.id}/edit`} 
+                                                defaultIMG={"pencil"}
+                                            />
+
+                                            <RemoveButton
+                                                removeUrl={`${window.location.origin}/api/estimate/${item.id}/remove`}
+                                                parentElementId={`-estimate-row-${index + 1}`}
+                                            />
                                         </td>
                                     </tr>
                                 ))

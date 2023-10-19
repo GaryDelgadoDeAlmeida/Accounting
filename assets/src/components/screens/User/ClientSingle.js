@@ -5,6 +5,7 @@ import ReturnButton from "../../parts/ReturnButton";
 import LinkButton from "../../parts/LinkButton";
 import Badge from "../../parts/Badge";
 import axios from "axios";
+import RemoveButton from "../../parts/RemoveButton";
 
 export default function ClientSingle() {
 
@@ -96,7 +97,7 @@ export default function ClientSingle() {
                             </thead>
                             <tbody>
                                 {estimates.length > 0 && typeof estimates === "object" && client.estimates.map((item, index) => (
-                                    <tr key={index}>
+                                    <tr id={`-estimate-row-${index + 1}`} key={index}>
                                         <td className={"-date txt-center"}>
                                             {(new Date(item.createdAt)).toLocaleDateString(undefined, {year:"numeric", month:"numeric"})}
                                         </td>
@@ -109,6 +110,10 @@ export default function ClientSingle() {
                                                 classname={"btn-blue"}
                                                 url={"/user/estimate/" + item.id}
                                                 defaultIMG={"eye"}
+                                            />
+                                            <RemoveButton
+                                                removeUrl={`${window.location.origin}/api/estimate/${item.id}/remove`}
+                                                parentElementId={`-estimate-row-${index + 1}`}
                                             />
                                         </td>
                                     </tr>
@@ -148,7 +153,7 @@ export default function ClientSingle() {
                             
                             <tbody>
                                 {invoices.length > 0 && typeof invoices === "object" && invoices.map((item, index) => (
-                                    <tr key={index}>
+                                    <tr id={`-invoice-row-${index + 1}`} key={index}>
                                         <td className={"-invoice-date txt-center"}>{(new Date(item.invoiceDate)).toLocaleDateString(undefined, {year:"numeric", month:"numeric"})}</td>
                                         <td className={"-status txt-center"}>
                                             <span className={"badge badge-success"}>Paid</span>
@@ -159,6 +164,10 @@ export default function ClientSingle() {
                                                 classname={"btn-blue"}
                                                 url={"/user/invoice/" + item.id}
                                                 defaultIMG={"eye"}
+                                            />
+                                            <RemoveButton
+                                                removeUrl={`${window.location.origin}/api/invoice/${item.id}/remove`}
+                                                parentElementId={`-invoice-row-${index + 1}`}
                                             />
                                         </td>
                                     </tr>

@@ -152,31 +152,6 @@ class EstimateController extends AbstractController
     }
 
     /**
-     * @Route("/estimate/{estimateID}/remove", requirements={"estimateID"="\d+"}, name="remove_estimate", methods={"DELETE"})
-     */
-    public function remove_estimate(Request $request, int $estimateID) : JsonResponse 
-    {
-        $estimate = $this->estimateRepository->find($estimateID);
-        if(empty($estimate)) {
-            return $this->json(["message" => "Not found estimate"], Response::HTTP_NOT_FOUND);
-        }
-
-        // Remove from the database the estimate
-        try {
-            foreach($estimate->getEstimateDetails() as $estimateDetail) {
-                $this->estimateDetailRepository->remove($estimateDetail);
-            }
-
-            $this->estimateRepository->remove($estimate, true);
-            
-        } catch(\Exception $e) {
-            return $this->json(["message" => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-
-        return $this->json(null, Response::HTTP_ACCEPTED);
-    }
-
-    /**
      * @Route("/estimate/{estimateID}/pdf", requirements={"estimateID"="\d+"}, name="pdf_estimate", methods={"GEt"})
      */
     public function get_estimate_pdf(Request $request, int $estimateID) {
@@ -198,5 +173,31 @@ class EstimateController extends AbstractController
             "Content-Type" => "application/pdf",
             "Content-Disposition" => "attachment; filename={$estimate->getLabel()}.pdf"
         ]);
+    }
+
+    /**
+     * @Route("/estimate/{estimateID}/remove", requirements={"estimateID"="\d+"}, name="remove_estimate", methods={"DELETE"})
+     */
+    public function remove_estimate(Request $request, int $estimateID) : JsonResponse 
+    {
+        $estimate = $this->estimateRepository->find($estimateID);
+        if(empty($estimate)) {
+            return $this->json(["message" => "Not found estimate"], Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            // Remove all details of the estimate
+            foreach($estimate->getEstimateDetails() as $estimateDetail) {
+                $this->estimateDetailRepository->remove($estimateDetail);
+            }
+
+            // Remove the estimate
+            $this->estimateRepository->remove($estimate, true);
+            
+        } catch(\Exception $e) {
+            return $this->json(["message" => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json(null, Response::HTTP_ACCEPTED);
     }
 }
