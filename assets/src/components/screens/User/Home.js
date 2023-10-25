@@ -167,7 +167,7 @@ export default function Home() {
                                                 <td className={"-action"}>
                                                     <LinkButton 
                                                         classname={"btn-blue"}
-                                                        url={`/invoice/${estimate.id}`}
+                                                        url={`/user/estimate/${estimate.id}`}
                                                         defaultIMG={"eye"}
                                                     />
                                                 </td>

@@ -16,7 +16,7 @@ class PdfManager extends AbstractController {
      * @param object entity
      * @return void
      */
-    public function generatePdf(string $type, object $entity)
+    public function generatePdf(string $baseUrl, string $type, object $entity, bool $attachment = false)
     {
         $filename = "";
         if($type === "invoice") {
@@ -44,7 +44,9 @@ class PdfManager extends AbstractController {
 
         // Retrieve the HTML generated in our twig file
         $html = $this->renderView("models/{$type}.html.twig", [
-            "{$type}" => $entity
+            "{$type}" => $entity,
+            "user" => $entity->getUser(),
+            "company" => $entity->getCompany()
         ]);
         
         // Load HTML to Dompdf
@@ -58,7 +60,7 @@ class PdfManager extends AbstractController {
 
         // Output the generated PDF to Browser (force download)
         $dompdf->stream("{$filename}.pdf", [
-            "Attachment" => false
+            "Attachment" => $attachment
         ]);
     }
 }

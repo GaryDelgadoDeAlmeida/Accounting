@@ -1,14 +1,177 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>{{ invoice.filename }}</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{{ absolute_url(asset("build/app.css")) }}">
+        <title>{{ invoice.filename }}</title>
+        <style>
+            html, body, .page {
+                font-size: .9rem;
+                background-color: #ffffff;
+                -moz-osx-font-smoothing: grayscale;
+                -webkit-font-smoothing: antialiased;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            }
+
+            h1 {
+                margin: 0;
+                padding: 0;
+            }
+
+            /* File PDF */
+            .file-pdf {
+                width: 100%;
+                display: flex;
+                font-size: 1rem;
+                margin-top: 40px;
+                flex-direction: column;
+            }
+
+                .file-pdf > .pdf-header {
+                    top: -40px;
+                    left: 0px;
+                    right: 0px;
+                    height: 50px;
+                    position: fixed;
+                    text-align: center;
+                    line-height: 35px;
+                }
+
+                .file-pdf > .pdf-client {}
+
+                .file-pdf > .pdf-content {
+                    margin-top: 50px;
+                }
+
+                .file-pdf > .pdf-footer {
+                    left: 0px;
+                    right: 0px;
+                    width: 100%;
+                    bottom: -30px;
+                    position: fixed;
+                }
+
+                    .file-pdf > .pdf-footer > p {
+                        margin: 0;
+                        padding: 0;
+                        width: 100%;
+                    }
+            
+            /* Table */
+            .table {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                overflow: hidden;
+                position: relative;
+                border-collapse: collapse;
+                background-color: #ffffff;
+                border-radius: 5px 5px 0 0;
+            }
+                .table > thead {
+                    color: #ffffff;
+                    background-color: #2962ff;
+                }
+
+                .table > thead > tr > th {
+                    padding: 10px;
+                }
+
+                .table > tbody > tr:nth-child(even) {
+                    background-color: #f2f2f2;
+                }
+                
+                .table > tbody > tr:hover {
+                    background-color: #c8c8c8;
+                }
+
+                .table > tbody > tr > td {
+                    padding: 10px;
+                }
+
+            /* Service provider */
+            .service-provider {
+                top: 0;
+            }
+
+                .service-provider > .-identity {
+                    gap: 5px;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .service-provider > .-address {
+                    margin: 5px 0;
+                }
+
+                .service-provider > .-contact {
+                    gap: 5px;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+            /* Common */
+            .d-flex {
+                display: flex;
+            }
+
+            .d-col {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .txt-center {
+                text-align: center;
+            }
+
+            .txt-left {
+                text-align: left;
+            }
+
+            .txt-right {
+                text-align: right;
+            }
+
+            .txt-bold {
+                font-weight: 700;
+            }
+
+            .f-right {
+                float: right;
+            }
+
+            .w-50 {
+                width: 50%;
+            }
+
+            .w-100 {
+                width: 100%;
+            }
+
+            .m-0 {
+                margin: 0;
+            }
+
+            .p-0 {
+                margin: 0;
+            }
+
+            .mt-25px {
+                margin-top: 25px;
+            }
+            
+            .mt-50px {
+                margin-top: 50px;
+            }
+
+            .pt-25px {
+                padding-top: 25px;
+            }
+        </style>
     </head>
     <body>
         <div class="page">
-            <div class="invoice-pdf">
+            <div class="file-pdf">
                 <div class="pdf-header">
                     <h2 class="-title">{{ invoice.filename }}</h2>
                     <p>Date d'émission : {{ invoice.invoiceDate|date("d/m/Y") }}</p>
@@ -16,26 +179,23 @@
                 
                 <div class="pdf-client">
                     <table class="table">
-                        <thead>
-                            <tr>
-                                <th class="w-50">Prestataire</th>
-                                <th class="w-50">Client</th>
-                            </tr>
-                        </thead>
                         <tbody>
                             <tr>
-                                <td class="-freelance">
+                                <td class="w-50 txt-left">
+                                    <h3>Prestataire</h3>
+
                                     {% set user = invoice.user %}
                                     <div class="service-provider">
                                         <div class="-identity">
-                                            <span class="txt-bold">{{ user.fullname }}</span>
+                                            <span>{{ user.fullname }}</span>
                                         </div>
                                         
-                                        {% if user.freelance is not same as (null) %}
-                                            <div class="-address">
+                                        <div class="-address">
+                                            {% if user.freelance is not same as (null) %}
                                                 <span>{{ user.freelance.address ~ ", " ~ user.freelance.zipCode ~ " " ~ user.freelance.city ~ ", " ~ user.freelance.country }}</span>
-                                            </div>
-                                        {% endif %}
+                                            {% endif %}
+                                            <span>189 rue Vercingétorix, Paris 75014, France</span>
+                                        </div>
                                         
                                         <div class="-contact">
                                             {% if user.freelance is not same as (null) %}<span>{{ user.freelance.phone }}</span><br />{% endif %}
@@ -43,11 +203,12 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="-client">
+                                <td class="w-50 txt-right">
+                                    <h3>Client</h3>
                                     {% set company = invoice.company %}
                                     <div class="service-provider">
                                         <div class="-identity">
-                                            <span class="txt-bold">{{ company.name }}</span>
+                                            <span>{{ company.name }}</span>
                                         </div>
                                         <div class="-address">
                                             <span>{{ company.address ~ ", " ~ company.zipCode ~ " " ~ company.city ~ ", " ~ company.country }}</span><br />
@@ -63,58 +224,57 @@
                     </table>
                 </div>
                 
-                <div class="pdf-body">
-                    <div class="w-100">
-                        <table class="table">
-                            <thead>
+                <div class="pdf-content d-col">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>TVA</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for invoiceDetail in invoice.invoiceDetails %}
                                 <tr>
-                                    <th class="column-description">Description</th>
-                                    <th class="column-quantity">Quantity</th>
-                                    <th class="column-price">Price</th>
-                                    <th class="column-tva">TVA</th>
-                                    <th class="column-amount">Amount</th>
+                                    <td class="txt-left">{{ invoiceDetail.description }}</td>
+                                    <td class="txt-center">{{ invoiceDetail.quantity }}</td>
+                                    <td class="txt-center">{{ invoiceDetail.price }}</td>
+                                    <td class="txt-center">{{ invoiceDetail.tva ? "Yes" : "No" }}</td>
+                                    <td class="txt-center">{{ (invoiceDetail.price * invoiceDetail.quantity) * (invoiceDetail.tva ? 1.2 : 1) }}</td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {% for invoiceDetail in invoice.invoiceDetails %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <div class="w-100 d-flex">
+                        <div class="pt-25px w-50"></div>
+                        <div class="w-50 f-right">
+                            <table class="table">
+                                <tbody>
                                     <tr>
-                                        <td class="-description txt-left">{{ invoiceDetail.description }}</td>
-                                        <td class="-quantity txt-center">{{ invoiceDetail.quantity }}</td>
-                                        <td class="-price txt-center">{{ invoiceDetail.price }}</td>
-                                        <td class="-tya txt-center">{{ invoiceDetail.tva ? "Yes" : "No" }}</td>
-                                        <td class="-amount txt-center">{{ (invoiceDetail.price * invoiceDetail.quantity) * (invoiceDetail.tva ? 1.2 : 1) }}</td>
+                                        <td>Sub total</td>
+                                        <td class="txt-center">{{ invoice.getAmount() }}</td>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="mt-25px w-50 f-left"></div>
-                    
-                    <div class="mt-25px w-50 f-right">
-                        <table class="table">
-                            <tbody>
-                                <tr>
-                                    <td class="-m-hidden">Sub total</td>
-                                    <td class="-amount">{{ invoice.getAmount() }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="-m-hidden">TVA (20%)</td>
-                                    <td class="-tva">{{ invoice.getTvaAmount() }}</td>
-                                </tr>
-                                <tr class="txt-bold">
-                                    <td class="-m-hidden">Total</td>
-                                    <td class="-total">{{ invoice.getTotalAmount() }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                    <tr>
+                                        <td>TVA (20%)</td>
+                                        <td class="txt-center">{{ invoice.getTvaAmount() }}</td>
+                                    </tr>
+                                    <tr class="txt-bold">
+                                        <td>Total</td>
+                                        <td class="txt-center">{{ invoice.getTotalAmount() }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-                
+
                 <div class="pdf-footer">
                     <p>
                         La loi n°92/1442 du 31 décembre 1992 nous fait l’obligation de vous indiquer que le non-respect des conditions de paiement entraîne des intérêts de retard suivant modalités et taux définis par la loi. Une indemnité forfaitaire de 40€ sera due pour frais de recouvrement en cas de retard de paiement.<br /><br />
-                        Mode de règlement : Virement ou chèque<br /><br />
+                        Mode de règlement : Virement ou chèque<br />
                         Date limite de règlement : 30 jours
                     </p>
                 </div>

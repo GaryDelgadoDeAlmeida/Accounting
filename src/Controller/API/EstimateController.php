@@ -33,9 +33,9 @@ class EstimateController extends AbstractController
     function __construct(
         Security $security, 
         PdfManager $pdfManager,
-        UserRepository $userRepository, // Temporary => To delete after the login process has been implemented
         EstimateManager $estimateManager, 
         SerializeManager $serializeManager, 
+        UserRepository $userRepository, // Temporary => To delete after the login process has been implemented
         EstimateRepository $estimateRepository, 
         EstimateDetailRepository $estimateDetailRepository
     ) {
@@ -161,7 +161,11 @@ class EstimateController extends AbstractController
         }
 
         try {
-            $this->pdfManager->generatePdf("estimate", $estimate);
+            $this->pdfManager->generatePdf(
+                $request->getScheme() . '://' . $request->getHttpHost() . $request->getBasePath(), 
+                "estimate", 
+                $estimate
+            );
         } catch(\Exception $e) {
             return $this->json(
                 $e->getMessage(), 

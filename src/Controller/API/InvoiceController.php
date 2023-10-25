@@ -26,6 +26,7 @@ class InvoiceController extends AbstractController
     private User $user;
     private PdfManager $pdfManager;
     private FormManager $formManager;
+    // private ContactManager $contactManager;
     private InvoiceManager $invoiceManager;
     private SerializeManager $serializeManager;
     private CompanyRepository $companyRepository;
@@ -36,6 +37,7 @@ class InvoiceController extends AbstractController
         Security $security,
         PdfManager $pdfManager,
         FormManager $formManager, 
+        // ContactManager $contactManager,
         InvoiceManager $invoiceManager, 
         SerializeManager $serializeManager,
         UserRepository $userRepository,
@@ -46,6 +48,7 @@ class InvoiceController extends AbstractController
         $this->user = $security->getUser() ?? $userRepository->find(1);
         $this->pdfManager = $pdfManager;
         $this->formManager = $formManager;
+        // $this->contactManager = $contactManager;
         $this->invoiceManager = $invoiceManager;
         $this->serializeManager = $serializeManager;
         $this->companyRepository = $companyRepository;
@@ -150,7 +153,7 @@ class InvoiceController extends AbstractController
     /**
      * @Route("/invoice/{invoiceID}/pdf", name="get_invoice_pdf", requirements={"invoiceID"="\d+"}, methods={"GET"})
      */
-    public function get_invoice_pdf(int $invoiceID)
+    public function get_invoice_pdf(Request $request, int $invoiceID)
     {
         $invoice = $this->invoiceRepository->find($invoiceID);
         if(empty($invoice)) {
@@ -158,7 +161,15 @@ class InvoiceController extends AbstractController
         }
 
         try {
-            $this->pdfManager->generatePdf("invoice", $invoice);
+            $this->pdfManager->generatePdf(
+                $request->getScheme() . '://' . $request->getHttpHost() . $request->getBasePath(),
+                "invoice", 
+                $invoice,
+                false
+            );
+
+            // After generating invoice PDF, send it to the client
+            // $this->contactManager->sendEmail($invoice->getLabel(), "gary.almeida.work@gmail.com");
         } catch(\Exception $e) {
             return $this->json(
                 $e->getMessage(), 

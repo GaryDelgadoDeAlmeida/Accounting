@@ -1,16 +1,210 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>{{ estimate.label }}</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{{ absolute_url(asset("build/app.css")) }}">
+        <title>{{ estimate.label }}</title>
+        <style>
+            html, body, .page {
+                font-size: .9rem;
+                background-color: #ffffff;
+                -moz-osx-font-smoothing: grayscale;
+                -webkit-font-smoothing: antialiased;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            }
+
+            /* File PDF */
+            .file-pdf {
+                display: flex;
+                font-size: 1rem;
+                margin-top: 40px;
+                flex-direction: column;
+            }
+
+                .file-pdf > .pdf-header {
+                    top: -40px;
+                    left: 0px;
+                    right: 0px;
+                    height: 50px;
+                    position: fixed;
+                    text-align: center;
+                    line-height: 35px;
+                }
+
+                .file-pdf > .pdf-content {
+                    margin-top: 25px;
+                }
+
+                .file-pdf > .pdf-footer {
+                    position: fixed; 
+                    bottom: -60px; 
+                    left: 0px; 
+                    right: 0px;
+                    height: 50px; 
+
+                    /** Extra personal styles **/
+                    background-color: #03a9f4;
+                    color: white;
+                    text-align: center;
+                    line-height: 35px;
+                }
+
+                    .file-pdf > .pdf-footer > p {
+                        margin: 0;
+                        padding: 0;
+                    }
+            
+            /* Table */
+            .table {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                overflow: hidden;
+                position: relative;
+                border-collapse: collapse;
+                background-color: #ffffff;
+                border-radius: 5px 5px 0 0;
+            }
+                .table > thead {
+                    color: #ffffff;
+                    background-color: #2962ff;
+                }
+
+                .table > thead > tr > th {
+                    padding: 10px;
+                }
+
+                .table > tbody > tr:nth-child(even) {
+                    background-color: #f2f2f2;
+                }
+                
+                .table > tbody > tr:hover {
+                    background-color: #c8c8c8;
+                }
+
+                .table > tbody > tr > td {
+                    padding: 10px;
+                }
+
+            /* Service provider */
+            .service-provider {
+                top: 0;
+            }
+
+                .service-provider > .-identity {
+                    gap: 5px;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .service-provider > .-address {
+                    margin: 5px 0;
+                }
+
+                .service-provider > .-contact {
+                    gap: 5px;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+            /* Common */
+            .d-flex {
+                display: flex;
+            }
+
+            .txt-center {
+                text-align: center;
+            }
+
+            .txt-left {
+                text-align: left;
+            }
+
+            .txt-right {
+                text-align: right;
+            }
+
+            .txt-bold {
+                font-weight: 700;
+            }
+
+            .f-right {
+                float: right;
+            }
+
+            .w-50 {
+                width: 50%;
+            }
+
+            .m-0 {
+                margin: 0;
+            }
+
+            .p-0 {
+                margin: 0;
+            }
+
+            .mt-25px {
+                margin-top: 25px;
+            }
+            
+            .mt-50px {
+                margin-top: 50px;
+            }
+        </style>
     </head>
     <body>
         <div class="page">
-            <div class="estimate-pdf">
+            <div class="file-pdf">
+                <div class="pdf-header">
+                    <h2>Estimate</h2>
+                </div>
                 <div class="pdf-content">
                     <div class="m-0 p-0">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <td class="w-50">
+                                        <h3 class="txt-bold txt-left">Prestataire</h3>
+                                        <div class="service-provider txt-left">
+                                            <div class="-identity">
+                                                <span>{{ user.fullname }}</span>
+                                            </div>
+                                            <div class="-address">
+                                                {% if user.freelance is not same as (null) %}
+                                                    <span>{{ user.freelance.address ~ ", " ~ user.freelance.zipCode ~ " " ~ user.freelance.city ~ ", " ~ user.freelance.country }}</span>
+                                                {% endif %}
+                                                
+                                                {# Temporary #}
+                                                <span>189 rue Vercingétorix, Paris 75014, France</span>
+                                                {# End Temporary #}
+                                            </div>
+                                            <div class="-contact">
+                                                {% if user.freelance is not same as (null) %}<span>{{ user.phone }}</span>{% endif %}
+                                                <span>{{ user.email }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="w-50">
+                                        <h3 class="txt-bold txt-right">Client</h3>
+                                        <div class="service-provider txt-right">
+                                            <div class="-identity">
+                                                <span>{{ company.name }}</span>
+                                            </div>
+                                            <div class="-address">
+                                                <span>{{ company.address ~ ", " ~ company.city ~ " " ~ company.zipCode ~ ", " ~ company.country  }}</span>
+                                            </div>
+                                            <div class="-contact">
+                                                {% if company.phone is defined %}<span>{{ company.phone }}</span>{% endif %}
+                                                {% if company.email is defined %}<span>{{ company.email }}</span>{% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-50px">
                         <table class="table">
                             <thead>
                                 <tr>
@@ -18,7 +212,6 @@
                                     <th>Quantity</th>
                                     <th>Nbr days</th>
                                     <th>Unit. Price</th>
-                                    {# <th>TVA</th> #}
                                     <th>Amount HT</th>
                                     <th>Amount TTC</th>
                                 </tr>
@@ -27,33 +220,36 @@
                                 {% for estimateDetail in estimate.estimateDetails %}
                                     <tr>
                                         <td>{{ estimateDetail.label }}</td>
-                                        <td>{{ estimateDetail.quantity }}</td>
-                                        <td>{{ estimateDetail.nbrDays }}</td>
-                                        <td>{{ estimateDetail.price }}</td>
-                                        <td>{{ (estimateDetail.price * estimateDetail.nbrDays) * estimateDetail.quantity }}</td>
-                                        <td>{{ ((estimateDetail.price * estimateDetail.nbrDays) * estimateDetail.quantity) * 1.2 }}</td>
+                                        <td class="txt-center">{{ estimateDetail.quantity }}</td>
+                                        <td class="txt-center">{{ estimateDetail.nbrDays }}</td>
+                                        <td class="txt-center">{{ estimateDetail.price }}</td>
+                                        <td class="txt-center">{{ (estimateDetail.price * estimateDetail.nbrDays) * estimateDetail.quantity }}</td>
+                                        <td class="txt-center">{{ ((estimateDetail.price * estimateDetail.nbrDays) * estimateDetail.quantity) * 1.2 }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-25px">
-                        <table class="table">
-                            <tbody>
-                                <tr>
-                                    <td class="-m-hidden">Amount</td>
-                                    <td class="-amount">{{ estimate.getAmount() }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="-m-hidden">TVA</td>
-                                    <td class="-tva">{{ estimate.getTvaAmount() }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="-m-hidden">Total amount</td>
-                                    <td class="-total">{{ estimate.getTotalAmount() }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="mt-25px d-flex">
+                        <div class="w-50"></div>
+                        <div class="w-50 f-right">
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <td>Amount</td>
+                                        <td class="txt-center">{{ estimate.getAmount() }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>TVA</td>
+                                        <td class="txt-center">{{ estimate.getTvaAmount() }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="txt-bold">Total amount</td>
+                                        <td class="txt-center">{{ estimate.getTotalAmount() }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
