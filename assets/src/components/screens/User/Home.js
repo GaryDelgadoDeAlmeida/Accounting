@@ -6,7 +6,7 @@ import axios from "axios";
 
 export default function Home() {
 
-    const { loading, items, load } = PrivateResources(window.location.origin + "/api/resume")
+    const { loading, items, load } = PrivateResources(`${window.location.origin}/api/resume`)
     useEffect(() => {
         load()
     }, [])

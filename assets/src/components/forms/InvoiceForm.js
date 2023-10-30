@@ -5,17 +5,17 @@ import FormControl from "../utils/FormControl";
 import PrivateResources from "../utils/PrivateResources";
 import { findChildren, findParent } from "../utils/DomElement";
 
-export default function InvoiceForm({companyID, invoiceID = null}) {
-    const userID = localStorage.getItem("user")
-    const { loading, items: companies, load } = PrivateResources(window.location.origin + "/api/companies")
+export default function InvoiceForm({companyID, invoice = null}) {
+    const { loading, items: companies, load } = PrivateResources(`${window.location.origin}/api/companies`)
 
     let details = []
+    let rowCounting = 0
     const formControl = new FormControl()
     const [formResponse, setFormResponse] = useState({})
     const [credentials, setCredentials] = useState({
         company: parseInt(companyID),
         invoice_date: "",
-        details: {}
+        details: {...invoice.invoiceDetails} ?? {}
     })
 
     useEffect(() => {
@@ -120,7 +120,6 @@ export default function InvoiceForm({companyID, invoiceID = null}) {
             return
         }
 
-        console.log(trElement)
         let rowID = trElement.id
         credentials.details[rowID]
     }
@@ -262,8 +261,8 @@ export default function InvoiceForm({companyID, invoiceID = null}) {
         }
 
         let url = `${window.location.origin}/api/invoice`
-        if(invoiceID != null) {
-            url = `${window.location.origin}/api/invoice/${invoiceID}`
+        if(invoice != null) {
+            url = `${window.location.origin}/api/invoice/${invoice.id}/update`
         }
 
         axios
@@ -328,6 +327,40 @@ export default function InvoiceForm({companyID, invoiceID = null}) {
                         </tr>
                     </thead>
                     <tbody className={"table-content"}>
+                        {Object.keys(credentials.details).length > 0 ? (
+                            Object.values(credentials.details).map((item, index) => {
+                                let tva = (item.tva ? 1.2 : 1)
+                                let amount = (item.price * tva) * item.quantity
+                                
+                                return (
+                                    <tr key={index}>
+                                        <td className={"-description"}>
+                                            <div className={"form-field"}>
+                                                <input type={"text"} className={"no-radius h-30px"} value={item.description} onChange={(e) => handleChange(e, "description")} required />
+                                            </div>
+                                        </td>
+                                        <td className={"-quantity"}>
+                                            <div className={"form-field"}>
+                                                <input type={"number"} className={"no-radius h-30px"} min={0} value={item.quantity} onChange={(e) => handleChange(e, "quantity")} required />
+                                            </div>
+                                        </td>
+                                        <td className={"-price"}>
+                                            <div className={"form-field"}>
+                                                <input type={"number"} className={"no-radius h-30px"} min={0} value={item.price} onChange={(e) => handleChange(e, "price")} required />
+                                            </div>
+                                        </td>
+                                        <td className={"-tva txt-center"}>
+                                            <input type={"checkbox"} checked={item.tva ? true : false} onChange={(e) => handleChange(e, "tva")} />
+                                        </td>
+                                        <td className={"-amount txt-center"}>{amount}</td>
+                                        <td className={"-action"}>
+                                            <button className={"btn btn-red"} type={"button"} onClick={(e) => handleRemoveRow(e)}>&minus;</button>
+                                        </td>
+                                    </tr>
+                                )
+                            })
+                        ) : (null)}
+
                         <tr>
                             <td colSpan={6} className={"-new-row"}>
                                 <button type={"button"} className={"btn btn-blue"} onClick={(e) => handleNewRow(e)}>+</button>

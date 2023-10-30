@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { findChildren } from "../utils/DomElement";
 
-export default function SeeMoreButton({url}) {
+export default function SeeMoreButton({url, smallSizeBtn = false}) {
 
     const handleMouseEnter = (e) => {
         let child = findChildren(e.target, undefined, "IMG")
@@ -21,7 +21,7 @@ export default function SeeMoreButton({url}) {
     return (
         <Link 
             to={url}
-            className={"btn btn-blue -inline-flex"}
+            className={`btn ${smallSizeBtn ? "btn-sm" : ""} btn-blue -inline-flex`}
             onMouseEnter={(e) => handleMouseEnter(e)}
             onMouseLeave={(e) => handleMouseLeave(e)}
         >

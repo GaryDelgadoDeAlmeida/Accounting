@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { findChildren } from "../utils/DomElement";
 import { useEffect, useState } from "react";
 
-export default function LinkButton({classname, value, url, defaultIMG}) {
+export default function LinkButton({classname, value, url, defaultIMG, smallSizeBtn = false}) {
 
     const [colorIMG, setColorIMG] = useState("")
 
@@ -51,7 +51,7 @@ export default function LinkButton({classname, value, url, defaultIMG}) {
     return (
         <Link 
             to={url}
-            className={`btn ${classname} ${defaultIMG !== undefined ? "-inline-flex" : ""}`} 
+            className={`btn ${classname} ${defaultIMG !== undefined ? "-inline-flex" : ""} ${smallSizeBtn ? "btn-sm" : ""}`} 
             onMouseEnter={(e) => handleMouseEnter(e)}
             onMouseLeave={(e) => handleMouseLeave(e)}
         >

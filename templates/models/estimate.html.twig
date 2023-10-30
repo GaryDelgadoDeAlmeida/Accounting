@@ -136,6 +136,10 @@
                 width: 50%;
             }
 
+            .w-100 {
+                width: 100%;
+            }
+
             .m-0 {
                 margin: 0;
             }
@@ -230,26 +234,32 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-25px d-flex">
-                        <div class="w-50"></div>
-                        <div class="w-50 f-right">
-                            <table class="table">
-                                <tbody>
-                                    <tr>
-                                        <td>Amount</td>
-                                        <td class="txt-center">{{ estimate.getAmount() }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>TVA</td>
-                                        <td class="txt-center">{{ estimate.getTvaAmount() }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="txt-bold">Total amount</td>
-                                        <td class="txt-center">{{ estimate.getTotalAmount() }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="mt-25px">
+                        <table class="w-100">
+                            <tbody>
+                                <tr>
+                                    <td class="w-50"></td>
+                                    <td class="w-50">
+                                        <table class="table">
+                                            <tbody>
+                                                <tr>
+                                                    <td>Amount</td>
+                                                    <td class="txt-center">{{ estimate.getAmount() }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>TVA</td>
+                                                    <td class="txt-center">{{ estimate.getTvaAmount() }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="txt-bold">Total amount</td>
+                                                    <td class="txt-center">{{ estimate.getTotalAmount() }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

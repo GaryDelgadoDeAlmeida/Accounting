@@ -27,9 +27,11 @@
             border-bottom: 1px solid var(--c-dimmGray);
         }
 
-        a {
+        a, button {
+            border: none;
             color: var(--c-black);
             text-decoration: none;
+            background-color: transparent;
         }
     }
 }

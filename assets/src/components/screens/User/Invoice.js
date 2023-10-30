@@ -4,16 +4,25 @@ import SeeMoreButton from "../../parts/SeeMoreButton";
 import PrivateResources from "../../utils/PrivateResources";
 import { Link } from "react-router-dom";
 import FormControl from "../../utils/FormControl";
+import LinkButton from "../../parts/LinkButton";
 import RemoveButton from "../../parts/RemoveButton";
 import axios from "axios";
 
 export default function Invoice() {
 
     const formControl = new FormControl()
-    const { loading, items: invoices, load } = PrivateResources(`${window.location.origin}/api/invoices`)
+    const [offset, setOffset] = useState(1)
+    const [limit, setLimit] = useState(20)
+    const { loading, items: invoices, load } = PrivateResources(`${window.location.origin}/api/invoices?offset=${offset}&limit=${limit}`)
     useEffect(() => {
         load()
     }, [])
+
+    const handlePagination = (e) => {
+        setOffset(
+            parseInt(e.currentTarget.value)
+        )
+    }
 
     const handleDownload = (e) => {
         console.log("Hi handleDownload")
@@ -48,57 +57,90 @@ export default function Invoice() {
 
     return (
         <UserHeader>
-            <Link className={"btn btn-green"} to={"/user/invoice/new"}>
-                <span>Add an invoice</span>
-            </Link>
+            <LinkButton 
+                classname={"btn-green"} 
+                url={"/user/invoice/new"}
+                value={"Add an invoice"}
+            />
 
             <div className={"page-section"}>
                 {!loading ? (
-                    <table className={"table"}>
-                        <thead>
-                            <tr>
-                                <th className={"column-invoice-date"}>Date</th>
-                                <th className={"column-client-name"}>Client</th>
-                                <th className={"column-status"}>Status</th>
-                                <th className={"column-amount"}>Amount (€)</th>
-                                <th className={"column-action"}></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {invoices.length > 0 && typeof invoices === "object" ? (
-                                invoices.map((item, index) => (
-                                    <tr id={`-invoice-row-${index + 1}`} key={index}>
-                                        <td className={"-invoice-date txt-center"}>{item.filename}</td>
-                                        <td className={"-client-name txt-center"}>{item.company.name}</td>
-                                        <td className={"-status txt-center"}>
-                                            <span className={"badge badge-success"}>Paid</span>
-                                        </td>
-                                        <td className={"-amount txt-center"}>{item.totalAmount}</td>
-                                        <td className={"-action txt-right"}>
-                                            <SeeMoreButton url={"/user/invoice/" + item.id} />
-
-                                            <RemoveButton
-                                                removeUrl={`${window.location.origin}/api/invoice/${item.id}/remove`}
-                                                parentElementId={`-invoice-row-${index + 1}`}
-                                            />
-
-                                            <button 
-                                                className={"btn btn-blue -inline-flex"} 
-                                                onClick={(e) => handleDownload(e)}
-                                                data-invoice={item.id}
-                                            >
-                                                <img src={`${window.location.origin}/content/svg/download-white.svg`} alt={""} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr className={"txt-center"}>
-                                    <td colSpan={5}>There is no invoice registered</td>
+                    <>
+                        <table className={"table"}>
+                            <thead>
+                                <tr>
+                                    <th className={"column-invoice-date"}>Date</th>
+                                    <th className={"column-client-name"}>Client</th>
+                                    <th className={"column-status"}>Status</th>
+                                    <th className={"column-amount"}>Amount (€)</th>
+                                    <th className={"column-action"}></th>
                                 </tr>
+                            </thead>
+                            <tbody>
+                                {invoices.length > 0 && typeof invoices === "object" ? (
+                                    invoices.map((item, index) => (
+                                        <tr id={`-invoice-row-${index + 1}`} key={index}>
+                                            <td className={"-invoice-date txt-center"}>{item.filename}</td>
+                                            <td className={"-client-name txt-center"}>{item.company.name}</td>
+                                            <td className={"-status txt-center"}>
+                                                <span className={"badge badge-success"}>Paid</span>
+                                            </td>
+                                            <td className={"-amount txt-center"}>{item.totalAmount}</td>
+                                            <td className={"-action txt-right"}>
+                                                <SeeMoreButton 
+                                                    url={"/user/invoice/" + item.id} 
+                                                    smallSizeBtn={true}
+                                                />
+
+                                                <RemoveButton
+                                                    removeUrl={`${window.location.origin}/api/invoice/${item.id}/remove`}
+                                                    parentElementId={`-invoice-row-${index + 1}`}
+                                                    smallSizeBtn={true}
+                                                />
+
+                                                <LinkButton 
+                                                    classname={"btn-orange"} 
+                                                    url={`/user/invoice/${item.id}/edit`}
+                                                    defaultIMG={"pencil"}
+                                                    smallSizeBtn={true}
+                                                />
+
+                                                <button 
+                                                    className={"btn btn-sm btn-blue -inline-flex"} 
+                                                    onClick={(e) => handleDownload(e)}
+                                                    data-invoice={item.id}
+                                                >
+                                                    <img src={`${window.location.origin}/content/svg/download-white.svg`} alt={""} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr className={"txt-center"}>
+                                        <td colSpan={5}>There is no invoice registered</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+
+                        <div className={"pagination"}>
+                            {offset - 1 > 0 && (
+                                <div>
+                                    <button onClick={(e) => handlePagination(e)} value={offset - 1}>{offset - 1}</button>
+                                </div>
                             )}
-                        </tbody>
-                    </table>
+
+                            <div className={"current-page"}>
+                                <span>{offset}</span>
+                            </div>
+
+                            {offset + 1 < 100 && (
+                                <div>
+                                    <button onClick={(e) => handlePagination(e)} value={offset + 1}>{offset + 1}</button>
+                                </div>
+                            )}
+                        </div>
+                    </>
                 ) : (
                     <div className="">
                         <span>Loading ...</span>

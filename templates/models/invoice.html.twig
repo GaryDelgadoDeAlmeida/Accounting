@@ -6,6 +6,7 @@
         <title>{{ invoice.filename }}</title>
         <style>
             html, body, .page {
+                width: 100%;
                 font-size: .9rem;
                 background-color: #ffffff;
                 -moz-osx-font-smoothing: grayscale;
@@ -21,10 +22,8 @@
             /* File PDF */
             .file-pdf {
                 width: 100%;
-                display: flex;
-                font-size: 1rem;
                 margin-top: 40px;
-                flex-direction: column;
+                position: relative;
             }
 
                 .file-pdf > .pdf-header {
@@ -34,13 +33,14 @@
                     height: 50px;
                     position: fixed;
                     text-align: center;
-                    line-height: 35px;
                 }
 
-                .file-pdf > .pdf-client {}
+                .file-pdf > .pdf-client {
+                    margin-top: 25px;
+                }
 
                 .file-pdf > .pdf-content {
-                    margin-top: 50px;
+                    margin-top: 25px;
                 }
 
                 .file-pdf > .pdf-footer {
@@ -113,11 +113,7 @@
             /* Common */
             .d-flex {
                 display: flex;
-            }
-
-            .d-col {
-                display: flex;
-                flex-direction: column;
+                flex-direction: row;
             }
 
             .txt-center {
@@ -148,11 +144,11 @@
                 width: 100%;
             }
 
-            .m-0 {
-                margin: 0;
+            .h-100px {
+                height: 100px;
             }
 
-            .p-0 {
+            .m-0 {
                 margin: 0;
             }
 
@@ -162,6 +158,10 @@
             
             .mt-50px {
                 margin-top: 50px;
+            }
+
+            .p-0 {
+                margin: 0;
             }
 
             .pt-25px {
@@ -224,50 +224,58 @@
                     </table>
                 </div>
                 
-                <div class="pdf-content d-col">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Description</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                                <th>TVA</th>
-                                <th>Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for invoiceDetail in invoice.invoiceDetails %}
+                <div class="pdf-content">
+                    <div class="mt-25px">
+                        <table class="table">
+                            <thead>
                                 <tr>
-                                    <td class="txt-left">{{ invoiceDetail.description }}</td>
-                                    <td class="txt-center">{{ invoiceDetail.quantity }}</td>
-                                    <td class="txt-center">{{ invoiceDetail.price }}</td>
-                                    <td class="txt-center">{{ invoiceDetail.tva ? "Yes" : "No" }}</td>
-                                    <td class="txt-center">{{ (invoiceDetail.price * invoiceDetail.quantity) * (invoiceDetail.tva ? 1.2 : 1) }}</td>
+                                    <th>Description</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>TVA</th>
+                                    <th>Amount</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    
-                    <div class="w-100 d-flex">
-                        <div class="pt-25px w-50"></div>
-                        <div class="w-50 f-right">
-                            <table class="table">
-                                <tbody>
+                            </thead>
+                            <tbody>
+                                {% for invoiceDetail in invoice.invoiceDetails %}
                                     <tr>
-                                        <td>Sub total</td>
-                                        <td class="txt-center">{{ invoice.getAmount() }}</td>
+                                        <td class="txt-left">{{ invoiceDetail.description }}</td>
+                                        <td class="txt-center">{{ invoiceDetail.quantity }}</td>
+                                        <td class="txt-center">{{ invoiceDetail.price }}</td>
+                                        <td class="txt-center">{{ invoiceDetail.tva ? "Yes" : "No" }}</td>
+                                        <td class="txt-center">{{ (invoiceDetail.price * invoiceDetail.quantity) * (invoiceDetail.tva ? 1.2 : 1) }}</td>
                                     </tr>
-                                    <tr>
-                                        <td>TVA (20%)</td>
-                                        <td class="txt-center">{{ invoice.getTvaAmount() }}</td>
-                                    </tr>
-                                    <tr class="txt-bold">
-                                        <td>Total</td>
-                                        <td class="txt-center">{{ invoice.getTotalAmount() }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-25px">
+                        <table class="w-100">
+                            <tbody>
+                                <tr>
+                                    <td class="w-50"></td>
+                                    <td class="w-50">
+                                        <table class="table">
+                                            <tbody>
+                                                <tr>
+                                                    <td>Sub total</td>
+                                                    <td class="txt-center">{{ invoice.getAmount() }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>TVA (20%)</td>
+                                                    <td class="txt-center">{{ invoice.getTvaAmount() }}</td>
+                                                </tr>
+                                                <tr class="txt-bold">
+                                                    <td>Total</td>
+                                                    <td class="txt-center">{{ invoice.getTotalAmount() }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 

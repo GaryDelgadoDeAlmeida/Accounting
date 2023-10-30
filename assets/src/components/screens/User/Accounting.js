@@ -6,7 +6,12 @@ import PrivateRessources from "../../utils/PrivateResources";
 // Comptabilité
 export default function Accounting() {
 
-    const { loading, items: benefits, load } = PrivateRessources(`${window.location.origin}/api/graphic-accounting`)
+    const years = [
+        2022,
+        2023
+    ]
+    const [currentYear, setCurrentYear] = useState((new Date()).getFullYear())
+    const { loading, items: benefits, load } = PrivateRessources(`${window.location.origin}/api/graphic-accounting?year=${currentYear}`)
     useEffect(() => {
         load()
     }, [])
@@ -34,7 +39,12 @@ export default function Accounting() {
     }
 
     const handleYearBenefitClick = (e, year) => {
+        year = parseInt(year)
         console.log("Hi handleYearBenefitClick ! onclick year : " + year)
+        if(currentYear != year) {
+            setCurrentYear(year)
+            load()
+        }
     }
 
     return (
@@ -42,10 +52,11 @@ export default function Accounting() {
             <div className={"page-section"}>
                 <h2>Accounting</h2>
 
-                <div className={"d-flex-col"}>
+                <div className={"d-flex-col -no-reverse"}>
                     <div className={"d-flex-row"}>
-                        <button className={"btn btn-grey"} onClick={(e) => handleYearBenefitClick(e, 2022)}>2022</button>
-                        <button className={"btn btn-grey"} onClick={(e) => handleYearBenefitClick(e, 2023)}>2023</button>
+                        {years.map((item, index) => (
+                            <button key={index} className={`btn btn-grey ${currentYear == item ? "active" : ""}`} onClick={(e) => handleYearBenefitClick(e, item)}>{item}</button>
+                        ))}
                     </div>
                     <div className={"amount-table"}>
                         {!loading && (

@@ -2,7 +2,7 @@ import React from "react"
 import axios from "axios"
 import { findChildren } from "../utils/DomElement"
 
-export default function RemoveButton({removeUrl, parentElementId}) {
+export default function RemoveButton({removeUrl, parentElementId, smallSizeBtn = false}) {
 
     const handleMouseEnter = (e) => {
         let child = findChildren(e.target, undefined, "IMG")
@@ -47,7 +47,7 @@ export default function RemoveButton({removeUrl, parentElementId}) {
 
     return (
         <button 
-            className={"btn btn-red -inline-flex"} 
+            className={`btn ${smallSizeBtn ? "btn-sm" : ""} btn-red -inline-flex`} 
             onMouseEnter={(e) => handleMouseEnter(e)} 
             onMouseLeave={(e) => handleMouseLeave(e)}
             onClick={(e) => handleRemove(e)}

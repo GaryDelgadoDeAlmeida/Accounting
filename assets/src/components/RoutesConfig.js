@@ -21,9 +21,11 @@ import UserClientInvoiceNew from "./screens/User/ClientInvoiceNew";
 import UserEstimate from "./screens/User/Estimate";
 import UserEstimateSingle from "./screens/User/EstimateSingle";
 import UserEstimateNew from "./screens/User/EstimateNew";
+import UserEstimateEdit from "./screens/User/EstimateEdit";
 import UserInvoice from "./screens/User/Invoice";
 import UserInvoiceSingle from "./screens/User/InvoiceSingle";
 import UserInvoiceNew from "./screens/User/InvoiceNew";
+import UserInvoiceEdit from "./screens/User/InvoiceEdit";
 import UserAccounting from "./screens/User/Accounting";
 import UserSettings from "./screens/User/Settings";
 import NotFound from "./screens/NotFound";
@@ -53,9 +55,11 @@ export default function RoutesConfig() {
                 <Route path={"/user/estimate"} element={<UserEstimate />} />
                 <Route path={"/user/estimate/new"} element={<UserEstimateNew />} />
                 <Route path={"/user/estimate/:estimateID"} element={<UserEstimateSingle />} />
+                <Route path={"/user/estimate/:estimateID/edit"} element={<UserEstimateEdit />} />
                 <Route path={"/user/invoice"} element={<UserInvoice />} />
                 <Route path={"/user/invoice/new"} element={<UserInvoiceNew />} />
                 <Route path={"/user/invoice/:invoiceID"} element={<UserInvoiceSingle />} />
+                <Route path={"/user/invoice/:invoiceID/edit"} element={<UserInvoiceEdit />} />
                 <Route path={"/user/accounting"} element={<UserAccounting />} />
                 <Route path={"/user/settings"} element={<UserSettings />} />
 

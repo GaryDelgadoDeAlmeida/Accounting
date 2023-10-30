@@ -1,14 +1,20 @@
 // import axios from "axios"
 
-export default async function PrivatePostRessource(url, sendBody) {
+export default async function PrivatePostRessource(url, sendBody, useToken = true) {
+    let headerOptions = {
+        "Accept": "application/ld+json",
+        "Content-Type": "application/form-data"
+    }
+
+    if(useToken) {
+        headerOptions.Authorization = "Bearer " + localStorage.getItem("token")
+    }
+
     const response = await fetch({
         url: `${window.location.origin}/api/${url}`,
         method: "POST",
         credentials: 'same-origin',
-        headers: {
-            Accept: "application/ld+json",
-            "Content-Type": "application/form-data"
-        },
+        headers: headerOptions,
         body: sendBody
     })
 

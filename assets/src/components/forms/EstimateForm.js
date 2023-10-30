@@ -4,16 +4,16 @@ import FormControl from "../utils/FormControl";
 import PrivateResources from "../utils/PrivateResources";
 import axios from "axios";
 
-export default function EstimateForm({companyID = null}) {
+export default function EstimateForm({estimate = null, companyID = null}) {
     let details = {}
     const currentDate = new Date()
     const formControl = new FormControl()
-    const {loading, items: companies, load} = PrivateResources(window.location.origin + "/api/companies")
+    const {loading, items: companies, load} = PrivateResources(`${window.location.origin}/api/companies`)
     
     const [credentials, setCredentials] = useState({
         date: "",
         company: "",
-        details: []
+        details: {...estimate.estimateDetails} ?? {}
     })
     const [credentialDetails, setCredentialDetails] = useState({
         title: "",
@@ -149,9 +149,14 @@ export default function EstimateForm({companyID = null}) {
             return
         }
 
+        let url = `${window.location.origin}/api/estimate`
+        if(estimate !== null) {
+            url = `${window.location.origin}/api/estimate/${estimate.id}/update`
+        }
+
         // Send data to API
         axios
-            .post(window.location.origin + "/api/estimate", credentials, {
+            .post(`${window.location.origin}/api/estimate`, credentials, {
                 headers: {
                     "Content-Type": "application/json"
                 }
@@ -248,9 +253,9 @@ export default function EstimateForm({companyID = null}) {
                                     <tbody id={"estimate-details"}>
                                         {Object.keys(credentials.details).length > 0 && typeof credentials.details == "object" && Object.values(credentials.details).map((item, index) => (
                                             <tr key={index}>
-                                                <td className={"-title"}>{item.title}</td>
+                                                <td className={"-title"}>{item.label}</td>
                                                 <td className={"-quantity txt-center"}>{item.quantity}</td>
-                                                <td className={"-price txt-center"}>{item.budget}</td>
+                                                <td className={"-price txt-center"}>{item.price}</td>
                                                 <td className={"-action txt-right"}>
                                                     <button type={"button"} className={"btn btn-red -inline-flex"} onClick={(e) => handleRemove(e)}>
                                                         <img src={`${window.location.origin}/content/svg/trash-white.svg`} />
