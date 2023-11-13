@@ -3,6 +3,7 @@
 namespace App\Controller\API;
 
 use App\Entity\User;
+use App\Manager\TokenManager;
 use App\Manager\SerializeManager;
 use App\Repository\UserRepository;
 use App\Repository\CompanyRepository;
@@ -20,7 +21,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class DefaultController extends AbstractController
 {
-    private User $user;
+    private ?User $user;
+    private TokenManager $tokenManager;
     private SerializeManager $serializerManager;
     private CompanyRepository $companyRepository;
     private InvoiceRepository $invoiceRepository;
@@ -28,13 +30,14 @@ class DefaultController extends AbstractController
 
     function __construct(
         Security $security,
-        UserRepository $userRepository, // Temporary : To delete after the login system has been implemented
+        TokenManager $tokenManager,
         SerializeManager $serializeManager,
         CompanyRepository $companyRepository,
         InvoiceRepository $invoiceRepository,
         EstimateRepository $estimateRepository
     ) {
-        $this->user = $security->getUser() ?? $userRepository->find(1); 
+        $this->user = $security->getUser() ?? null;
+        $this->tokenManager = $tokenManager;
         $this->serializeManager = $serializeManager;
         $this->companyRepository = $companyRepository;
         $this->invoiceRepository = $invoiceRepository;
@@ -46,8 +49,9 @@ class DefaultController extends AbstractController
      */
     public function index(Request $request): JsonResponse
     {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
         if(empty($this->user)) {
-            return $this->json("The user is missing", Response::HTTP_FORBIDDEN);
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
         }
 
         $userID = $this->user->getId();

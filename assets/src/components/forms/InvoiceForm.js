@@ -15,7 +15,7 @@ export default function InvoiceForm({companyID, invoice = null}) {
     const [credentials, setCredentials] = useState({
         company: parseInt(companyID),
         invoice_date: "",
-        details: {...invoice.invoiceDetails} ?? {}
+        details: invoice != null ? {...invoice.invoiceDetails} : {}
     })
 
     useEffect(() => {

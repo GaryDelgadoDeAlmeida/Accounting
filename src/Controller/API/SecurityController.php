@@ -107,13 +107,21 @@ class SecurityController extends AbstractController
                 $request
             )
         );
+
+        $authenticatorToken = $authenticator->authenticateUser(
+            $user, 
+            $formAuthenticator, 
+            $request
+        );
         
         // substitute the previous line (redirect response) with this one.
         return $this->json([
-            "token" => $authenticator->authenticateUser(
-                $user, 
-                $formAuthenticator, 
-                $request
+            "token" => base64_encode(
+                json_encode([
+                    "userID" => $user->getId(),
+                    "email" => $user->getEmail(),
+                    "roles" => $user->getRoles()
+                ], JSON_UNESCAPED_UNICODE)
             )
         ]); 
     }

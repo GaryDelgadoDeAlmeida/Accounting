@@ -9,7 +9,7 @@ import RemoveButton from "../../parts/RemoveButton";
 export default function Estimate() {
 
     const [offset, setOffset] = useState(1)
-    const [limit, setLimit] = useState(20)
+    const limit = 20
     const {loading, items: estimates, load} = PrivateResources(`${window.location.origin}/api/estimate?offset=${offset}&limit=${limit}`)
 
     useEffect(() => {

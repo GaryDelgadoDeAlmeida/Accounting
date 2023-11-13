@@ -32,6 +32,7 @@ form {
             height: 35px;
             padding: 0 20px;
             border-radius: 25px;
+            background-color: transparent;
             border: 1px solid var(--c-silver);
         }
 
@@ -40,6 +41,7 @@ form {
             padding: 20px;
             resize: vertical;
             border-radius: 25px;
+            background-color: transparent;
             border: 1px solid var(--c-silver);
         }
 
@@ -47,6 +49,7 @@ form {
             height: 35px;
             padding: 0 15px;
             border-radius: 25px;
+            background-color: transparent;
             border: 1px solid var(--c-silver);
 
             &[multiple] {

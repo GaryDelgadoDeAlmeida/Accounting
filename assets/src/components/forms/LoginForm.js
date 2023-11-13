@@ -68,7 +68,7 @@ export default function LoginForm() {
             .then(res => {
                 let data = res.data
                 if(data.token != "") {
-                    if(["undefined", null, undefined].indexOf(localStorage.getItem("token")) === -1) {
+                    if(["undefined", "null", null, undefined].indexOf(localStorage.getItem("token")) !== -1) {
                         localStorage.setItem("token", data.token)
                         setLogged(true)
                     }

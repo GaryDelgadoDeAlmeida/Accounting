@@ -45,14 +45,23 @@ export default function Settings() {
                         )}
 
                         {onglet === "security" && (
-                            <div className={"card"}>
-                                <div className={"-header"}>
-                                    <label>Change your password</label>
+                            <>
+                                <div className={"card"}>
+                                    <div className={"-header"}>
+                                        <label>Change your password</label>
+                                    </div>
+                                    <div className={"-content"}>
+                                        <PasswordForm userID={userID} />
+                                    </div>
                                 </div>
-                                <div className={"-content"}>
-                                    <PasswordForm userID={userID} />
+
+                                <div className={"mt-15px"}>
+                                    <button className={"btn btn-red -inline-flex"}>
+                                        <img src={`${window.location.origin}/content/svg/trash-white.svg`} alt={"trash"} />
+                                        <span>Remove your account</span>
+                                    </button>
                                 </div>
-                            </div>
+                            </>
                         )}
 
                         {allowedOgnlet.indexOf(onglet) === -1 && (

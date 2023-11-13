@@ -21,9 +21,10 @@ export default function ClientSingle() {
     useEffect(() => {
         setLoading(true)
         axios
-            .get(window.location.origin + "/api/company/" + clientID, {
+            .get(`${window.location.origin}/api/company/${clientID}`, {
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
                 }
             })
             .then(res => {
@@ -40,7 +41,8 @@ export default function ClientSingle() {
                 )
             })
             .catch(err => {
-                alert(err.response.data.message)
+                let message = err.response.data.message ?? err.response.data.detail
+                alert(message)
                 setError(true)
             })
         ;

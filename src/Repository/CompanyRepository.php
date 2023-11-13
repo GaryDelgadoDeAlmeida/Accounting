@@ -21,6 +21,11 @@ class CompanyRepository extends ServiceEntityRepository
         parent::__construct($registry, Company::class);
     }
 
+    /**
+     * @param Company entity
+     * @param bool flush
+     * @return void
+     */
     public function save(Company $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
@@ -30,6 +35,11 @@ class CompanyRepository extends ServiceEntityRepository
         }
     }
 
+    /**
+     * @param Company 
+     * @param bool flush
+     * @return void
+     */
     public function remove(Company $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
@@ -76,6 +86,9 @@ class CompanyRepository extends ServiceEntityRepository
 
     /**
      * Count all clients of an user
+     * 
+     * @param int user
+     * @return void
      */
     public function countCompanies(int $userID) {
         return $this->createQueryBuilder("company")

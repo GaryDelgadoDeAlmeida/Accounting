@@ -62,5 +62,7 @@ class PdfManager extends AbstractController {
         $dompdf->stream("{$filename}.pdf", [
             "Attachment" => $attachment
         ]);
+
+        return $dompdf;
     }
 }

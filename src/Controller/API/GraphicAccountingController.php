@@ -3,7 +3,7 @@
 namespace App\Controller\API;
 
 use App\Entity\User;
-use App\Repository\UserRepository;
+use App\Manager\TokenManager;
 use App\Repository\InvoiceRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
@@ -17,11 +17,17 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class GraphicAccountingController extends AbstractController
 {
-    private User $user;
+    private ?User $user;
+    private TokenManager $tokenManager;
     private InvoiceRepository $invoiceRepository;
 
-    function __construct(Security $security, UserRepository $userRepository, InvoiceRepository $invoiceRepository) {
-        $this->user = $security->getUser() ?? $userRepository->find(1);
+    function __construct(
+        Security $security, 
+        TokenManager $tokenManager,
+        InvoiceRepository $invoiceRepository
+    ) {
+        $this->user = $security->getUser() ?? null;
+        $this->tokenManager = $tokenManager;
         $this->invoiceRepository = $invoiceRepository;
     }
 
@@ -30,6 +36,11 @@ class GraphicAccountingController extends AbstractController
      */
     public function index(Request $request): JsonResponse
     {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
         $yearAmount = [];
         $year = $request->get("year", (new \DateTime())->format("Y"));
         $invoices = $this->invoiceRepository->getDetailYearBenefit($this->user, $year);

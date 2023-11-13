@@ -1,11 +1,14 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import UserHeader from "../../parts/UserHeader"
 import LinkButton from "../../parts/LinkButton"
+import Notification from "../../parts/Notification"
 import PrivateResources from "../../utils/PrivateResources"
+import axios from "axios"
 
 export default function EstimateSingle() {
     const { estimateID } = useParams()
+    const [error, setError] = useState(false)
     const { loading, items: estimate, load } = PrivateResources(`${window.location.origin}/api/estimate/${estimateID}`)
 
     useEffect(() => {
@@ -14,6 +17,37 @@ export default function EstimateSingle() {
 
     const handleGeneratePDF = (e) => {
         console.log("HI handleGeneratePDF")
+        setError(false)
+        if(estimateID != null) {
+            axios
+                .get(`${window.location.origin}/api/estimate/${estimateID}/pdf`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/pdf",
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                        "ReferrerPolicy": "no-referrer",
+                        "Mode": "no-cors"
+                    }
+                })
+                .then(response => {
+                    console.log(response, response.data)
+                    const aElement = document.createElement('a');
+                    aElement.setAttribute('download', estimate.label);
+                    
+                    const href = URL.createObjectURL(
+                        new Blob([response.data], {type: "application/pdf"})
+                    );
+                    aElement.href = href;
+                    aElement.setAttribute('target', '_blank');
+                    aElement.click();
+                    URL.revokeObjectURL(href);
+                })
+                .catch(error => {
+                    console.log(error)
+                    setError(true)
+                })
+            ;
+        }
     }
 
     return (
@@ -28,6 +62,9 @@ export default function EstimateSingle() {
 
                 {!loading && Object.keys(estimate).length > 0 ? (
                     <div className={"mt-15px"}>
+                        {error && (
+                            <Notification classname={"danger"} message={"An error has been encountered. Please retry downloading the estimate later."} />
+                        )}
                         <div className={"d-flex"}>
                             <div className={"w-50"}>
                                 <label>Estimate N°1</label>
@@ -137,16 +174,16 @@ export default function EstimateSingle() {
                                 <table className={"table"}>
                                     <tbody>
                                         <tr>
-                                            <td className={""}>Total HT (€)</td>
+                                            <td className={"-m-hidden"}>Total HT (€)</td>
                                             <td className={"-amount txt-center"}>{estimate.amount}</td>
                                         </tr>
                                         <tr>
-                                            <td className={""}>TVA</td>
+                                            <td className={"-m-hidden"}>TVA</td>
                                             <td className={"-tva txt-center"}>{estimate.tvaAmount}</td>
                                         </tr>
                                         <tr>
-                                            <td className={""}>Total (€)</td>
-                                            <td className={"-total-amount txt-center"}>{estimate.totalAmount}</td>
+                                            <td className={"-m-hidden"}>Total (€)</td>
+                                            <td className={"-total txt-center"}>{estimate.totalAmount}</td>
                                         </tr>
                                     </tbody>
                                 </table>

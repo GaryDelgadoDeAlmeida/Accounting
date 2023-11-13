@@ -28,9 +28,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 180, unique: true)]
     private ?string $email = null;
 
-    #[ORM\Column]
-    private array $roles = [];
-
     /**
      * @var string The hashed password
      */
@@ -39,6 +36,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $birthDate = null;
+
+    #[ORM\Column]
+    private array $roles = [];
 
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
@@ -130,25 +130,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @see UserInterface
-     */
-    public function getRoles(): array
-    {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
-    }
-
-    public function setRoles(array $roles): self
-    {
-        $this->roles = $roles;
-
-        return $this;
-    }
-
-    /**
      * @see PasswordAuthenticatedUserInterface
      */
     public function getPassword(): string
@@ -191,6 +172,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setBirthDate(\DateTimeInterface $birthDate): self
     {
         $this->birthDate = $birthDate;
+
+        return $this;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    public function isAdmin(): bool {
+        $isAdmin = false;
+
+        if(in_array("ROLE_ADMIN", $this->getRoles())) {
+            $isAdmin = true;
+        }
+
+        return $isAdmin;
+    }
+
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
 
         return $this;
     }
@@ -240,12 +250,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
+     * Find a company by the id
+     * 
+     * @param int company id
+     * @return Company
+     */
+    public function getCompany(int $companyID) : Company {
+        $company = null;
+        
+        foreach($this->companies as $client) {
+            if($client->getId() === $companyID) {
+                $company = $client;
+                break;
+            }
+        }
+
+        return $company;
+    }
+
+    /**
      * Find a company using the same siret in the list of the user
      * 
      * @param string siret
      * @return Company|null
      */
-    public function getCompany(string $siret) : Company {
+    public function findCompanyBySiret(string $siret) : Company {
         foreach($this->companies as $company) {
             if($company->getSiret() == $siret) {
                 return $company;

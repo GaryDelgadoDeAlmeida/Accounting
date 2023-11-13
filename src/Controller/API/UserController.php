@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Enum\UserEnum;
 use App\Manager\FormManager;
 use App\Manager\UserManager;
+use App\Manager\TokenManager;
 use App\Manager\SerializeManager;
 use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,9 +21,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class UserController extends AbstractController
 {
-    private User $user;
+    private ?User $user;
     private FormManager $formManager;
     private UserManager $userManager;
+    private TokenManager $tokenManager;
     private SerializeManager $serializeManager;
     private UserRepository $userRepository;
 
@@ -30,18 +32,20 @@ class UserController extends AbstractController
         Security $security,
         FormManager $formManager, 
         UserManager $userManager,
+        TokenManager $tokenManager,
         SerializeManager $serializeManager, 
         UserRepository $userRepository, 
     ) {
-        $this->user = $security->getUser() ?? (new User())->setRoles(["ROLE_USER"]);
+        $this->user = $security->getUser() ?? null;
         $this->formManager = $formManager;
         $this->userManager = $userManager;
+        $this->tokenManager = $tokenManager;
         $this->serializeManager = $serializeManager;
         $this->userRepository = $userRepository;
     }
 
     /**
-     * @Route("/user", name="get_users", methods={"GET"})
+     * @Route("/users", name="get_users", methods={"GET"})
      */
     public function get_users(Request $request): JsonResponse
     {
@@ -103,9 +107,33 @@ class UserController extends AbstractController
     }
 
     /**
+     * @Route("/profile", name="get_profile", methods={"GET"})
+     */
+    public function get_profile(Request $request) : JsonResponse {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json(null, Response::HTTP_FORBIDDEN);
+        }
+        
+        return $this->json(
+            $this->serializeManager->serializeContent($this->user), 
+            Response::HTTP_OK
+        );
+    }
+
+    /**
      * @Route("/user/{userID}", name="single_user", requirements={"userID"="\d+"}, methods={"GET"})
      */
     public function get_user(Request $request, int $userID) : JsonResponse {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
+        if(!$this->user->isAdmin()) {
+            return $this->json(null, Response::HTTP_FORBIDDEN);
+        }
+
         $user = $this->userRepository->find($userID);
         if(empty($user)) {
             return $this->json(null, Response::HTTP_NOT_FOUND);
@@ -121,7 +149,16 @@ class UserController extends AbstractController
     /**
      * @Route("/user/{userID}", name="update_single_user", requirements={"userID"="\d+"}, methods={"PUT", "UPDATE"})
      */
-    public function update_user(Request $request, int $userID) : JsonResponse {
+    public function update_user(Request $request, int $userID) : JsonResponse
+    {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
+        if(!$this->user->isAdmin()) {
+            return $this->json(null, Response::HTTP_FORBIDDEN);
+        }
 
         $user = $this->userRepository->find($userID);
         if(empty($user)) {
@@ -192,7 +229,7 @@ class UserController extends AbstractController
         }
 
         // check if a company linked to the user already use the siret (has to be unique)
-        $company = $user->getCompany($companyJsonContent["siret"]);
+        $company = $user->findCompanyBySiret($companyJsonContent["siret"]);
         if($company) {
             return $this->json("A company already exist with the same siret number", Response::HTTP_FORBIDDEN);
         }

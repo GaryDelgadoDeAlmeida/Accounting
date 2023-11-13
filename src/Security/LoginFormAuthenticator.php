@@ -49,12 +49,16 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
             return new RedirectResponse($targetPath);
         }
 
-        // For example:
-        // return new RedirectResponse($this->urlGenerator->generate('some_route'));
+        $user = $token->getUser();
+        $jsonToken = json_encode([
+            "userID" => $user->getId(),
+            "email" => $user->getEmail(),
+            "roles" => $user->getRoles()
+        ], JSON_UNESCAPED_UNICODE);
+
         return new Response(json_encode([
-            "token" => base64_encode($token)
+            "token" => base64_encode($jsonToken)
         ], JSON_UNESCAPED_UNICODE), Response::HTTP_OK);
-        // throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
     }
 
     protected function getLoginUrl(Request $request): string

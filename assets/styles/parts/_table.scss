@@ -168,6 +168,10 @@
                         }
                     }
 
+                    &.-nbr-days::before {
+                        content: "Nombre de jours";
+                    }
+
                     &.-status::before {
                         content: "Statut";
                     }

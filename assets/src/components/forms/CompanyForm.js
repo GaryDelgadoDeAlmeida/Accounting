@@ -239,7 +239,7 @@ export default function CompanyForm({userID, company = {}}) {
                     </div>
                 </form>
             ) : (
-                <Notification clasname={"information"} message={"Loading ..."} />
+                <Notification classname={"information"} message={"Loading ..."} />
             )}
         </>
     )

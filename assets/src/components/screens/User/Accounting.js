@@ -71,12 +71,12 @@ export default function Accounting() {
                                     {Object.keys(generateAllMonth()).length > 0 && typeof generateAllMonth() === "object" ? (
                                         Object.values(generateAllMonth()).map((item, index) => {
                                             let date = new Date()
-                                            date.setMonth(index - 1)
+                                            date.setMonth(index)
 
                                             return (
                                                 <tr key={index} className={"txt-center"}>
                                                     <td className={"-m-hidden"}>{date.toLocaleDateString("en-EN", {month: 'long'})}</td>
-                                                    <td className={`-${date.toLocaleDateString("en-EN", {month: 'long'}).toLowerCase()}`}>{benefits[index + 1] ?? 0}</td>
+                                                    <td className={`-${date.toLocaleDateString("en-EN", {month: 'long'}).toLowerCase()}`}>{benefits[item + 1] ?? 0}</td>
                                                 </tr>
                                             )
                                         })

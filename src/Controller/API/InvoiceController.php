@@ -23,7 +23,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class InvoiceController extends AbstractController
 {
-    private User $user;
+    private ?User $user;
     private PdfManager $pdfManager;
     private FormManager $formManager;
     // private ContactManager $contactManager;
@@ -45,7 +45,7 @@ class InvoiceController extends AbstractController
         InvoiceRepository $invoiceRepository,
         InvoiceDetailRepository $invoiceDetailRepository
     ) {
-        $this->user = $security->getUser() ?? $userRepository->find(1);
+        $this->user = $security->getUser() ?? null; // Temporary : To delete after the login system has been implemented
         $this->pdfManager = $pdfManager;
         $this->formManager = $formManager;
         // $this->contactManager = $contactManager;
@@ -61,6 +61,11 @@ class InvoiceController extends AbstractController
      */
     public function get_invoices(Request $request): JsonResponse
     {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
         $limit = 20;
         $offset = $request->get("offset", 1);
         $offset = is_numeric($offset) && $offset >= 1 ? $offset : 1;
@@ -78,6 +83,11 @@ class InvoiceController extends AbstractController
      */
     public function post_invoice(Request $request)
     {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
         $jsonContent = json_decode($request->getContent(), true);
         if(empty($jsonContent)) {
             return $this->json(null, Response::HTTP_FORBIDDEN);
@@ -118,6 +128,11 @@ class InvoiceController extends AbstractController
      */
     public function get_invoice(int $invoiceID = 0): JsonResponse
     {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
         $invoice = $this->invoiceRepository->findOneBy(["id" => $invoiceID, "user" => $this->user]);
         if(empty($invoice)) {
             return $this->json(null, Response::HTTP_NOT_FOUND);
@@ -134,6 +149,11 @@ class InvoiceController extends AbstractController
      */
     public function update_invoice(Request $request, int $invoiceID = 0): JsonResponse
     {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
         $invoice = $this->invoiceRepository->find($invoiceID);
         if(!$invoice) {
             return $this->json(null, Response::HTTP_NOT_FOUND);
@@ -155,7 +175,12 @@ class InvoiceController extends AbstractController
      */
     public function get_invoice_pdf(Request $request, int $invoiceID)
     {
-        $invoice = $this->invoiceRepository->find($invoiceID);
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
+        $invoice = $this->invoiceRepository->findOneBy(["id" => $invoiceID, "user" => $this->user]);
         if(empty($invoice)) {
             return $this->json(null, Response::HTTP_NOT_FOUND);
         }
@@ -189,6 +214,11 @@ class InvoiceController extends AbstractController
      */
     public function remove_invoice(Request $request, int $invoiceID = 0) : JsonResponse 
     {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
         if(empty($invoiceID)) {
             return $this->json(["message" => "Unknown invoice identification"], Response::HTTP_FORBIDDEN);
         }

@@ -8,12 +8,12 @@ export default function EstimateForm({estimate = null, companyID = null}) {
     let details = {}
     const currentDate = new Date()
     const formControl = new FormControl()
-    const {loading, items: companies, load} = PrivateResources(`${window.location.origin}/api/companies`)
+    const {loading = true, items: companies, load} = PrivateResources(`${window.location.origin}/api/companies`)
     
     const [credentials, setCredentials] = useState({
         date: "",
         company: "",
-        details: {...estimate.estimateDetails} ?? {}
+        details: estimate != null ? {...estimate.estimateDetails} : {}
     })
     const [credentialDetails, setCredentialDetails] = useState({
         title: "",

@@ -80,7 +80,7 @@ Quick setup create a new repository on the command line
 
 Compile a SASS file into a CSS file
 ```bash
-    sass index.scss index.css
+    sass --style compressed ./public/assets/sass/index.scss ./public/assets/build/index.css
 ```
 
 ### Générer un mot de passe hashé

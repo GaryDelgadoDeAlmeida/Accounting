@@ -9,7 +9,7 @@ import PrivateResources from "../../utils/PrivateResources"
 export default function ClientEdit() {
     const { clientID } = useParams()
     const [error, setError] = useState(false)
-    const { loading, items, load } = PrivateResources(window.location.origin + "/api/company/" + clientID)
+    const { loading, items, load } = PrivateResources(`${window.location.origin}/api/company/${clientID}`)
 
     useEffect(() => {
         load()
@@ -26,7 +26,11 @@ export default function ClientEdit() {
                     <label>Edit company</label>
                 </div>
                 <div className={"-content"}>
-                    <CompanyForm company={items.company} />
+                    {!loading && items.company != null ? (
+                        <CompanyForm company={items.company} />
+                    ) : (
+                        <p>Loading ...</p>
+                    )}
                 </div>
             </div>
         </UserHeader>

@@ -2,11 +2,13 @@
 
 namespace App\Controller\API;
 
+use App\Entity\User;
 use App\Manager\FormManager;
 use App\Manager\ContactManager;
 use App\Manager\SerializeManager;
 use App\Repository\ContactRepository;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,17 +19,20 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class ContactController extends AbstractController
 {
+    private ?User $user;
     private FormManager $formManager;
     private ContactManager $contactManager;
     private SerializeManager $serializerManager;
     private ContactRepository $contactRepository;
 
     function __construct(
+        Security $security,
         FormManager $formManager, 
         ContactManager $contactManager,
         SerializeManager $serializerManager,
         ContactRepository $contactRepository
     ) {
+        $this->user = $security->getUser() ?? null;
         $this->formManager = $formManager;
         $this->contactManager = $contactManager;
         $this->serializerManager = $serializerManager;
@@ -39,13 +44,18 @@ class ContactController extends AbstractController
      */
     public function get_contact(Request $request) : JsonResponse 
     {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
         $offset = $request->get("offset", 1);
         $offset = is_numeric($offset) && $offset > 1 ? $offset : 1;
         $limit = 20;
 
         return $this->json(
             $this->serializerManager->serializeContent(
-                $this->contactRepository->findBy([], ["id" => "ASC"], $limit, ($offset - 1) * $limit)
+                $this->contactRepository->findBy([], ["id" => "DESC"], $limit, ($offset - 1) * $limit)
             ), 
             Response::HTTP_OK
         );
@@ -126,6 +136,15 @@ class ContactController extends AbstractController
      */
     public function remove_single_contact(Request $request, int $contactID) : JsonResponse 
     {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
+        if(!$this->user->isAdmin()) {
+            return $this->json("The user don't have the necessary rights", Response::HTTP_FORBIDDEN);
+        }
+
         $contact = $this->contactRepository->find($contactID);
         if(!$contact) {
             return $this->json(null, Response::HTTP_NOT_FOUND);
