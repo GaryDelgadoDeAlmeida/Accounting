@@ -5,6 +5,7 @@ namespace App\Controller\API;
 use App\Entity\User;
 use App\Manager\PdfManager;
 use App\Manager\FormManager;
+use App\Manager\TokenManager;
 use App\Manager\InvoiceManager;
 use App\Manager\SerializeManager;
 use App\Repository\UserRepository;
@@ -26,6 +27,7 @@ class InvoiceController extends AbstractController
     private ?User $user;
     private PdfManager $pdfManager;
     private FormManager $formManager;
+    private TokenManager $tokenManager;
     // private ContactManager $contactManager;
     private InvoiceManager $invoiceManager;
     private SerializeManager $serializeManager;
@@ -37,6 +39,7 @@ class InvoiceController extends AbstractController
         Security $security,
         PdfManager $pdfManager,
         FormManager $formManager, 
+        TokenManager $tokenManager,
         // ContactManager $contactManager,
         InvoiceManager $invoiceManager, 
         SerializeManager $serializeManager,
@@ -48,6 +51,7 @@ class InvoiceController extends AbstractController
         $this->user = $security->getUser() ?? null; // Temporary : To delete after the login system has been implemented
         $this->pdfManager = $pdfManager;
         $this->formManager = $formManager;
+        $this->tokenManager = $tokenManager;
         // $this->contactManager = $contactManager;
         $this->invoiceManager = $invoiceManager;
         $this->serializeManager = $serializeManager;
@@ -126,7 +130,7 @@ class InvoiceController extends AbstractController
     /**
      * @Route("/invoice/{invoiceID}", name="get_invoice", requirements={"invoiceID"="\d+"}, methods={"GET"})
      */
-    public function get_invoice(int $invoiceID = 0): JsonResponse
+    public function get_invoice(Request $request, int $invoiceID = 0): JsonResponse
     {
         $this->user = $this->user ?? $this->tokenManager->checkToken($request);
         if(empty($this->user)) {

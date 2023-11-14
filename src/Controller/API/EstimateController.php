@@ -117,7 +117,7 @@ class EstimateController extends AbstractController
     /**
      * @Route("/estimate/{estimateID}", requirements={"estimateID"="\d+"}, name="get_estimate", methods={"GET"})
      */
-    public function get_estimate(int $estimateID) : JsonResponse 
+    public function get_estimate(Request $request, int $estimateID) : JsonResponse 
     {
         $this->user = $this->user ?? $this->tokenManager->checkToken($request);
         if(empty($this->user)) {
