@@ -28,7 +28,7 @@ abstract class InvoiceEnum {
         return static::$typeName[$status];
     }
 
-    public function getAvailableStatus() {
+    public static function getAvailableStatus() {
         return [
             self::STATUS_UNPAID,
             self::STATUS_ONGOING,
@@ -36,7 +36,7 @@ abstract class InvoiceEnum {
         ];
     }
 
-    public function getInvoiceAvailableChoices() {
+    public static function getInvoiceAvailableChoices() {
         return [
             self::INVOICE_FILENAME,
             self::INVOICE_FILEPATH,
@@ -45,11 +45,11 @@ abstract class InvoiceEnum {
         ];
     }
 
-    public function getChoices() {
+    public static function getChoices() {
         $choices = [];
 
-        foreach(self::getAvailableChoices() as $key => $choice) {
-            $choices[static::$typeName[$key]] = $choice;
+        foreach(self::getAvailableStatus() as $choice) {
+            $choices[static::$typeName[$choice]] = $choice;
         }
 
         return $choices;

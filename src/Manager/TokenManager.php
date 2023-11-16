@@ -16,22 +16,22 @@ class TokenManager {
     public function checkToken(Request $request) {
         $authorization = $request->headers->get('Authorization', null);
         if(!$authorization) {
-            throw new \Error("The 'Authorization' header is missing");
+            throw new \Error("The 'Authorization' header is missing", 403);
         }
 
         // skip beyond "Bearer "
         $tokenBearer = substr($authorization, 7);
         if(empty($tokenBearer)) {
-            throw new \Error("The 'Authorization' header miss the token bearer");
+            throw new \Error("The 'Authorization' header miss the token bearer", 403);
         }
         
         if(!$decodeToken = base64_decode($tokenBearer)) {
-            throw new \Error("An error has been encountered with the sended token");
+            throw new \Error("An error has been encountered with the sended token", 500);
         }
 
         $jsonToken = json_decode($decodeToken, true);
         if(!$jsonToken) {
-            throw new \Error("An error has been encountered with the sended token");
+            throw new \Error("An error has been encountered with the sended token", 500);
         }
 
         // Check the content of the token (normally, we have a json who have the email, roles and the user id)

@@ -4,9 +4,8 @@ import Notification from "../parts/Notification";
 import FormControl from "../utils/FormControl";
 import PublicResources from "../utils/PublicResources";
 
-export default function UserCorporationForm({userID}) {
+export default function UserCorporationForm({freelance}) {
 
-    const { loading: userLoading, items: corporation, load: corporationLoad } = PublicResources(window.location.origin + "/api/user/" + userID + "/freelance")
     const { loading: countriesLoading, items: countries, load: countriesLoad } = PublicResources("https://restcountries.com/v3.1/all?fields=name")
     const juridicalStatus = [
         {
@@ -29,18 +28,17 @@ export default function UserCorporationForm({userID}) {
 
     // Form field
     const [credentials, setCredentials] = useState({
-        name: "",
-        address: "",
-        city: "",
-        zip_code: "",
-        country: "",
-        siren: "",
-        siret: "",
-        duns_number: ""
+        name: freelance != null ? freelance.name : "",
+        address: freelance != null ? freelance.address : "",
+        city: freelance != null ? freelance.city : "",
+        zip_code: freelance != null ? freelance.zip_code : "",
+        country: freelance != null ? freelance.country : "",
+        siren: freelance != null ? freelance.siren : "",
+        siret: freelance != null ? freelance.siret : "",
+        duns_number: freelance != null ? freelance.duns_number : ""
     })
 
     useEffect(() => {
-        corporationLoad()
         countriesLoad()
     }, [])
 
@@ -117,7 +115,7 @@ export default function UserCorporationForm({userID}) {
 
             <div className={"form-field"}>
                 <label htmlFor={"name"}>Name</label>
-                <input id={"name"} type={"text"} value={credentials.name != "" ? credentials.name : corporation.name} maxLength={255} onChange={(e) => handleChange(e, "name")} />
+                <input id={"name"} type={"text"} value={credentials.name} maxLength={255} onChange={(e) => handleChange(e, "name")} />
             </div>
 
             <div className={"form-field"}>

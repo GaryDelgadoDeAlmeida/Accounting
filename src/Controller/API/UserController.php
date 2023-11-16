@@ -122,6 +122,52 @@ class UserController extends AbstractController
     }
 
     /**
+     * @Route("/profile", name="update_profile", methods={"UPDATE", "PUT"})
+     */
+    public function udate_profile(Request $request) : JsonResponse
+    {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
+        $jsonContent = json_decode($request->getContent(), true);
+        if(empty($jsonContent)) {
+            return $this->json("An error has been encoutered with the sended body", Response::HTTP_PRECONDITION_FAILED);
+        }
+
+        try {
+            if(isset($userFields["password"])) {
+                if($userFields["password"] === $userFields["new_password"]) {
+                    return $this->json(
+                        "The old password and the new one are the same.", 
+                        Response::HTTP_FORBIDDEN
+                    );
+                }
+
+                if($userFields["new_password"] !== $userFields["confirm_password"]) {
+                    return $this->json(
+                        "The confirmation password field value isn't the same as the password", 
+                        Response::HTTP_PRECONDITION_FAILED
+                    );
+                }
+            }
+
+            $userFields = $this->userManager->checkUserFields($jsonContent);
+            if(empty($userFields)) {
+                return $this->json("", Response::HTTP_PRECONDITION_FAILED);
+            }
+
+            // Update profile
+            $user = $this->userManager->fillUser($userFields, $this->user);
+        } catch(\Exception $e) {
+            return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json(null, Response::HTTP_ACCEPTED);
+    }
+
+    /**
      * @Route("/user/{userID}", name="single_user", requirements={"userID"="\d+"}, methods={"GET"})
      */
     public function get_user(Request $request, int $userID) : JsonResponse {
@@ -157,7 +203,7 @@ class UserController extends AbstractController
         }
 
         if(!$this->user->isAdmin()) {
-            return $this->json(null, Response::HTTP_FORBIDDEN);
+            return $this->json("The user don't have the necessary rigths to process an update on another user than himself", Response::HTTP_FORBIDDEN);
         }
 
         $user = $this->userRepository->find($userID);

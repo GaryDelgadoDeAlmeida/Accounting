@@ -34,8 +34,8 @@ abstract class UserEnum {
     {
         $choices = [];
 
-        foreach(self::getAvailableChoices() as $key => $choice) {
-            $choices[static::$typeName[$key]] = $choice;
+        foreach(self::getAvailableChoices() as $choice) {
+            $choices[static::$typeName[$choice]] = $choice;
         }
 
         return $choices;

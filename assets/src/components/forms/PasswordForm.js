@@ -5,7 +5,7 @@ import Notification from "../parts/Notification";
 import FormControl from "../utils/FormControl";
 import axios from "axios";
 
-export default function PasswordForm({userID}) {
+export default function PasswordForm() {
 
     const formControl = new FormControl()
     const [formResponse, setFormResponse] = useState({})
@@ -62,10 +62,11 @@ export default function PasswordForm({userID}) {
         }
 
         axios
-            .post(window.location.origin + "/api/user/" + userID + "/update", credentials, {
+            .post(`${window.location.origin}/api/profile`, credentials, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Accept": "application/json+ld"
+                    "Accept": "application/json+ld",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
                 }
             })
             .then((response) => {

@@ -14,6 +14,18 @@ abstract class FreelanceEnum {
     public const FREELANCE_SIRET = "siret";
     public const FREELANCE_DUNS_NUMBER = "duns_number";
 
+    public static array $typeName = [
+        self::FREELANCE_NAME => "Name",
+        self::FREELANCE_JURIDIC_STATUS => "Status",
+        self::FREELANCE_ADDRESS => "Address",
+        self::FREELANCE_ZIPCODE => "Zip code",
+        self::FREELANCE_CITY => "City",
+        self::FREELANCE_COUNTRY => "Country",
+        self::FREELANCE_SIREN => "Siren",
+        self::FREELANCE_SIRET => "Siret",
+        self::FREELANCE_DUNS_NUMBER => "DUNS number",
+    ];
+
     public static function getAvalaibleChoices() : array {
         return [
             self::FREELANCE_NAME,
@@ -26,5 +38,15 @@ abstract class FreelanceEnum {
             self::FREELANCE_SIRET,
             self::FREELANCE_DUNS_NUMBER,
         ];
+    }
+
+    public static function getChoices() : array {
+        $choices = [];
+
+        foreach(self::getAvalaibleChoices() as $choice) {
+            $choice[self::$typeName[$choice]] = $choice;
+        }
+
+        return $choices;
     }
 }
