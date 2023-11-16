@@ -13,6 +13,7 @@ abstract class FreelanceEnum {
     public const FREELANCE_SIREN = "siren";
     public const FREELANCE_SIRET = "siret";
     public const FREELANCE_DUNS_NUMBER = "duns_number";
+    public const FREELANCE_PHONE_NUMBER = "phone";
 
     public static array $typeName = [
         self::FREELANCE_NAME => "Name",
@@ -24,6 +25,7 @@ abstract class FreelanceEnum {
         self::FREELANCE_SIREN => "Siren",
         self::FREELANCE_SIRET => "Siret",
         self::FREELANCE_DUNS_NUMBER => "DUNS number",
+        self::FREELANCE_PHONE_NUMBER => "Phone number"
     ];
 
     public static function getAvalaibleChoices() : array {
@@ -37,6 +39,7 @@ abstract class FreelanceEnum {
             self::FREELANCE_SIREN,
             self::FREELANCE_SIRET,
             self::FREELANCE_DUNS_NUMBER,
+            self::FREELANCE_PHONE_NUMBER
         ];
     }
 

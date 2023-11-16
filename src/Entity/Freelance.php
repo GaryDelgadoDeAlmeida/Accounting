@@ -37,7 +37,7 @@ class Freelance
     #[ORM\Column(length: 14)]
     private ?string $siret = null;
 
-    #[ORM\Column(length: 14)]
+    #[ORM\Column(length: 14, nullable: true)]
     private ?string $duns_number = null;
 
     #[ORM\Column(length: 100)]

@@ -7,6 +7,7 @@ use App\Enum\UserEnum;
 use App\Manager\FormManager;
 use App\Manager\UserManager;
 use App\Manager\TokenManager;
+use App\Manager\FreelanceManager;
 use App\Manager\SerializeManager;
 use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,6 +26,7 @@ class UserController extends AbstractController
     private FormManager $formManager;
     private UserManager $userManager;
     private TokenManager $tokenManager;
+    private FreelanceManager $freelanceManager;
     private SerializeManager $serializeManager;
     private UserRepository $userRepository;
 
@@ -33,6 +35,7 @@ class UserController extends AbstractController
         FormManager $formManager, 
         UserManager $userManager,
         TokenManager $tokenManager,
+        FreelanceManager $freelanceManager,
         SerializeManager $serializeManager, 
         UserRepository $userRepository, 
     ) {
@@ -40,6 +43,7 @@ class UserController extends AbstractController
         $this->formManager = $formManager;
         $this->userManager = $userManager;
         $this->tokenManager = $tokenManager;
+        $this->freelanceManager = $freelanceManager;
         $this->serializeManager = $serializeManager;
         $this->userRepository = $userRepository;
     }
@@ -124,7 +128,7 @@ class UserController extends AbstractController
     /**
      * @Route("/profile", name="update_profile", methods={"UPDATE", "PUT"})
      */
-    public function udate_profile(Request $request) : JsonResponse
+    public function update_profile(Request $request) : JsonResponse
     {
         $this->user = $this->user ?? $this->tokenManager->checkToken($request);
         if(empty($this->user)) {
@@ -159,7 +163,36 @@ class UserController extends AbstractController
             }
 
             // Update profile
-            $user = $this->userManager->fillUser($userFields, $this->user);
+            $this->user = $this->userManager->fillUser($userFields, $this->user);
+        } catch(\Exception $e) {
+            return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json(null, Response::HTTP_ACCEPTED);
+    }
+
+    /**
+     * @Route("/profile/freelance", name="profile_post_freelance", methods={"POST", "UPDATE", "PUT"})
+     */
+    public function profile_post_freelance(Request $request) : JsonResponse
+    {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
+        $jsonContent = json_decode($request->getContent(), true);
+        if(empty($jsonContent)) {
+            return $this->json("", Response::HTTP_PRECONDITION_FAILED);
+        }
+
+        try {
+            $fields = $this->freelanceManager->checkFields($jsonContent);
+            if(empty($fields)) {
+                return $this->json("", Response::HTTP_PRECONDITION_FAILED);
+            }
+
+            $this->freelanceManager->fillFreelance($fields, $this->user);
         } catch(\Exception $e) {
             return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -225,23 +258,6 @@ class UserController extends AbstractController
         }
 
         return $this->json(null, Response::HTTP_ACCEPTED);
-    }
-
-    /**
-     * @Route("/user/{userID}/freelance", name="user_get_freelance", requirements={"userID"="\d+"}, methods={"GET"})
-     */
-    public function user_get_freelance(Request $request, int $userID) : JsonResponse {
-        $user = $this->userRepository->find($userID);
-        if(!$user) {
-            return $this->json("The user coundn't be found", Response::HTTP_FORBIDDEN);
-        }
-
-        return $this->json(
-            $this->serializeManager->serializeContent(
-                $user->getFreelance() ?? []
-            ), 
-            Response::HTTP_OK
-        );
     }
 
     /**

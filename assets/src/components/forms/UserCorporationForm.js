@@ -6,7 +6,7 @@ import PublicResources from "../utils/PublicResources";
 
 export default function UserCorporationForm({freelance}) {
 
-    const { loading: countriesLoading, items: countries, load: countriesLoad } = PublicResources("https://restcountries.com/v3.1/all?fields=name")
+    const { loading, items: countries, load } = PublicResources("https://restcountries.com/v3.1/all?fields=name")
     const juridicalStatus = [
         {
             key: "sarl",
@@ -29,17 +29,19 @@ export default function UserCorporationForm({freelance}) {
     // Form field
     const [credentials, setCredentials] = useState({
         name: freelance != null ? freelance.name : "",
+        status: "",
         address: freelance != null ? freelance.address : "",
         city: freelance != null ? freelance.city : "",
-        zip_code: freelance != null ? freelance.zip_code : "",
+        zip_code: freelance != null ? freelance.zipCode : "",
         country: freelance != null ? freelance.country : "",
         siren: freelance != null ? freelance.siren : "",
         siret: freelance != null ? freelance.siret : "",
-        duns_number: freelance != null ? freelance.duns_number : ""
+        phone: "",
+        duns_number: freelance != null ? freelance.dunsNumber : ""
     })
 
     useEffect(() => {
-        countriesLoad()
+        load()
     }, [])
 
     // Form response
@@ -48,6 +50,7 @@ export default function UserCorporationForm({freelance}) {
 
     const handleChange = (e, fieldName) =>  {
         let fieldValue = e.target.value
+        let maxLength = e.target.getAttribute("maxLength") ?? 255
 
         switch(fieldName) {
             case "name":
@@ -86,6 +89,9 @@ export default function UserCorporationForm({freelance}) {
                 }
                 break
 
+            case "status":
+                break;
+
             default:
                 setFormResponse({classname: "danger", message: `The field '${fieldName}' is forbidden`})
                 return
@@ -101,12 +107,27 @@ export default function UserCorporationForm({freelance}) {
         e.preventDefault()
 
         axios
-            .post("/api/user/corporation", credentials)
-            .then(res => console.log(res))
-            .catch(err => console.error(err))
-        ;
+            .post("/api/profile/freelance", credentials, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json+ld",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            })
+            .then(res => {
+                console.log(res)
+                setFormResponse({classname: "success", message: "Your company has been updated."})
+            })
+            .catch(({response}) => {
+                console.error(response.data)
+                let errorMessage = "An error has been encountered. Please, retry later or contact the staff is the error persist."
+                if(response.data != "") {
+                    errorMessage = response.data
+                }
 
-        setFormResponse({classname: "information", message: "Section under construction"})
+                setFormResponse({classname: "danger", message: errorMessage})
+            })
+        ;
     }
 
     return (
@@ -120,7 +141,7 @@ export default function UserCorporationForm({freelance}) {
 
             <div className={"form-field"}>
                 <label htmlFor={"status"}>Juridical status</label>
-                <select>
+                <select onChange={(e) => handleChange(e, "status")}>
                     <option value={""}>Select a juridical status</option>
                     {juridicalStatus.map((item, index) => (
                         <option key={index} value={item.key}>{item.value}</option>
@@ -148,8 +169,8 @@ export default function UserCorporationForm({freelance}) {
                     <label htmlFor={"country"}>Country</label>
                     <select id={"country"} onChange={(e) => handleChange(e, "country")}>
                         <option>Select a country</option>
-                        {countries.length > 0 && countries.map((item, index) => (
-                            <option key={index} value={item.name.common}>{item.name.common}</option>
+                        {!loading && countries.length > 0 && countries.map((item, index) => (
+                            <option key={index} value={item.name.common} selected={item.name.common === credentials.country ? true : false}>{item.name.common}</option>
                         ))}
                     </select>
                 </div>
@@ -158,12 +179,12 @@ export default function UserCorporationForm({freelance}) {
             <div className={"form-field-inline"}>
                 <div className={"form-field"}>
                     <label htmlFor={"siren"}>SIREN</label>
-                    <input type={"text"} placeholder={"EX : 914 002 308"} maxLength={9} onChange={(e) => handleChange(e, "siren")} />
+                    <input type={"text"} placeholder={"EX : 914 002 308"} value={credentials.siren} maxLength={9} onChange={(e) => handleChange(e, "siren")} />
                 </div>
 
                 <div className={"form-field"}>
                     <label htmlFor={"siret"}>SIRET</label>
-                    <input type={"text"} placeholder={"EX : 914 002 308 00015"} maxLength={14} onChange={(e) => handleChange(e, "siret")} />
+                    <input type={"text"} placeholder={"EX : 914 002 308 00015"} value={credentials.siret} maxLength={14} onChange={(e) => handleChange(e, "siret")} />
                 </div>
             </div>
 
