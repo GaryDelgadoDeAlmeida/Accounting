@@ -10,6 +10,9 @@ import { Navigate } from "react-router-dom";
 
 export default function Settings() {
 
+    const [logged, setLogged] = useState(
+        localStorage.getItem("token") && ["undefined", "null", null, undefined].indexOf(localStorage.getItem("token")) === -1 ? true : false
+    )
     const allowedOgnlet = ["my-account", "corporation", "security"]
     const [onglet, setOnglet] = useState("my-account")
     const { loading, items: user, load } = PrivateResources(`${window.location.origin}/api/profile`)
@@ -34,6 +37,7 @@ export default function Settings() {
             .then((response) => {
                 if(response.status == 202) {
                     localStorage.setItem("token", null)
+                    setLogged(false)
                 }
             })
             .catch(({response}) => {
@@ -48,7 +52,7 @@ export default function Settings() {
 
     return (
         <UserHeader>
-            {!localStorage.getItem("token") && (
+            {!logged && (
                 <Navigate to={"/"} />
             )}
 

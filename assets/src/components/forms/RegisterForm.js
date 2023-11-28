@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import Notification from "../parts/Notification";
-import LinkButton from "../parts/LinkButton";
 import FormControl from "../utils/FormControl";
+import { Link } from "react-router-dom";
 
 export default function RegisterForm() {
     
@@ -147,10 +147,13 @@ export default function RegisterForm() {
                     <input type={"password"} placeholder={"Confirm password"} onChange={(e) => handleChange(e, "conform_password")} />
                 </div>
             </div>
+
+            <div className={"form-message txt-center mb-15px"}>
+                <small>Vous avez déjà un compte ? <Link to={"/login"}>Connectez-vous</Link></small>
+            </div>
             
             <div className={"form-button"}>
-                <LinkButton classname={"btn-blue"} url={"/login"} value={"Login"} />
-                <button className={"btn btn-green"} type={"submit"}>Register</button>
+                <button className={"btn btn-green"} type={"submit"}>Submit</button>
             </div>
         </form>
     )

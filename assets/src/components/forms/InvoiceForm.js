@@ -270,13 +270,17 @@ export default function InvoiceForm({companyID, invoice = null}) {
                     "Accept": "application/json+ld"
                 }
             })
-            .then((response) => {
+            .then(({data}) => {
                 setFormResponse({classname: "success", message: "The new invoice has been successfully hadded to your account"})
             })
-            .catch((error) => {
+            .catch(({response}) => {
                 let errorMessage = "An error has been encountered. Please, retry later"
-                if(error.response.data != "") {
-                    errorMessage = error.response.data
+                if(response.data != "") {
+                    if(typeof response.data == "object") {
+                        errorMessage = response.data.detail
+                    } else {
+                        errorMessage = response.data
+                    }
                 }
                 setFormResponse({classname: "danger", message: errorMessage})
             })

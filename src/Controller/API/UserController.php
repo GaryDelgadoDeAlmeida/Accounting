@@ -4,7 +4,6 @@ namespace App\Controller\API;
 
 use App\Entity\User;
 use App\Enum\UserEnum;
-use App\Manager\FormManager;
 use App\Manager\UserManager;
 use App\Manager\TokenManager;
 use App\Manager\FreelanceManager;
@@ -14,6 +13,8 @@ use App\Repository\CompanyRepository;
 use App\Repository\InvoiceRepository;
 use App\Repository\EstimateRepository;
 use App\Repository\FreelanceRepository;
+use App\Repository\InvoiceDetailRepository;
+use App\Repository\EstimateDetailRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,7 +29,6 @@ class UserController extends AbstractController
 {
     private ?User $user;
     
-    private FormManager $formManager;
     private UserManager $userManager;
     private TokenManager $tokenManager;
     private FreelanceManager $freelanceManager;
@@ -39,10 +39,11 @@ class UserController extends AbstractController
     private InvoiceRepository $invoiceRepository;
     private EstimateRepository $estimateRepository;
     private FreelanceRepository $freelanceRepository;
+    private InvoiceDetailRepository $invoiceDetailRepository;
+    private EstimateDetailRepository $estimateDetailRepository;
 
     function __construct(
         Security $security,
-        FormManager $formManager, 
         UserManager $userManager,
         TokenManager $tokenManager,
         FreelanceManager $freelanceManager,
@@ -51,10 +52,11 @@ class UserController extends AbstractController
         CompanyRepository $companyRepository,
         InvoiceRepository $invoiceRepository,
         EstimateRepository $estimateRepository,
-        FreelanceRepository $freelanceRepository
+        FreelanceRepository $freelanceRepository,
+        InvoiceDetailRepository $invoiceDetailRepository,
+        EstimateDetailRepository $estimateDetailRepository
     ) {
         $this->user = $security->getUser() ?? null;
-        $this->formManager = $formManager;
         $this->userManager = $userManager;
         $this->tokenManager = $tokenManager;
         $this->freelanceManager = $freelanceManager;
@@ -65,6 +67,8 @@ class UserController extends AbstractController
         $this->invoiceRepository = $invoiceRepository;
         $this->estimateRepository = $estimateRepository;
         $this->freelanceRepository = $freelanceRepository;
+        $this->invoiceDetailRepository = $invoiceDetailRepository;
+        $this->estimateDetailRepository = $estimateDetailRepository;
     }
 
     /**
@@ -326,31 +330,45 @@ class UserController extends AbstractController
             return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
         }
 
-        /*try {
+        try {
             // Remove all companies linked to the client
             foreach($this->user->getCompanies() as $company) {
-                $this->companyRepository->remove($company, true);
+                if(count($company->getUsers()) > 1) {
+                    $this->companyRepository->remove($company);
+                } else {
+                    $company->removeUser($this->user);
+                }
+
+                $this->em->flush();
             }
 
             // Remove all estimates
             foreach($this->user->getEstimates() as $estimate) {
+                foreach($estimate->getEstimateDetails() as $detail) {
+                    $this->estimateDetailRepository->remove($detail);
+                }
                 $this->estimateRepository->remove($estimate, true);
             }
 
             // Remove all invoices
             foreach($this->user->getInvoices() as $invoice) {
+                foreach($invoice->getInvoiceDetails() as $detail) {
+                    $this->invoiceDetailRepository->remove($detail);
+                }
                 $this->invoiceRepository->remove($invoice, true);
             }
 
             // Remove freelance link
-            $this->freelanceRepository->remove($this->user->getFreelance(), true);
+            if($this->user->getFreelance() != null) {
+                $this->freelanceRepository->remove($this->user->getFreelance(), true);
+            }
 
             // Remove the user account in the end
             $this->userRepository->remove($this->user, true);
 
         } catch(\Exception $e) {
             return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
-        }*/
+        }
 
         return $this->json(null, Response::HTTP_ACCEPTED);
     }
@@ -362,6 +380,12 @@ class UserController extends AbstractController
         $this->user = $this->user ?? $this->tokenManager->checkToken($request);
         if(empty($this->user)) {
             return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
+        try {
+            // 
+        } catch(\Exception $e) {
+            return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return $this->json(null, Response::HTTP_ACCEPTED);

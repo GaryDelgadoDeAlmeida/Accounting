@@ -128,23 +128,25 @@ export default function Invoice() {
                             </tbody>
                         </table>
 
-                        <div className={"pagination"}>
-                            {offset - 1 > 0 && (
-                                <div className={"item"}>
-                                    <button onClick={(e) => handlePagination(e)} value={offset - 1}>{offset - 1}</button>
-                                </div>
-                            )}
+                        {invoices.length > 0 && typeof invoices === "object" && (
+                            <div className={"pagination"}>
+                                {offset - 1 > 0 && (
+                                    <div className={"item"}>
+                                        <button onClick={(e) => handlePagination(e)} value={offset - 1}>{offset - 1}</button>
+                                    </div>
+                                )}
 
-                            <div className={"item current-page"}>
-                                <span>{offset}</span>
+                                <div className={"item current-page"}>
+                                    <span>{offset}</span>
+                                </div>
+
+                                {offset + 1 < 100 && (
+                                    <div className={"item"}>
+                                        <button onClick={(e) => handlePagination(e)} value={offset + 1}>{offset + 1}</button>
+                                    </div>
+                                )}
                             </div>
-
-                            {offset + 1 < 100 && (
-                                <div className={"item"}>
-                                    <button onClick={(e) => handlePagination(e)} value={offset + 1}>{offset + 1}</button>
-                                </div>
-                            )}
-                        </div>
+                        )}
                     </>
                 ) : (
                     <Notification classname={"information"} message={"Loading ..."} />

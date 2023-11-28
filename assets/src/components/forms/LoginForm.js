@@ -1,20 +1,20 @@
 import React, { useState } from "react";
 import axios from "axios";
 import FormControl from "../utils/FormControl";
-import LinkButton from "../parts/LinkButton";
 import Notification from "../parts/Notification";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 
 export default function LoginForm() {
+    
+    const formControl = new FormControl()
     const [credentials, setCredentials] = useState({
         username: "",
         password: ""
     })
     const [formResponse, setFormResponse] = useState({})
     const [logged, setLogged] = useState(
-        localStorage.getItem("token") && ["null", "undefined"].indexOf(localStorage.getItem("token")) === -1 ? true : false
+        localStorage.getItem("token") && ["undefined", "null", null, undefined].indexOf(localStorage.getItem("token")) === -1 ? true : false
     )
-    const formControl = new FormControl()
 
     const handleChange = (e, fieldName) => {
         let fieldValue = e.target.value
@@ -65,23 +65,26 @@ export default function LoginForm() {
                     "Accept": "application/json+ld"
                 }
             })
-            .then(response => {
-                let data = response.data
-                if(data.token != "") {
+            .then((response) => {
+                if(response.data.token != null) {
                     if(["undefined", "null", null, undefined].indexOf(localStorage.getItem("token")) !== -1) {
-                        localStorage.setItem("token", data.token)
+                        localStorage.setItem("token", response.data.token)
                         setLogged(true)
                     }
 
                     setFormResponse({classname: "success", message: "Successfully connected"})
                 } else {
-                    setFormResponse({classname: "danger", message: data.error.messageKey})
+                    setFormResponse({classname: "danger", message: response.data.error.messageKey})
                 }
             })
-            .catch(error => {
-                let errorMessage = "An error has been encountered"
-                if(error.response.data != "") {
-                    errorMessage = error.response.data
+            .catch(({response}) => {
+                let errorMessage = "An error has been encountered. Please retry later"
+                if(response.data != "") {
+                    if(typeof response.data == "object") {
+                        errorMessage = response.data.detail
+                    } else {
+                        errorMessage = response.data
+                    }
                 }
                 setFormResponse({classname: "danger", message: errorMessage})
             })
@@ -103,9 +106,12 @@ export default function LoginForm() {
                 <div className={"form-field"}>
                     <input type={"password"} placeholder={"Password ..."} maxLength={255} onChange={(e) => handleChange(e, "password")} />
                 </div>
+
+                <div className={"form-message txt-center mb-15px"}>
+                    <small>Vous n'avez pas de compte ? <Link to={"/register"}>Créer un nouveau compte</Link></small>
+                </div>
                 
                 <div className={"form-button"}>
-                    <LinkButton classname={"btn-blue"} url={"/register"} value={"Register"} />
                     <button className={"btn btn-green"} type={"submit"}>Submit</button>
                 </div>
             </form>

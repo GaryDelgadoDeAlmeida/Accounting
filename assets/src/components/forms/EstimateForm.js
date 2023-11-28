@@ -174,10 +174,14 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                 // Return a response to the user
                 setFormResponse({classname: "success", message: "Successfully added"})
             })
-            .catch(error => {
+            .catch(({response}) => {
                 let errorMessage = "An error has been encountered. Please, retry more later"
-                if(error.response.data != "") {
-                    errorMessage = error.response.data
+                if(response.data != "") {
+                    if(typeof response.data == "object") {
+                        errorMessage = response.data.detail
+                    } else {
+                        errorMessage = response.data
+                    }
                 }
                 setFormResponse({classname: "danger", message: errorMessage})
             })
