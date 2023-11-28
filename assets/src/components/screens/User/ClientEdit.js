@@ -5,6 +5,7 @@ import UserHeader from "../../parts/UserHeader";
 import CompanyForm from "../../forms/CompanyForm";
 import ReturnButton from "../../parts/ReturnButton";
 import PrivateResources from "../../utils/PrivateResources"
+import Notification from "../../parts/Notification";
 
 export default function ClientEdit() {
     const { clientID } = useParams()
@@ -29,7 +30,7 @@ export default function ClientEdit() {
                     {!loading && items.company != null ? (
                         <CompanyForm company={items.company} />
                     ) : (
-                        <p>Loading ...</p>
+                        <Notification classname={"information"} message={"Loading ..."} />
                     )}
                 </div>
             </div>

@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import PrivatePostRessource from "../utils/PrivatePostRessource";
-import { useParams } from "react-router-dom";
 import Notification from "../parts/Notification";
 import FormControl from "../utils/FormControl";
 import axios from "axios";
@@ -70,12 +68,15 @@ export default function PasswordForm() {
                 }
             })
             .then((response) => {
-                console.log(response.data)
                 setFormResponse({classname: "success", message: "The password has been successfully updated"})
             })
             .catch((error) => {
-                console.log(error.response.data)
-                setFormResponse({classname: "danger", message: "An error has been found. The password couldn't be updated"})
+                let errorMessage = "An error has been found. The password couldn't be updated"
+                if(error.response.data != "") {
+                    errorMessage = error.response.data
+                }
+
+                setFormResponse({classname: "danger", message: errorMessage})
             })
         ;
     }

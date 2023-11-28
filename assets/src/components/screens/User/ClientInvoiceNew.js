@@ -7,22 +7,18 @@ import InvoiceForm from "../../forms/InvoiceForm";
 
 export default function ClientInvoiceNew() {
     const { clientID } = useParams()
-    const userID = localStorage.getItem("user")
-    const [client, setClient] = useState({})
     const [error, setError] = useState(false)
 
     useEffect(() => {
         axios
             .get("/api/company/" + clientID, {
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
                 }
             })
-            .then(response => {
-                setClient(response.data)
-            })
             .catch(err => {
-                alert(err.response.data.message)
+                alert(err.response.data)
                 setError(true)
             })
         ;

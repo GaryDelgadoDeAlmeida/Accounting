@@ -5,7 +5,6 @@ import { findChildren, findParent } from "../../utils/DomElement";
 export default function Policy() {
 
     const handleCollapseAccordeon = (e) => {
-        console.log("Hi handleCollapseAccordeon", e.target.className)
         let targetClassname = e.target.className
         let currentTarget = e.target
 

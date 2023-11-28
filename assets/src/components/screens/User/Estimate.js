@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import UserHeader from "../../parts/UserHeader";
 import SeeMoreButton from "../../parts/SeeMoreButton";
 import PrivateResources from "../../utils/PrivateResources";
-import { Link } from "react-router-dom";
 import LinkButton from "../../parts/LinkButton";
 import RemoveButton from "../../parts/RemoveButton";
+import Notification from "../../parts/Notification";
 
 export default function Estimate() {
 
@@ -24,9 +24,11 @@ export default function Estimate() {
 
     return (
         <UserHeader>
-            <Link className={"btn btn-green"} to={"/user/estimate/new"}>
-                <span>Add an estimate</span>
-            </Link>
+            <LinkButton
+                classname={"btn-green"}
+                value={"Add an estimate"}
+                url={"/user/estimate/new"}
+            />
             
             <div className={"page-section"}>
                 {!loading ? (
@@ -75,26 +77,24 @@ export default function Estimate() {
 
                         <div className={"pagination"}>
                             {offset - 1 > 0 && (
-                                <div>
+                                <div className={"item"}>
                                     <button onClick={(e) => handlePagination(e)} value={offset - 1}>{offset - 1}</button>
                                 </div>
                             )}
 
-                            <div className={"current-page"}>
+                            <div className={"item current-page"}>
                                 <span>{offset}</span>
                             </div>
                             
                             {offset + 1 < 100 && (
-                                <div>
+                                <div className={"item"}>
                                     <button onClick={(e) => handlePagination(e)} value={offset + 1}>{offset + 1}</button>
                                 </div>
                             )}
                         </div>
                     </>
                 ) : (
-                    <div className="">
-                        <span>Loading ...</span>
-                    </div>
+                    <Notification classname={"information"} message={"Loading ..."} />
                 )}
             </div>
         </UserHeader>

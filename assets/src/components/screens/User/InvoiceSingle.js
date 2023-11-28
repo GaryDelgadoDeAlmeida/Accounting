@@ -4,6 +4,7 @@ import PrivateResources from "../../utils/PrivateResources";
 import UserHeader from "../../parts/UserHeader";
 import LinkButton from "../../parts/LinkButton";
 import axios from "axios";
+import Notification from "../../parts/Notification";
 
 export default function InvoiceSingle() {
     const { invoiceID } = useParams()
@@ -40,10 +41,10 @@ export default function InvoiceSingle() {
                 <div className={"page-section"}>
                     <div className={"d-flex"}>
                         <div className={"left w-50 txt-left"}>
-                            <h3 className={"-title"}>Numéro de facture : {(new Date(invoice.invoiceDate)).toLocaleString("en-GB")}</h3>
+                            <h3 className={"-title"}>{invoice.filename}</h3>
                             <div className={"d-column"}>
-                                <label>Date d'émission : {(new Date(invoice.createdAt).toLocaleString("en-GB"))}</label>
-                                <label>Date d'échéance : 11/05/2023</label>
+                                <label>Date d'émission : {(new Date(invoice.invoiceDate).toLocaleString("en-GB"))}</label>
+                                <label>Date d'échéance : {(new Date(invoice.invoiceDate).toLocaleString("en-GB"))}</label>
                             </div>
                         </div>
                         <div className={"right w-50 txt-right m-auto"}>
@@ -55,10 +56,18 @@ export default function InvoiceSingle() {
 
                     <div className={"mt-25px"}>
                         <div className={"sending-status"}>
-                            <div className={"item"}>Envoyer</div>
-                            <div className={"item"}>En cours</div>
-                            <div className={"item"}>En cours de paiement</div>
-                            <div className={"item"}>Payer</div>
+                            <div className={"item -active"}>
+                                <span className={"txt-bold"}>Envoyer</span>
+                            </div>
+                            <div className={"item -ongoing"}>
+                                <span className={"txt-bold"}>En cours</span>
+                            </div>
+                            <div className={"item"}>
+                                <span className={"txt-bold"}>En cours de paiement</span>
+                            </div>
+                            <div className={"item"}>
+                                <span className={"txt-bold"}>Payer</span>
+                            </div>
                         </div>
                     </div>
 
@@ -76,17 +85,28 @@ export default function InvoiceSingle() {
                                         {typeof invoice.user == "object" && (
                                             <div className={"service-provider"}>
                                                 <div className={"-identity"}>
-                                                    <label>{invoice.user.fullname}</label>
+                                                    <span className={"txt-bold"}>{invoice.user.fullname}</span>
+                                                    {invoice.user.freelance != null && (
+                                                        <>
+                                                            <span>SIREN : {invoice.user.freelance.siren}</span>
+                                                            <span>SIRET : {invoice.user.freelance.siret}</span>
+                                                        </>
+                                                    )}
                                                 </div>
-                                                <div className={"-address"}>
-                                                    <span>
-                                                        189, rue Vercingétorix, Paris 75014, France
-                                                        {/* {invoice.user.address}, {invoice.user.zipCode} {invoice.user.city}, {invoice.user.country} */}
-                                                    </span>
-                                                </div>
+                                                
+                                                {invoice.user.freelance != null && (
+                                                    <div className={"-address"}>
+                                                        <span>{
+                                                            invoice.user.freelance.address + ", " + 
+                                                            invoice.user.freelance.zipCode + " " + 
+                                                            invoice.user.freelance.city + ", " +
+                                                            invoice.user.freelance.country
+                                                        }</span>
+                                                    </div>
+                                                )}
+
                                                 <div className={"-contact"}>
-                                                    <span className={"-phone"}>(+33) 6 52 07 39 97</span>
-                                                    <span className={"-email"}>gary.almeida.word@gmail.com</span>
+                                                    <span className={"-email"}>{invoice.user.email}</span>
                                                 </div>
                                             </div>
                                         )}
@@ -95,12 +115,17 @@ export default function InvoiceSingle() {
                                         {typeof invoice.company == "object" && (
                                             <div className={"service-provider"}>
                                                 <div className={"-identity"}>
-                                                    <label>{invoice.company.name}</label>
+                                                    <span className={"txt-bold"}>{invoice.company.name}</span>
+                                                    <span>SIREN : {invoice.company.siren}</span>
+                                                    <span>SIRET : {invoice.company.siret}</span>
                                                 </div>
                                                 <div className={"-address"}>
-                                                    <span>
-                                                        {invoice.company.address}, {invoice.company.zipCode} {invoice.company.city}, {invoice.company.country}
-                                                    </span>
+                                                    <span>{
+                                                        invoice.company.address + ", " +
+                                                        invoice.company.zipCode + " " +
+                                                        invoice.company.city + ", " +
+                                                        invoice.company.country
+                                                    }</span>
                                                 </div>
                                                 <div className={"-contact"}>
                                                     {invoice.company.phone != "" && (<span className={"-phone"}>{invoice.company.phone}</span>)}
@@ -119,7 +144,7 @@ export default function InvoiceSingle() {
                         <table className={"table"}>
                             <thead>
                                 <tr>
-                                    <th className={"column-invoice-description"}>Description</th>
+                                    <th className={"column-description"}>Description</th>
                                     <th className={"column-quantity"}>Quantité</th>
                                     <th className={"column-price"}>Montant HT</th>
                                     <th className={"column-tva"}>TVA</th>
@@ -130,7 +155,7 @@ export default function InvoiceSingle() {
                                 {[null, undefined].indexOf(invoice.invoiceDetails) == -1 && typeof invoice.invoiceDetails == "object" ? (
                                     invoice.invoiceDetails.map((item, index) => (
                                         <tr className={"txt-center"} key={index}>
-                                            <td className={"-invoice-description txt-left"}>{item.description}</td>
+                                            <td className={"-description txt-left"}>{item.description}</td>
                                             <td className={"-quantity"}>{item.quantity}</td>
                                             <td className={"-price"}>{item.price}</td>
                                             <td className={"-tva"}>{item.tva ? "20 %" : "0 %"}</td>
@@ -150,16 +175,16 @@ export default function InvoiceSingle() {
                             <table className={"table"}>
                                 <tbody>
                                     <tr>
-                                        <td>Montant Total HT (€)</td>
-                                        <td>{invoice.amount}</td>
+                                        <td className={"-m-hidden"}>Montant Total HT (€)</td>
+                                        <td className={"-amount"}>{invoice.amount}</td>
                                     </tr>
                                     <tr>
-                                        <td>TVA (20%)</td>
-                                        <td>{invoice.tvaAmount}</td>
+                                        <td className={"-m-hidden"}>TVA (20%)</td>
+                                        <td className={"-tva"}>{invoice.tvaAmount}</td>
                                     </tr>
                                     <tr>
-                                        <td>Montant Total TTC (€)</td>
-                                        <td>{invoice.totalAmount}</td>
+                                        <td className={"-m-hidden"}>Montant Total TTC (€)</td>
+                                        <td className={"-total"}>{invoice.totalAmount}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -171,7 +196,7 @@ export default function InvoiceSingle() {
                     </div>
                 </div>
             ) : (
-                <p>Loading ...</p>
+                <Notification classname={"information"} message={"Loading ..."} />
             )}
         </UserHeader>
     )

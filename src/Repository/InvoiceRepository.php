@@ -50,12 +50,11 @@ class InvoiceRepository extends ServiceEntityRepository
      * @param int limit
      * @return Invoice[]
      */
-    function getInvoices(int $userID, int $offset, int $limit) {
+    function getInvoices(User $user, int $offset, int $limit) {
         return $this->createQueryBuilder("invoice")
-            ->leftJoin("invoice.user", "user")
-            ->where("user.id = :userID")
+            ->where("invoice.user = :user")
             ->orderBy("invoice.id", "DESC")
-            ->setParameter("userID", $userID)
+            ->setParameter("user", $user)
             ->setFirstResult(($offset - 1) * $limit)
             ->setMaxResults($limit)
             ->getQuery()

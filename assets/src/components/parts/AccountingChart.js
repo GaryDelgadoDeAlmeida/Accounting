@@ -3,7 +3,6 @@ import Chart from 'chart.js/auto';
 import { Bar } from "react-chartjs-2";
 
 export default function AccountingChart({benefits = {}, months = []}) {
-    console.log(benefits)
     const config = {
         data: {
             labels: months.map((item, index) => {

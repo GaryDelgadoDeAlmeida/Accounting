@@ -4,6 +4,7 @@ import UserHeader from "../../parts/UserHeader"
 import LinkButton from "../../parts/LinkButton"
 import Notification from "../../parts/Notification"
 import PrivateResources from "../../utils/PrivateResources"
+import { formatDate } from "../../utils/DomElement"
 import axios from "axios"
 
 export default function EstimateSingle() {
@@ -16,7 +17,7 @@ export default function EstimateSingle() {
     }, [])
 
     const handleGeneratePDF = (e) => {
-        console.log("HI handleGeneratePDF")
+        // console.log("HI handleGeneratePDF")
         setError(false)
         if(estimateID != null) {
             axios
@@ -30,7 +31,7 @@ export default function EstimateSingle() {
                     }
                 })
                 .then(response => {
-                    console.log(response, response.data)
+                    // console.log(response, response.data)
                     const aElement = document.createElement('a');
                     aElement.setAttribute('download', estimate.label);
                     
@@ -43,7 +44,7 @@ export default function EstimateSingle() {
                     URL.revokeObjectURL(href);
                 })
                 .catch(error => {
-                    console.log(error)
+                    // console.log(error)
                     setError(true)
                 })
             ;
@@ -52,26 +53,26 @@ export default function EstimateSingle() {
 
     return (
         <UserHeader>
-            <div className={"page-section"}>
-                <LinkButton 
-                    classname={"btn-blue"} 
-                    url={"/user/estimate"} 
-                    value={"Return"}
-                    defaultIMG={"arrow-left"} 
-                />
+            
+            <LinkButton 
+                classname={"btn-blue"} 
+                url={"/user/estimate"} 
+                value={"Return"}
+                defaultIMG={"arrow-left"} 
+            />
 
+            <div className={"page-section"}>
                 {!loading && Object.keys(estimate).length > 0 ? (
-                    <div className={"mt-15px"}>
+                    <>
                         {error && (
                             <Notification classname={"danger"} message={"An error has been encountered. Please retry downloading the estimate later."} />
                         )}
                         <div className={"d-flex"}>
                             <div className={"w-50"}>
-                                <label>Estimate N°1</label>
+                                <h2>{estimate.label}</h2>
                                 <div className={"d-column"}>
-                                    <span>Nombre de devis : 1</span>
-                                    <span>Date d'émission : {Date.now("Y-m-d")}</span>
-                                    <span>Date d'échéance : {Date.now("Y-m-d")}</span>
+                                    <span>Date d'émission : { formatDate(estimate.createdAt) }</span>
+                                    <span>Date d'échéance : { formatDate(estimate.createdAt) }</span>
                                 </div>
                             </div>
                             <div className={"w-50 txt-right"}>
@@ -95,14 +96,25 @@ export default function EstimateSingle() {
                                             <div className={"service-provider"}>
                                                 <div className={"-identity"}>
                                                     <span className={"txt-bold"}>{estimate.user.fullname}</span>
-                                                    <span>SIREN : 914 002 308</span>
-                                                    <span>N° de TVA : FR 72914002308</span>
+                                                    {estimate.user.freelance != null && (
+                                                        <>
+                                                            <span>SIREN : {estimate.user.freelance.siren}</span>
+                                                            <span>SIRET : {estimate.user.freelance.siret}</span>
+                                                        </>
+                                                    )}
                                                 </div>
-                                                <div className={"-address"}>
-                                                    <span>189, rue Vercingétorix, 75014 Paris, France</span>
-                                                </div>
+                                                
+                                                {estimate.user.freelance != null && (
+                                                    <div className={"-address"}>
+                                                        <span>{
+                                                            estimate.user.freelance.address + ", " +
+                                                            estimate.user.freelance.city + " " +
+                                                            estimate.user.freelance.zipCode + ", " +
+                                                            estimate.user.freelance.country
+                                                        }</span>
+                                                    </div>
+                                                )}
                                                 <div className={"-contact"}>
-                                                    <span className={"-phone"}>(+33) 6 52 07 39 97</span>
                                                     <span className={"-email"}>{estimate.user.email}</span>
                                                 </div>
                                             </div>
@@ -189,9 +201,9 @@ export default function EstimateSingle() {
                                 </table>
                             </div>
                         </div>
-                    </div>
+                    </>
                 ) : (
-                    <p>Loading ...</p>
+                    <Notification classname={"information"} message={"Loading ..."} />
                 )}
             </div>
         </UserHeader>

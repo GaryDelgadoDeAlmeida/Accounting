@@ -5,35 +5,20 @@ import LinkButton from "../parts/LinkButton";
 import FormControl from "../utils/FormControl";
 
 export default function RegisterForm() {
+    
     // Form field
     const [credentials, setCredentials] = useState({
         firstname: "",
         lastname: "",
-        address: "",
-        zip_code: "",
-        city: "",
-        country: "",
-        phone: "",
+        birth_date: "",
         email: "",
-        password: ""
+        password: "",
+        conform_password: ""
     })
-    const [countries, setCountries] = useState({})
     
     // Form response
     const [formResponse, setFormResponse] = useState({})
     const formControl =  new FormControl()
-
-    useEffect(() => {
-        axios
-            .get("https://restcountries.com/v3.1/all?fields=name,cca2")
-            .then(response => {
-                setCountries(response.data)
-            })
-            .catch(err => {
-                console.error(err)
-            })
-        ;
-    }, [])
 
     const handleChange = (e, fieldName) => {
         let fieldValue = e.target.value
@@ -55,35 +40,6 @@ export default function RegisterForm() {
                 }
                 break
 
-            case "address":
-                if(!formControl.checkMaxLength(fieldValue, maxLength)) {
-                    setFormResponse({classname: "danger", message: "A length limitation error has been found with the address"})
-                    return
-                }
-                break
-
-            case "zip_code":
-                if(!formControl.checkLength(fieldValue, 1, 10)) {
-                    setFormResponse({classname: "danger", message: "The zip code don't respect length limitation"})
-                    return
-                }
-
-                if(!formControl.checkNumber(fieldValue)) {
-                    setFormResponse({classname: "danger", message: "The zip code format is forbidden. It must be a number"})
-                    return
-                }
-                break
-
-            case "city":
-                if(!formControl.checkLength(fieldValue, 1, maxLength)) {
-                    setFormResponse({classname: "danger", message: "A length limitation error has been found with the city field"})
-                    return
-                }
-                break
-            
-            case "country":
-                break
-
             case "email":
                 // Check if email respect length limitation
                 if(!formControl.checkLength(fieldValue, 1, maxLength)) {
@@ -98,29 +54,13 @@ export default function RegisterForm() {
                 }
                 break
 
+            case "birth_date":
+                fieldValue = (new Date(fieldValue)).toLocaleDateString(undefined, {year:"numeric", month:"numeric", day: "numeric"})
+                break;
+
             case "password":
-                // Check if the password have a minimum length
-                if(!formControl.checkMinLength(fieldValue, 8)) {
-                    setFormResponse({classname: "danger", message: "The password should be at minimum 8 characters"})
-                    return
-                }
-
-                // Check if the pasword have all means to be a secured password
-                if(!formControl.checkPassword(fieldValue)) {
-                    setFormResponse({classname: "danger", message: "The password is not secure."})
-                    return
-                }
-                break
-
-            case "phone":
-                // Remove space in the string to perform a regex check
-                fieldValue = fieldValue.replaceAll(" ", "")
-
-                // Check if the phone number is valid
-                if(!formControl.checkPhone(fieldValue)) {
-                    setFormResponse({classname: "danger", message: "The phone number format isn't valid"})
-                    return
-                }
+            case "conform_password":
+                // Do nothing. All check will be in handle in submit event
                 break
 
             default:
@@ -137,26 +77,41 @@ export default function RegisterForm() {
     const handleSubmit = (e) => {
         e.preventDefault()
 
-        // Check if a field is empty
-        if(!formControl.checkMinLength(credentials.country, 1)) {
-            setFormResponse({classname: "danger", message: "The country can't be empty"})
+        // Check the length of the password
+        if(!formControl.checkMinLength(credentials.password, 8)) {
+            setFormResponse({classname: "danger", message: "The password should be at minimum 8 characters"})
+            return
+        }
+
+        // Check if the pasword have all means to be a secured password
+        if(!formControl.checkPassword(credentials.password)) {
+            setFormResponse({classname: "danger", message: "The password is not secure."})
+            return
+        }
+
+        // Check if the password and the confirmation is equal
+        if(credentials.password != credentials.conform_password) {
+            setFormResponse({classname: "danger", message: "The confirmation password isn't incorrect"})
             return
         }
 
         // Send all data to the API in order to create a new account
         axios
-            .post("/api/user", credentials, {
+            .post(`${window.location.origin}/api/user`, credentials, {
                 headers: {
                     "Content-Type": "application/json"
                 }
             })
             .then(response => {
-                console.log(response, response.data)
-                setFormResponse({classname: "success", message: "The account has been successfully registered"})
+                setFormResponse({classname: "success", message: response.data})
             })
             .catch(error => {
-                console.error(error)
-                setFormResponse({classname: "danger", message: ""})
+                let errorMessage = "An error occured. Please retry later or contact the webmaster."
+                if(error.response.data != "") {
+                    errorMessage = error.response.data
+                }
+
+                setFormResponse({classname: "danger", message: errorMessage})
             })
         ;
     }
@@ -174,31 +129,10 @@ export default function RegisterForm() {
                     <input type={"text"} placeholder={"Lastname"} onChange={(e) => handleChange(e, "lastname")} />
                 </div>
             </div>
-
-            <div className={"form-field"}>
-                <input type={"text"} placeholder={"Address"} onChange={(e) => handleChange(e, "address")} />
-            </div>
-
-            <div className={"form-field-inline"}>
-                <div className={"form-field"}>
-                    <input type={"text"} placeholder={"Zip code"} onChange={(e) => handleChange(e, "zip_code")} />
-                </div>
-                <div className={"form-field"}>
-                    <input type={"text"} placeholder={"City"} onChange={(e) => handleChange(e, "city")} />
-                </div>
-                <div className={"form-field"}>
-                    <select onChange={(e) => handleChange(e, "country")}>
-                        <option value={""}>Select a country</option>
-                        {countries.length > 0 && countries.map((item, key) => {
-                            <option key={key} value={item.cca2}>{ item.name["common"] }</option>
-                        })}
-                    </select>
-                </div>
-            </div>
             
             <div className={"form-field"}>
-                <input type={"tel"} pattern="[0-9]{10}" placeholder={"Phone"} onChange={(e) => handleChange(e, "phone")} />
-                <small className={"txt-right"}>Ex: 01 00 00 00 00</small>
+                <label htmlFor={"birth_date"}>Birth date</label>
+                <input id={"birth_date"} type={"date"} placeholder="dd-mm-yyyy" onChange={(e) => handleChange(e, "birth_date")} />
             </div>
             
             <div className={"form-field"}>

@@ -45,6 +45,14 @@
                 // 
             }
 
+            &.column-tva {
+                width: 50px;
+            }
+
+            &.column-amount {
+                width: 50px;
+            }
+
             &.column-quantity {
                 width: 50px;
             }
@@ -199,6 +207,10 @@
                     // Common
                     &.-m-hidden {
                         display: none;
+                    }
+
+                    &.-message::before {
+                        content: "Message";
                     }
 
                     &.-id::before {

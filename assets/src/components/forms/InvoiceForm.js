@@ -204,8 +204,7 @@ export default function InvoiceForm({companyID, invoice = null}) {
                     findChildren(parent, "-price"),
                     "form-field"
                 ),
-                "",
-                "input"
+                "", "input"
             ).value ?? 0
             let quantity = findChildren(
                 findChildren(
@@ -216,8 +215,7 @@ export default function InvoiceForm({companyID, invoice = null}) {
             ).value ?? 0
             let tva = findChildren(
                 findChildren(parent, "-tva"),
-                "",
-                "input"
+                "", "input"
             ).checked ?? false
             
             amount.innerHTML = (price * (tva ? 1.20 : 1)) * quantity
@@ -276,9 +274,11 @@ export default function InvoiceForm({companyID, invoice = null}) {
                 setFormResponse({classname: "success", message: "The new invoice has been successfully hadded to your account"})
             })
             .catch((error) => {
-                console.log(error)
-
-                setFormResponse({classname: "danger", message: "An error has been encountered. Please, retry later"})
+                let errorMessage = "An error has been encountered. Please, retry later"
+                if(error.response.data != "") {
+                    errorMessage = error.response.data
+                }
+                setFormResponse({classname: "danger", message: errorMessage})
             })
         ;
     }
@@ -327,7 +327,7 @@ export default function InvoiceForm({companyID, invoice = null}) {
                         </tr>
                     </thead>
                     <tbody className={"table-content"}>
-                        {Object.keys(credentials.details).length > 0 ? (
+                        {invoice != null && Object.keys(credentials.details).length > 0 ? (
                             Object.values(credentials.details).map((item, index) => {
                                 let tva = (item.tva ? 1.2 : 1)
                                 let amount = (item.price * tva) * item.quantity

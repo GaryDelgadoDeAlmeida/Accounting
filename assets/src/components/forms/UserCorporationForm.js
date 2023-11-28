@@ -114,12 +114,10 @@ export default function UserCorporationForm({freelance}) {
                     "Authorization": "Bearer " + localStorage.getItem("token")
                 }
             })
-            .then(res => {
-                console.log(res)
+            .then((response) => {
                 setFormResponse({classname: "success", message: "Your company has been updated."})
             })
             .catch(({response}) => {
-                console.error(response.data)
                 let errorMessage = "An error has been encountered. Please, retry later or contact the staff is the error persist."
                 if(response.data != "") {
                     errorMessage = response.data

@@ -24,7 +24,6 @@ export default function RemoveButton({removeUrl, parentElementId, smallSizeBtn =
         }
         
         let parent = document.getElementById(parentElementId)
-        console.log(parent, parentElementId)
         if(!parent) {
             return
         }
@@ -32,15 +31,17 @@ export default function RemoveButton({removeUrl, parentElementId, smallSizeBtn =
         axios
             .delete(removeUrl, {
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Accept": "application/json+ld",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
                 }
             })
             .then(response => {
                 console.log(response, response.data, response.status)
                 parent.remove()
             })
-            .catch(error => {
-                console.log(error)
+            .catch(({response}) => {
+                alert(response.data)
             })
         ;
     }

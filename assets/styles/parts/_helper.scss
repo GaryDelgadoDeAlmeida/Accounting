@@ -169,6 +169,18 @@
 /* ---------------------------------------- *\
     Display
 \* ---------------------------------------- */
+.-g-5px {
+    gap: 5px;
+}
+
+.-g-10px {
+    gap: 10px;
+}
+
+.-g-15px {
+    gap: 15px;
+}
+
 .d-flex {
     display: flex;
 }
@@ -180,7 +192,7 @@
 }
 
 .d-flex-col {
-    gap: 15px;
+    // gap: 15px;
     display: flex;
     flex-direction: column;
 
@@ -202,7 +214,7 @@
 }
 
 .d-flex-row {
-    gap: 15px;
+    // gap: 15px;
     display: flex;
 
     @include tablet {

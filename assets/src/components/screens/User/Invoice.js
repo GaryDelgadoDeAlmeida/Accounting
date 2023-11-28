@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import UserHeader from "../../parts/UserHeader";
 import SeeMoreButton from "../../parts/SeeMoreButton";
 import PrivateResources from "../../utils/PrivateResources";
-import { Link } from "react-router-dom";
+import Notification from "../../parts/Notification";
 import FormControl from "../../utils/FormControl";
 import LinkButton from "../../parts/LinkButton";
 import RemoveButton from "../../parts/RemoveButton";
@@ -25,7 +25,7 @@ export default function Invoice() {
     }
 
     const handleDownload = (e) => {
-        console.log("Hi handleDownload")
+        // console.log("Hi handleDownload")
 
         let invoiceID = e.currentTarget.getAttribute("data-invoice")
         if(!formControl.checkMinLength(invoiceID, 1)) {
@@ -46,11 +46,16 @@ export default function Invoice() {
                 }
             })
             .then(response => {
-                console.log(response, response.data, response.status)
+                // console.log(response, response.data, response.status)
                 // window.open("url", "_blank")
             })
-            .catch(error => {
-                console.log(error)
+            .catch(({response}) => {
+                let errorMessage = "An error has been encountered. Please retry later"
+                if(response.data != "") {
+                    errorMessage = response.data
+                }
+
+                alert(errorMessage)
             })
         ;
     }
@@ -92,12 +97,6 @@ export default function Invoice() {
                                                     smallSizeBtn={true}
                                                 />
 
-                                                <RemoveButton
-                                                    removeUrl={`${window.location.origin}/api/invoice/${item.id}/remove`}
-                                                    parentElementId={`-invoice-row-${index + 1}`}
-                                                    smallSizeBtn={true}
-                                                />
-
                                                 <LinkButton 
                                                     classname={"btn-orange"} 
                                                     url={`/user/invoice/${item.id}/edit`}
@@ -112,6 +111,12 @@ export default function Invoice() {
                                                 >
                                                     <img src={`${window.location.origin}/content/svg/download-white.svg`} alt={""} />
                                                 </button>
+
+                                                <RemoveButton
+                                                    removeUrl={`${window.location.origin}/api/invoice/${item.id}/remove`}
+                                                    parentElementId={`-invoice-row-${index + 1}`}
+                                                    smallSizeBtn={true}
+                                                />
                                             </td>
                                         </tr>
                                     ))
@@ -125,26 +130,24 @@ export default function Invoice() {
 
                         <div className={"pagination"}>
                             {offset - 1 > 0 && (
-                                <div>
+                                <div className={"item"}>
                                     <button onClick={(e) => handlePagination(e)} value={offset - 1}>{offset - 1}</button>
                                 </div>
                             )}
 
-                            <div className={"current-page"}>
+                            <div className={"item current-page"}>
                                 <span>{offset}</span>
                             </div>
 
                             {offset + 1 < 100 && (
-                                <div>
+                                <div className={"item"}>
                                     <button onClick={(e) => handlePagination(e)} value={offset + 1}>{offset + 1}</button>
                                 </div>
                             )}
                         </div>
                     </>
                 ) : (
-                    <div className="">
-                        <span>Loading ...</span>
-                    </div>
+                    <Notification classname={"information"} message={"Loading ..."} />
                 )}
             </div>
         </UserHeader>

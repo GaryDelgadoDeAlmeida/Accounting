@@ -12,6 +12,7 @@ export default function CompanyForm({userID, company = {}}) {
         name: "", 
         siren: "", 
         siret: "", 
+        status: "",
         duns_number: "", 
         address: "", 
         city: "", 
@@ -38,22 +39,25 @@ export default function CompanyForm({userID, company = {}}) {
                 }
                 break
 
+            case "status":
+                break;
+
             case "siren":
-                if(!formControl.checkNumber(fieldValue) || formControl.checkLength(fieldValue, 0, 9)) {
+                if(!formControl.checkNumber(fieldValue) || !formControl.checkLength(fieldValue, 0, 9)) {
                     setFormResponse({classname: "danger", message: "Le numéro de SIREN n'est pas conforme."})
                     return
                 }
                 break
 
             case "siret":
-                if(!formControl.checkNumber(fieldValue) || formControl.checkLength(fieldValue, 0, 14)) {
+                if(!formControl.checkNumber(fieldValue) || !formControl.checkLength(fieldValue, 0, 14)) {
                     setFormResponse({classname: "danger", message: "Le numéro de SIRET n'est pas conforme."})
                     return
                 }
                 break
 
             case "duns_number":
-                if(!formControl.checkNumber(fieldValue) || formControl.checkLength(fieldValue, 0, 14)) {
+                if(!formControl.checkNumber(fieldValue) || !formControl.checkLength(fieldValue, 0, 14)) {
                     setFormResponse({classname: "danger", message: "Le numéro DUNS n'est pas conforme."})
                     return
                 }
@@ -125,29 +129,24 @@ export default function CompanyForm({userID, company = {}}) {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        if(Object.values(credentiels).indexOf("") !== -1) {
-            setFormResponse({classname: "danger", message: "Une erreur a été rencontrée, veuillez vérifier que tous les champs soient bien renseigner."})
-            return
-        }
-
-        if(!formControl.checkNumber(credentiels.siren) || !formControl.checkNumber(credentiels.siret) || !formControl.checkNumber(credentiels.duns_number)) {
-            setFormResponse({classname: "danger", message: ""})
-            return
-        }
+        // if(Object.values(credentiels).indexOf("") !== -1) {
+        //     setFormResponse({classname: "danger", message: "Une erreur a été rencontrée, veuillez vérifier que tous les champs soient bien renseigner."})
+        //     return
+        // }
 
         axios
-            .post("/api/user/" + userID + "/company", credentiels, {
+            .post(`${window.location.origin}/api/company`, credentiels, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Accept": "application/json+ld"
+                    "Accept": "application/json+ld",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
                 }
             })
             .then(res => {
-                console.log(res)
                 setFormResponse({classname: "success", message: "La société a bien été ajouté parmis vos clients"})
             })
             .catch(err => {
-                console.err(err)
+                console.err(err, err.response)
                 setFormResponse({classname: "danger", message: "An error has been encountered. Please, retry later"})
             })
         ;
@@ -184,7 +183,7 @@ export default function CompanyForm({userID, company = {}}) {
                         
                         <div className={"form-field"}>
                             <label htmlFor={"siret"}>N°SIRET</label>
-                            <input id={"siret"} type={"number"} placeholder={"EX : 914 002 308 00015"} value={credentiels.siret !== "" ? credentiels.siret : company.siret} maxLength={14} onChange={(e) => handleChange(e, "siren")} />
+                            <input id={"siret"} type={"number"} placeholder={"EX : 914 002 308 00015"} value={credentiels.siret !== "" ? credentiels.siret : company.siret} maxLength={14} onChange={(e) => handleChange(e, "siret")} />
                         </div>
                     </div>
                     

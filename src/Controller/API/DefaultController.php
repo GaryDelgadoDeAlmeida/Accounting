@@ -58,13 +58,13 @@ class DefaultController extends AbstractController
         $currentDate = new \DateTime();
 
         return $this->json($this->serializeManager->serializeContent([
-            "nbrClients" => $this->companyRepository->countCompanies($userID),
+            "nbrClients" => $this->user->countCompanies(),
             "lastMonthAmount" => $this->invoiceRepository->getMonthBenefit($this->user, (new \DateTime())->modify("-1 month")->format("m")),
             "ongoingMonthAmout" => $this->invoiceRepository->getMonthBenefit($this->user, $currentDate->format("Y")),
             "currentYearBenefit" => $this->invoiceRepository->getYearBenefit($this->user, $currentDate->format("Y")),
             "clients" => $this->companyRepository->getCompaniesByUser($userID, 1, 3),
-            "invoices" => $this->invoiceRepository->getInvoices($userID, 1, 3),
-            "estimates" => $this->estimateRepository->getEstimates($userID, 1, 3)
+            "invoices" => $this->invoiceRepository->getInvoices($this->user, 1, 3),
+            "estimates" => $this->estimateRepository->getEstimates($this->user, 1, 3)
         ]), Response::HTTP_OK);
     }
 }

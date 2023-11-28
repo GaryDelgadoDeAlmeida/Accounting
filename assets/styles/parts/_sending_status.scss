@@ -1,7 +1,39 @@
 .sending-status {
-    // 
+    display: grid;
+    grid-gap: 15px;
+    grid-auto-rows: minmax(100px, auto);
+    grid-template-columns: repeat(4, 1fr);
+
+    @include mobile {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    @include tinyMobile {
+        grid-template-columns: repeat(1, 1fr);
+    }
 
     .item {
-        // 
+        height: 100px;
+        display: flex;
+        padding: 0 10px;
+        font-size: 1.1rem;
+        color: var(--c-black);
+        background-color: var(--c-white);
+        border: 1px solid var(--c-lightGray);
+
+        &.-active {
+            color: var(--c-white);
+            background-color: var(--c-darkBlue);
+        }
+
+        &.-ongoing {
+            color: var(--c-white);
+            background-color: var(--c-orangeRed);
+        }
+
+        span {
+            margin: auto;
+            text-align: center;
+        }
     }
 }

@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import UserHeader from "../../parts/UserHeader";
 import LinkButton from "../../parts/LinkButton";
+import Notification from "../../parts/Notification";
 import PrivateResources from "../../utils/PrivateResources";
-import axios from "axios";
 
 export default function Home() {
 
@@ -16,7 +16,7 @@ export default function Home() {
             {!loading ? (
                 <div className={"page-section"}>
                     {/* Resume */}
-                    <div className={"resume d-flex-row"}>
+                    <div className={"resume d-flex-row -g-15px"}>
                         <div className={"card item-row"}>
                             <div className={"-header"}></div>
                             <div className={"-content txt-right"}>
@@ -63,7 +63,7 @@ export default function Home() {
                     </div>
 
                     {/* Resume block 1 */}
-                    <div className={"d-flex-row mt-15px"}>
+                    <div className={"d-flex-row -g-15px mt-15px"}>
 
                         {/* Client */}                    
                         <div className={"card item-row"}>
@@ -80,19 +80,25 @@ export default function Home() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {Object.values({...items.clients}).map((client, index) => (
-                                            <tr key={index}>
-                                                <td className={"-client-name"}>{client.name}</td>
-                                                <td className={"-client-address"}>{client.address + " " + client.zipCode + " " + client.city + ", " + client.country}</td>
-                                                <td className={"-action txt-right"}>
-                                                    <LinkButton 
-                                                        classname={"btn-blue"}
-                                                        url={`/user/client/${client.id}`}
-                                                        defaultIMG={"eye"}
-                                                    />
-                                                </td>
+                                        {Object.keys({...items.clients}).length > 0 ? (
+                                            Object.values({...items.clients}).map((client, index) => (
+                                                <tr key={index}>
+                                                    <td className={"-client-name"}>{client.name}</td>
+                                                    <td className={"-client-address"}>{client.address + " " + client.zipCode + " " + client.city + ", " + client.country}</td>
+                                                    <td className={"-action txt-right"}>
+                                                        <LinkButton 
+                                                            classname={"btn-blue"}
+                                                            url={`/user/client/${client.id}`}
+                                                            defaultIMG={"eye"}
+                                                        />
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={3} className={"-message txt-center"}>Il n'y a aucun client enregistrer</td>
                                             </tr>
-                                        ))}
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -115,27 +121,33 @@ export default function Home() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {Object.values({...items.invoices}).map((invoice, index) => {
-                                            let date = new Date(invoice.invoiceDate)
+                                        {Object.keys({...items.invoices}).length > 0 ? (
+                                            Object.values({...items.invoices}).map((invoice, index) => {
+                                                let date = new Date(invoice.invoiceDate)
 
-                                            return (
-                                                <tr key={index}>
-                                                    <td className={"-invoice-date"}>{date.toLocaleDateString(undefined, {year: "numeric", month: "numeric", day: "numeric"})}</td>
-                                                    <td className={"-client-name txt-center"}>{invoice.company.name}</td>
-                                                    <td className={"-status txt-center"}>
-                                                        <span className={"badge badge-success"}>Paid</span>
-                                                    </td>
-                                                    <td className={"-invoice-euro txt-center"}>EURO</td>
-                                                    <td className={"-action txt-right"}>
-                                                        <LinkButton 
-                                                            classname={"btn-blue"}
-                                                            url={`/user/invoice/${invoice.id}`}
-                                                            defaultIMG={"eye"}
-                                                        />
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })}
+                                                return (
+                                                    <tr key={index}>
+                                                        <td className={"-invoice-date"}>{date.toLocaleDateString(undefined, {year: "numeric", month: "numeric", day: "numeric"})}</td>
+                                                        <td className={"-client-name txt-center"}>{invoice.company.name}</td>
+                                                        <td className={"-status txt-center"}>
+                                                            <span className={"badge badge-success"}>Paid</span>
+                                                        </td>
+                                                        <td className={"-invoice-euro txt-center"}>EURO</td>
+                                                        <td className={"-action txt-right"}>
+                                                            <LinkButton 
+                                                                classname={"btn-blue"}
+                                                                url={`/user/invoice/${invoice.id}`}
+                                                                defaultIMG={"eye"}
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={5} className={"-message txt-center"}>Il n'y a aucune facture enregistrer</td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -143,7 +155,7 @@ export default function Home() {
                     </div>
 
                     {/* Resume block 2 */}
-                    <div className={"d-flex-row mt-15px"}>
+                    <div className={"d-flex-row -g-15px mt-15px"}>
                         
                         {/* Estimates */}
                         <div className={"card item-row"}>
@@ -162,31 +174,39 @@ export default function Home() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {Object.values({...items.estimates}).map((estimate, index) => {
-                                            let date = new Date(estimate.createdAt)
-                                            return (
-                                                <tr key={index}>
-                                                    <td className={"-date"}>{date.toLocaleDateString(undefined, {year: "numeric", month: "numeric", day: "numeric"})}</td>
-                                                    <td className={"-client-name txt-center"}>{estimate.company.name}</td>
-                                                    <td className={"-estimate-name txt-center"}>{estimate.label}</td>
-                                                    <td className={"-amount txt-center"}>2500</td>
-                                                    <td className={"-action"}>
-                                                        <LinkButton 
-                                                            classname={"btn-blue"}
-                                                            url={`/user/estimate/${estimate.id}`}
-                                                            defaultIMG={"eye"}
-                                                        />
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })}
+                                        {Object.keys({...items.estimates}).length > 0 ?
+                                            Object.values({...items.estimates}).map((estimate, index) => {
+                                                let date = new Date(estimate.createdAt)
+                                                return (
+                                                    <tr key={index}>
+                                                        <td className={"-date"}>{date.toLocaleDateString(undefined, {year: "numeric", month: "numeric", day: "numeric"})}</td>
+                                                        <td className={"-client-name txt-center"}>{estimate.company.name}</td>
+                                                        <td className={"-estimate-name txt-center"}>{estimate.label}</td>
+                                                        <td className={"-amount txt-center"}>2500</td>
+                                                        <td className={"-action"}>
+                                                            <LinkButton 
+                                                                classname={"btn-blue"}
+                                                                url={`/user/estimate/${estimate.id}`}
+                                                                defaultIMG={"eye"}
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })
+                                        : (
+                                            <tr>
+                                                <td colSpan={5} className={"-message txt-center"}>Il n'y a aucun devis enregistrer</td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
                 </div>
-            ) : (<p>Loading</p>)}
+            ) : (
+                <Notification classname={"information"} message={"Loading ..."} />
+            )}
         </UserHeader>
     )
 }

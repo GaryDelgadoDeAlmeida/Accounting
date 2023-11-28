@@ -7,19 +7,23 @@ use App\Enum\UserEnum;
 use App\Manager\FormManager;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class UserManager {
 
     private EntityManagerInterface $em;
+    private UserPasswordEncoderInterface $encoder;
     private FormManager $formManager;
     private UserRepository $userRepository;
 
     function __construct(
         EntityManagerInterface $em, 
+        UserPasswordEncoderInterface $encoder,
         FormManager $formManager,
         UserRepository $userRepository
     ) {
         $this->em = $em;
+        $this->encoder = $encoder;
         $this->formManager = $formManager;
         $this->userRepository = $userRepository;
     }
@@ -64,7 +68,9 @@ class UserManager {
 
                 // Check if email is valid
                 if(!$this->formManager->isEmail($row)) {
-                    throw new \Exception("The email isn't valid");
+                    throw new \Exception(
+                        sprintf("The email '%s' isn't valid", $row)
+                    );
                 }
             } elseif($key === UserEnum::USER_PASSWORD) {
                 // Check the password min length
@@ -116,13 +122,18 @@ class UserManager {
         array $roles = ["USER_ROLE"]
     ) {
         $user = (new User())
-            ->setFirstname($firstname)
-            ->setLastname($lastname)
+            ->setFirstname(ucfirst(strtolower($firstname)))
+            ->setLastname(strtoupper($lastname))
             ->setBirthDate($birth_date)
             ->setEmail($email)
-            ->setPassword($password)
             ->setRoles($roles)
+            ->setUpdatedAt(new \DateTimeImmutable())
+            ->setCreatedAt(new \DateTimeImmutable())
         ;
+
+        $user->setPassword(
+            $this->encoder->encodePassword($user, $password)
+        );
 
         try {
             $this->userRepository->save($user, true);

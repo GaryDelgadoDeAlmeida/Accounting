@@ -27,8 +27,8 @@ export default function UserHeader(props) {
                         alert("An error has been encountered during the logout process")
                     }
                 })
-                .catch(error => {
-                    console.log(error)
+                .catch(({response}) => {
+                    alert(response.data)
                 })
             ;
         }
@@ -40,6 +40,7 @@ export default function UserHeader(props) {
             
             <div className={"page -admin"}>
                 <div className={"page-header -admin"}>
+                    {/* <img className={"horizontal-menu-logo"} src={`${window.location.origin}/content/img/logo.jpg`} alt={"logo"} /> */}
                     <ul className={"horizontal-menu"}>
                         <li><Link to={"/user"}>Home</Link></li>
                         <li><Link to={"/user/client"}>Client</Link></li>

@@ -11,7 +11,7 @@ export default async function PrivatePostRessource(url, sendBody, useToken = tru
     }
 
     const response = await fetch({
-        url: `${window.location.origin}/api/${url}`,
+        url: url,
         method: "POST",
         credentials: 'same-origin',
         headers: headerOptions,

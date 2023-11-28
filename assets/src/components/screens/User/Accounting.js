@@ -6,12 +6,10 @@ import PrivateRessources from "../../utils/PrivateResources";
 // Comptabilité
 export default function Accounting() {
 
-    const years = [
-        2022,
-        2023
-    ]
+    const years = [2022, 2023]
     const [currentYear, setCurrentYear] = useState((new Date()).getFullYear())
     const { loading, items: benefits, load } = PrivateRessources(`${window.location.origin}/api/graphic-accounting?year=${currentYear}`)
+    
     useEffect(() => {
         load()
     }, [])
@@ -52,8 +50,8 @@ export default function Accounting() {
             <div className={"page-section"}>
                 <h2>Accounting</h2>
 
-                <div className={"d-flex-col -no-reverse"}>
-                    <div className={"d-flex-row"}>
+                <div className={"d-flex-col -g-15px -no-reverse"}>
+                    <div className={"d-flex-row -g-15px"}>
                         {years.map((item, index) => (
                             <button key={index} className={`btn btn-grey ${currentYear == item ? "active" : ""}`} onClick={(e) => handleYearBenefitClick(e, item)}>{item}</button>
                         ))}

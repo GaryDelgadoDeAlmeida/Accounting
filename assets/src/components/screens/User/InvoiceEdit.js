@@ -4,6 +4,7 @@ import UserHeader from "../../parts/UserHeader";
 import ReturnButton from "../../parts/ReturnButton";
 import InvoiceForm from "../../forms/InvoiceForm";
 import PrivateResources from "../../utils/PrivateResources";
+import Notification from "../../parts/Notification";
 
 export default function InvoiceEdit() {
     const { invoiceID } = useParams()
@@ -17,7 +18,7 @@ export default function InvoiceEdit() {
         <UserHeader>
             <ReturnButton path={"/user/invoice"} />
             
-            <div className={"page-content"}>
+            <div className={"page-section"}>
                 {!loading && invoice.company !== undefined ? (
                     <div className={"card"}>
                         <div className={"-content"}>
@@ -25,7 +26,7 @@ export default function InvoiceEdit() {
                         </div>
                     </div>
                 ) : (
-                    <p>Loading ...</p>
+                    <Notification classname={"information"} message={"Loading ..."} />
                 )}
             </div>
         </UserHeader>

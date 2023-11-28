@@ -36,6 +36,10 @@ form {
             border: 1px solid var(--c-silver);
         }
 
+        input:disabled {
+            background-color: var(--c-silver);
+        }
+
         textarea {
             height: 80px;
             padding: 20px;

@@ -2,10 +2,11 @@ import React, { useEffect, useState } from "react";
 import Notification from "../parts/Notification";
 import FormControl from "../utils/FormControl";
 import PublicResources from "../utils/PublicResources";
+import { formatDate } from "../utils/DomElement"
 import axios from "axios";
 
 export default function UserForm({user}) {
-    const { loading: natLoading, items: nationalities, load: natLoad } = PublicResources("https://restcountries.com/v3.1/all?fields=name")
+    const { loading, items: nationalities, load } = PublicResources("https://restcountries.com/v3.1/all?fields=name")
 
     const formControl = new FormControl()
     const [formResponse, setFormResponse] = useState({})
@@ -13,11 +14,11 @@ export default function UserForm({user}) {
         firstname: user.firstname,
         lastname: user.lastname,
         nationality: user.nationality,
-        birth_date: (new Date(user.birthDate)).toLocaleDateString(undefined, {year:"numeric", month:"numeric", day: "numeric"})
+        birth_date: user.birthDate != "" ? formatDate(user.birthDate) : null
     })
 
     useEffect(() => {
-        natLoad()
+        load()
     }, [])
 
     const handleChange = (e, fieldName) => {
@@ -54,8 +55,6 @@ export default function UserForm({user}) {
     const handleSubmit = (e) => {
         e.preventDefault()
 
-        console.log(credentials)
-
         axios
             .put(`${window.location.origin}/api/profile`, credentials, {
                 headers: {
@@ -65,10 +64,9 @@ export default function UserForm({user}) {
                 } 
             })
             .then((response) => {
-                console.log(response, response.data)
                 setFormResponse({classname: "success", message: "Your account has been successfully updated"})
             })
-            .catch(({response, data} = error) => {
+            .catch(({response}) => {
                 let errorMessage = "An error has been encountered. Please retry later."
                 if(response.data != "") {
                     errorMessage = response.data
@@ -94,6 +92,11 @@ export default function UserForm({user}) {
                 </div>
             </div>
 
+            <div className={"form-field"}>
+                <label htmlFor={"email"}>Email</label>
+                <input id={"email"} type={"text"} value={user.email} readOnly disabled />
+            </div>
+
             <div className={"form-field-inline"}>
                 <div className={"form-field"}>
                     <label htmlFor={"nationality"}>Nationality</label>
@@ -107,7 +110,7 @@ export default function UserForm({user}) {
 
                 <div className={"form-field"}>
                     <label htmlFor={"birth-date"}>Birth date</label>
-                    <input type={"date"} onChange={(e) => handleChange(e, "birth_date")} />
+                    <input type={"date"} value={credentials.birth_date} onChange={(e) => handleChange(e, "birth_date")} />
                 </div>
             </div>
             

@@ -19,6 +19,9 @@ export default function PrivateResources(route) {
                     "Authorization": "Bearer " + localStorage.getItem("token")
                 }
             })
+            .then((response) => {
+                setItems(response.data)
+            })
             .catch((err) => console.log(err))
         ;
         setItems(response)

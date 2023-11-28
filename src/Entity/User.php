@@ -253,19 +253,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * Find a company by the id
      * 
      * @param int company id
-     * @return Company
+     * @return Company|null
      */
-    public function getCompany(int $companyID) : Company {
-        $company = null;
-        
-        foreach($this->companies as $client) {
-            if($client->getId() === $companyID) {
-                $company = $client;
-                break;
+    public function getCompany(int $companyID) : Company|null {        
+        foreach($this->companies as $company) {
+            if($company->getId() === $companyID) {
+                return $company;
             }
         }
 
-        return $company;
+        return null;
     }
 
     /**
@@ -282,6 +279,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return null;
+    }
+
+    public function countCompanies() : int {
+        return count($this->companies);
     }
 
     public function addCompany(Company $company): self

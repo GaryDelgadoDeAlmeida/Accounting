@@ -6,6 +6,7 @@ import LinkButton from "../../parts/LinkButton";
 import Badge from "../../parts/Badge";
 import axios from "axios";
 import RemoveButton from "../../parts/RemoveButton";
+import Notification from "../../parts/Notification";
 
 export default function ClientSingle() {
 
@@ -55,7 +56,7 @@ export default function ClientSingle() {
             
             <ReturnButton path={"/user/client"} />
             
-            {loading === false ? (
+            {loading === false && client != null ? (
                 <div className={"page-section"}>
                     {/* Client Address */}
                     <div className={"card client-identity"}>
@@ -64,10 +65,15 @@ export default function ClientSingle() {
                         </div>
                         <div className={"client-infos"}>
                             <span className={"client-name"}>{client.name}</span>
-                            <span className={"client-address"}>{client.address}, {client.city} {client.zip_code}, {client.country}</span>
+                            <span className={"client-address"}>{
+                                client.address + ", " + 
+                                client.zipCode + " " + 
+                                client.city + ", " + 
+                                client.country
+                            }</span>
                             <div>
                                 <LinkButton
-                                    classname={"btn-blue"}
+                                    classname={"btn-orange"}
                                     url={`/user/client/${clientID}/edit`}
                                     defaultIMG={"pencil"}
                                 />
@@ -185,7 +191,7 @@ export default function ClientSingle() {
                     </div>
                 </div>
             ) : (
-                <p>Loading ...</p>
+                <Notification classname={"information"} message={"Loading ..."} />
             )}
         </UserHeader>
     )

@@ -10,6 +10,10 @@ use App\Manager\TokenManager;
 use App\Manager\FreelanceManager;
 use App\Manager\SerializeManager;
 use App\Repository\UserRepository;
+use App\Repository\CompanyRepository;
+use App\Repository\InvoiceRepository;
+use App\Repository\EstimateRepository;
+use App\Repository\FreelanceRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,12 +27,18 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class UserController extends AbstractController
 {
     private ?User $user;
+    
     private FormManager $formManager;
     private UserManager $userManager;
     private TokenManager $tokenManager;
     private FreelanceManager $freelanceManager;
     private SerializeManager $serializeManager;
+    
     private UserRepository $userRepository;
+    private CompanyRepository $companyRepository;
+    private InvoiceRepository $invoiceRepository;
+    private EstimateRepository $estimateRepository;
+    private FreelanceRepository $freelanceRepository;
 
     function __construct(
         Security $security,
@@ -38,6 +48,10 @@ class UserController extends AbstractController
         FreelanceManager $freelanceManager,
         SerializeManager $serializeManager, 
         UserRepository $userRepository, 
+        CompanyRepository $companyRepository,
+        InvoiceRepository $invoiceRepository,
+        EstimateRepository $estimateRepository,
+        FreelanceRepository $freelanceRepository
     ) {
         $this->user = $security->getUser() ?? null;
         $this->formManager = $formManager;
@@ -45,7 +59,12 @@ class UserController extends AbstractController
         $this->tokenManager = $tokenManager;
         $this->freelanceManager = $freelanceManager;
         $this->serializeManager = $serializeManager;
+        
         $this->userRepository = $userRepository;
+        $this->companyRepository = $companyRepository;
+        $this->invoiceRepository = $invoiceRepository;
+        $this->estimateRepository = $estimateRepository;
+        $this->freelanceRepository = $freelanceRepository;
     }
 
     /**
@@ -73,7 +92,7 @@ class UserController extends AbstractController
     public function post_user(Request $request) : JsonResponse {
 
         // If the JSON couldn't be decoded then return an error to the client
-        $jsonContent = json_decode($request->getContent());
+        $jsonContent = json_decode($request->getContent(), true);
         if(!$jsonContent) {
             return $this->json("An error has been found with the sended body", Response::HTTP_PRECONDITION_FAILED);
         }
@@ -81,33 +100,30 @@ class UserController extends AbstractController
         $userFields = [];
         try {
             $userFields = $this->userManager->checkUserFields($jsonContent);
+
+            // Check if an account already exist with the same email
+            if(!empty($this->userRepository->findOneBy(["email" => $userFields[UserEnum::USER_EMAIL]]))) {
+                return $this->json("An account with the email '{$userFields[UserEnum::USER_EMAIL]}' already exist", Response::HTTP_FORBIDDEN);
+            }
+
+            // After all check, if everything is OK, then create the new user account
+            $response = $this->userManager->newUser(
+                $userFields[UserEnum::USER_FIRSTNAME],
+                $userFields[UserEnum::USER_LASTNAME],
+                $userFields[UserEnum::USER_EMAIL],
+                $userFields[UserEnum::USER_PASSWORD],
+                $userFields[UserEnum::USER_BIRTH_DATE]
+            );
+
+            if(!($response instanceof User)) {
+                return $this->json($response, Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
         } catch(\Exception $e) {
             return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        // Check if an account already exist with the same email
-        if(!empty($this->userRepository->findOneBy(["email" => $userFields[UserEnum::USER_EMAIL]]))) {
-            return $this->json("An account with the email '{$userFields[UserEnum::USER_EMAIL]}' already exist", Response::HTTP_FORBIDDEN);
-        }
-
-        // After all check, if everything is OK, then create the new user account
-        $response = $this->userManager->newUser(
-            $userFields[UserEnum::USER_FIRSTNAME],
-            $userFields[UserEnum::USER_LASTNAME],
-            $userFields[UserEnum::USER_EMAIL],
-            $userFields[UserEnum::USER_PASSWORD],
-        );
-
-        if(!($response instanceof User)) {
-            return $this->json([
-                "message" => $response
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-
         // Return a response to the client
-        return $this->json([
-            "message" => "The account {$userFields[UserEnum::USER_EMAIL]} has been successfully created"
-        ], Response::HTTP_CREATED);
+        return $this->json("The account {$userFields[UserEnum::USER_EMAIL]} has been successfully created", Response::HTTP_CREATED);
     }
 
     /**
@@ -299,5 +315,55 @@ class UserController extends AbstractController
         // Process to the insert
 
         return $this->json("Route under construction", Response::HTTP_OK);
+    }
+
+    /**
+     * @Route("/profile/remove", name="user_profile_remove", methods={"DELETE"})
+     */
+    public function user_profile_remove(Request $request) : JsonResponse {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
+        /*try {
+            // Remove all companies linked to the client
+            foreach($this->user->getCompanies() as $company) {
+                $this->companyRepository->remove($company, true);
+            }
+
+            // Remove all estimates
+            foreach($this->user->getEstimates() as $estimate) {
+                $this->estimateRepository->remove($estimate, true);
+            }
+
+            // Remove all invoices
+            foreach($this->user->getInvoices() as $invoice) {
+                $this->invoiceRepository->remove($invoice, true);
+            }
+
+            // Remove freelance link
+            $this->freelanceRepository->remove($this->user->getFreelance(), true);
+
+            // Remove the user account in the end
+            $this->userRepository->remove($this->user, true);
+
+        } catch(\Exception $e) {
+            return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }*/
+
+        return $this->json(null, Response::HTTP_ACCEPTED);
+    }
+    
+    /**
+     * @Route("/user/{userID}/remove", name="user_remove", requirements={"userID"="\d+"}, methods={"DELETE"})
+     */
+    public function user_remove_account(Request $request, int $userID) : JsonResponse {
+        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
+        if(empty($this->user)) {
+            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+        }
+
+        return $this->json(null, Response::HTTP_ACCEPTED);
     }
 }

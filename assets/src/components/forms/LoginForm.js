@@ -65,8 +65,8 @@ export default function LoginForm() {
                     "Accept": "application/json+ld"
                 }
             })
-            .then(res => {
-                let data = res.data
+            .then(response => {
+                let data = response.data
                 if(data.token != "") {
                     if(["undefined", "null", null, undefined].indexOf(localStorage.getItem("token")) !== -1) {
                         localStorage.setItem("token", data.token)
@@ -78,9 +78,12 @@ export default function LoginForm() {
                     setFormResponse({classname: "danger", message: data.error.messageKey})
                 }
             })
-            .catch(err => {
-                console.log(err)
-                setFormResponse({classname: "danger", message: "An error has been encountered"})
+            .catch(error => {
+                let errorMessage = "An error has been encountered"
+                if(error.response.data != "") {
+                    errorMessage = error.response.data
+                }
+                setFormResponse({classname: "danger", message: errorMessage})
             })
         ;
     }

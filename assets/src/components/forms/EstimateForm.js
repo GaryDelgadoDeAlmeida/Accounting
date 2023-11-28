@@ -162,8 +162,6 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                 }
             })
             .then(res => {
-                console.log(res.data)
-
                 // Reset all fields to an empty value
                 setCredentialDetails({
                     title: "",
@@ -172,14 +170,18 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                     nbr_days: 1,
                     budget: 0
                 })
+
+                // Return a response to the user
+                setFormResponse({classname: "success", message: "Successfully added"})
             })
-            .catch(err => {
-                console.log(err)
+            .catch(error => {
+                let errorMessage = "An error has been encountered. Please, retry more later"
+                if(error.response.data != "") {
+                    errorMessage = error.response.data
+                }
+                setFormResponse({classname: "danger", message: errorMessage})
             })
         ;
-
-        // Return a response to the user
-        setFormResponse({classname: "success", message: "Successfully added"})
     }
 
     return (
@@ -188,7 +190,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                 <form className={"form"} onSubmit={(e) => handleSubmit(e)}>
                     {Object.keys(formResponse).length > 0 && (<Notification {...formResponse} />)}
                     
-                    <div className={"d-flex-row"}>
+                    <div className={"d-flex-row -g-15px"}>
                         <div className={"card item-row"}>
                             <div className={"-content"}>
                                 <div className={"form-field"}>

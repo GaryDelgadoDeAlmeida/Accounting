@@ -3,11 +3,10 @@
 namespace App\Controller\API;
 
 use App\Entity\User;
-use App\Manager\FormManager;
+use App\Enum\CompanyEnum;
 use App\Manager\TokenManager;
 use App\Manager\CompanyManager;
 use App\Manager\SerializeManager;
-use App\Repository\UserRepository;
 use App\Repository\CompanyRepository;
 use App\Repository\InvoiceRepository;
 use App\Repository\EstimateRepository;
@@ -28,11 +27,9 @@ class CompanyController extends AbstractController {
 
     private ?User $user = null;
     private EntityManagerInterface $em;
-    private FormManager $formManager;
     private TokenManager $tokenManager;
     private CompanyManager $companyManager;
     private SerializeManager $serializeManager;
-    private UserRepository $userRepository;
     private CompanyRepository $companyRepository;
     private InvoiceRepository $invoiceRepository;
     private EstimateRepository $estimateRepository;
@@ -42,11 +39,9 @@ class CompanyController extends AbstractController {
     function __construct(
         Security $security,
         EntityManagerInterface $em,
-        FormManager $formManager,
         TokenManager $tokenManager,
         CompanyManager $companyManager,
         SerializeManager $serializeManager,
-        UserRepository $userRepository,
         CompanyRepository $companyRepository,
         InvoiceRepository $invoiceRepository,
         EstimateRepository $estimateRepository,
@@ -55,11 +50,9 @@ class CompanyController extends AbstractController {
     ) {
         $this->em = $em;
         $this->user = $security->getUser() ?? null;
-        $this->formManager = $formManager;
         $this->tokenManager = $tokenManager;
         $this->serializeManager = $serializeManager;
         $this->companyManager = $companyManager;
-        $this->userRepository = $userRepository;
         $this->companyRepository = $companyRepository;
         $this->invoiceRepository = $invoiceRepository;
         $this->invoiceDetailRepository = $invoiceDetailRepository;
@@ -83,7 +76,7 @@ class CompanyController extends AbstractController {
 
         return $this->json(
             $this->serializeManager->serializeContent(
-                $this->companyRepository->getCompanies($offset, $limit)
+                $this->companyRepository->getCompaniesByUser($this->user->getId(), $offset, $limit)
             ), 
             Response::HTTP_OK
         );
@@ -99,30 +92,23 @@ class CompanyController extends AbstractController {
             return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
         }
 
-        // Get the body request
-        $bodyContent = $request->getContent();
-
         // Decode the JSON content into array
-        $jsonContent = json_decode($bodyContent);
+        $jsonContent = json_decode($request->getContent(), true);
         if(!$jsonContent) {
             return $this->json(null, Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        // Separate only the needed value
-        $content = [];
-        foreach($jsonContent as $key => $row) {
-            if(!in_array($key, ["name", "address", "zip_code", "city", "country", "siren", "siret", "dns_number", "phone", "email"])) {
-                continue;
-            }
-
-            // $this->formManager
-            $content[$key] = $row;
-        }
-
         try {
-            $company = $this->companyManager->fillCompany($content);
+            // Check all fields
+            $fields = $this->companyManager->checkCompanyFields($jsonContent);
+
+            // Search for an existing company using the siret number
+            // $company = $this->companyRepository->findBy(["siret" => $fields[CompanyEnum::COMPANY_SIRET]]);
+
+            // Fill the company object
+            $company = $this->companyManager->fillCompany($fields, $this->user);
         } catch(\Exeception $e) {
-            return $this->json($e->getMessage());
+            return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return $this->json(null, Response::HTTP_CREATED);
@@ -176,7 +162,7 @@ class CompanyController extends AbstractController {
     /**
      * @Route("/company/{companyID}/estimate/{estimateID}/update", requirements={"companyID"="\d+", "estimateID"="\d+"}, name="update_estimate_form_company", methods={"PUT", "UPDATE"})
      */
-    function update_estimate_form_company(Request $resquest, int $companyID, int $estimateID) : JsonResponse
+    public function update_estimate_form_company(Request $resquest, int $companyID, int $estimateID) : JsonResponse
     {
         $this->user = $this->user ?? $this->tokenManager->checkToken($request);
         if(empty($this->user)) {
@@ -252,15 +238,12 @@ class CompanyController extends AbstractController {
             return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
         }
 
-        $company = $this->companyRepository->findOneBy(["id" => $companyID, "user" => $this->user]);
+        $company = $this->user->getCompany($companyID);
         if(empty($company)) {
             return $this->json("The company couldn't be found", Response::HTTP_NOT_FOUND);
         }
 
         try {
-            // Unlink the user and the company
-            $company->removeUser($this->user);
-
             // Remove all invoices of the user and the company
             $invoices = $this->invoiceRepository->getInvoicesByClientAndUser($company, $this->user);
             foreach($invoices as $invoice) {
@@ -272,7 +255,7 @@ class CompanyController extends AbstractController {
             }
 
             // Remove all estimates of the user and the company
-            $estimates = $this->estimateRepository->getEstimatesByClientAndUser($company, $this->user);
+            $estimates = $this->estimateRepository->getEstimatesByCompanyAndUser($company, $this->user);
             foreach($estimates as $estimate) {
                 foreach($estimate->getEstimateDetails() as $estimateDetail) {
                     $this->estimateDetailRepository->remove($estimateDetail);
@@ -280,6 +263,12 @@ class CompanyController extends AbstractController {
 
                 $this->estimateRepository->remove($estimate, true);
             }
+
+            // Unlink the user and the company
+            $company->removeUser($this->user);
+            
+            // Save change in the entity
+            $this->em->flush();
         } catch(\Exception $e) {
             return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }

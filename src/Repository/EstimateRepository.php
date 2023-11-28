@@ -44,13 +44,15 @@ class EstimateRepository extends ServiceEntityRepository
     /**
      * Get estimates
      * 
-     * @param int userID
+     * @param User user
      * @param int offset
      * @param int limit
      * @return Estimate[]
      */
-    public function getEstimates(int $userID, int $offset, int $limit) {
+    public function getEstimates(User $user, int $offset, int $limit) {
         return $this->createQueryBuilder("estimate")
+            ->where("estimate.user = :user")
+            ->setParameter("user", $user)
             ->setFirstResult(($offset - 1) * $limit)
             ->setMaxResults($limit)
             ->getQuery()
