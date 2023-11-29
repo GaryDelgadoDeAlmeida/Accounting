@@ -11,6 +11,7 @@ import axios from "axios";
 export default function Invoice() {
 
     const formControl = new FormControl()
+    const [ responseMessage, setResponseMessage ] = useState({})
     const [offset, setOffset] = useState(1)
     const [limit, setLimit] = useState(20)
     const { loading, items: invoices, load } = PrivateResources(`${window.location.origin}/api/invoices?offset=${offset}&limit=${limit}`)
@@ -24,8 +25,9 @@ export default function Invoice() {
         )
     }
 
-    const handleDownload = (e) => {
+    const handleDownload = async (e) => {
         // console.log("Hi handleDownload")
+        setResponseMessage({})
 
         let invoiceID = e.currentTarget.getAttribute("data-invoice")
         if(!formControl.checkMinLength(invoiceID, 1)) {
@@ -38,26 +40,31 @@ export default function Invoice() {
             return
         }
 
-        axios
-            .get(`${window.location.origin}/api/invoice/${invoiceID}/pdf`, {
+        try {
+            await fetch(`${window.location.origin}/api/invoice/${invoiceID}/pdf`, {
+                method: "GET",
+                credentials: 'same-origin',
                 headers: {
+                    "Accept": "application/ld+json",
                     "Content-Type": "application/json",
-                    "Accept": "application/pdf"
+                    "Authorization": "Bearer " + localStorage.getItem("token")
                 }
             })
-            .then(response => {
-                // console.log(response, response.data, response.status)
-                // window.open("url", "_blank")
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(new Blob([blob]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', decodeURI('invoice.pdf'));
+                document.body.appendChild(link);
+                link.click();
+                window.URL.revokeObjectURL(url);
+                link.remove();
             })
-            .catch(({response}) => {
-                let errorMessage = "An error has been encountered. Please retry later"
-                if(response.data != "") {
-                    errorMessage = response.data
-                }
-
-                alert(errorMessage)
-            })
-        ;
+        } catch(error) {
+            console.log(error)
+            alert("An error has been encountered. The PDF invoice couldn't be downloded.")
+        }
     }
 
     return (

@@ -16,38 +16,39 @@ export default function EstimateSingle() {
         load()
     }, [])
 
-    const handleGeneratePDF = (e) => {
-        // console.log("HI handleGeneratePDF")
+    const handleGeneratePDF = async (e) => {
         setError(false)
-        if(estimateID != null) {
-            axios
-                .get(`${window.location.origin}/api/estimate/${estimateID}/pdf`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Accept": "application/pdf",
-                        "Authorization": `Bearer ${localStorage.getItem("token")}`,
-                        "ReferrerPolicy": "no-referrer",
-                        "Mode": "no-cors"
-                    }
-                })
-                .then(response => {
-                    // console.log(response, response.data)
-                    const aElement = document.createElement('a');
-                    aElement.setAttribute('download', estimate.label);
-                    
-                    const href = URL.createObjectURL(
-                        new Blob([response.data], {type: "application/pdf"})
-                    );
-                    aElement.href = href;
-                    aElement.setAttribute('target', '_blank');
-                    aElement.click();
-                    URL.revokeObjectURL(href);
-                })
-                .catch(error => {
-                    // console.log(error)
-                    setError(true)
-                })
-            ;
+        
+        if(!estimateID) {
+            setError(true)
+            return
+        }
+
+        try {
+            await fetch(`${window.location.origin}/api/estimate/${estimateID}/pdf`, {
+                method: "GET",
+                credentials: 'same-origin',
+                headers: {
+                    "Accept": "application/ld+json",
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(new Blob([blob]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', decodeURI('estimate.pdf'));
+                document.body.appendChild(link);
+                link.click();
+                window.URL.revokeObjectURL(url);
+                link.remove();
+            })
+        } catch(error) {
+            console.log(error)
+            // alert("An error has been encountered. The PDF estimate couldn't be downloded.")
+            setError(true)
         }
     }
 

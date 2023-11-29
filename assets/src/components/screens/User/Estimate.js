@@ -22,6 +22,39 @@ export default function Estimate() {
         )
     }
 
+    const handleDownload = async (e) => {
+        const estimateID = e.currentTarget.getAttribute("data-estimateid")
+        if(!estimateID) {
+            return
+        }
+        
+        try {
+            await fetch(`${window.location.origin}/api/estimate/${estimateID}/pdf`, {
+                method: "GET",
+                credentials: 'same-origin',
+                headers: {
+                    "Accept": "application/ld+json",
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                }
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(new Blob([blob]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', decodeURI('estimate.pdf'));
+                document.body.appendChild(link);
+                link.click();
+                window.URL.revokeObjectURL(url);
+                link.remove();
+            })
+        } catch(error) {
+            console.log(error)
+            alert("An error has been encountered. The PDF estimate couldn't be downloded.")
+        }
+    }
+
     return (
         <UserHeader>
             <LinkButton
@@ -59,6 +92,14 @@ export default function Estimate() {
                                                     url={`/user/estimate/${item.id}/edit`} 
                                                     defaultIMG={"pencil"}
                                                 />
+
+                                                <button 
+                                                    className={"btn btn-green -inline-flex"}
+                                                    data-estimateid={item.id}
+                                                    onClick={(e) => handleDownload(e)}
+                                                >
+                                                    <img src={`${window.location.origin}/content/svg/download-white.svg`} alt={"download"} />
+                                                </button>
 
                                                 <RemoveButton
                                                     removeUrl={`${window.location.origin}/api/estimate/${item.id}/remove`}

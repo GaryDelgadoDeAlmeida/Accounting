@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>{{ invoice.filename }}</title>
         <style>
             html, body, .page {
@@ -194,11 +193,9 @@
                                             {% if user.freelance is not same as (null) %}
                                                 <span>{{ user.freelance.address ~ ", " ~ user.freelance.zipCode ~ " " ~ user.freelance.city ~ ", " ~ user.freelance.country }}</span>
                                             {% endif %}
-                                            <span>189 rue Vercingétorix, Paris 75014, France</span>
                                         </div>
                                         
                                         <div class="-contact">
-                                            {% if user.freelance is not same as (null) %}<span>{{ user.freelance.phone }}</span><br />{% endif %}
                                             <span>{{ user.email }}</span>
                                         </div>
                                     </div>

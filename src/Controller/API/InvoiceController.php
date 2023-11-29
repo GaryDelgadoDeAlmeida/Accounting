@@ -190,15 +190,13 @@ class InvoiceController extends AbstractController
         }
 
         try {
-            $this->pdfManager->generatePdf(
-                $request->getScheme() . '://' . $request->getHttpHost() . $request->getBasePath(),
+            $dompdf = $this->pdfManager->generatePdf(
                 "invoice", 
-                $invoice,
-                false
+                $invoice
             );
 
             // After generating invoice PDF, send it to the client
-            // $this->contactManager->sendEmail($invoice->getLabel(), "gary.almeida.work@gmail.com");
+            // $this->contactManager->sendEmail($invoice->getFilename(), "gary.almeida.work@gmail.com");
         } catch(\Exception $e) {
             return $this->json(
                 $e->getMessage(), 
@@ -206,11 +204,11 @@ class InvoiceController extends AbstractController
             );
         }
 
-        return $this->json("", Response::HTTP_OK, [
-            "Content-Type" => "application/pdf",
-            "Content-Disposition" => "attachment; filename={$invoice->getFilename()}.pdf"
-        ]);
-        // return $this->invoiceManager->generateInvoice($invoice);
+        return $this->json(
+            $dompdf->stream($invoice->getFilename(), ["Compress" => true, "Attachment" => false]), 
+            Response::HTTP_OK, 
+            ["Content-Type" => "application/pdf"]
+        );
     }
 
     /**

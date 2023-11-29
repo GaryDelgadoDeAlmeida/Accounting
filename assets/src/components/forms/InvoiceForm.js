@@ -300,8 +300,8 @@ export default function InvoiceForm({companyID, invoice = null}) {
             </div>
 
             <div className={"form-field"}>
-                <label>Due date</label>
-                <input type={"date"} onChange={(e) => handleChange(e, "due_date")} />
+                <label htmlFor={"due_date"}>Due date</label>
+                <input id={"due_date"} type={"date"} onChange={(e) => handleChange(e, "due_date")} />
             </div>
 
             {!loading && (

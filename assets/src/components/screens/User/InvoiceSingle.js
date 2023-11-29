@@ -17,15 +17,30 @@ export default function InvoiceSingle() {
     }, [])
 
     const handleDownloadInvoice = async (e) => {
-        console.log("Hi handleDownloadInvoice")
-        const response = await fetch(`${window.location.origin}/api/invoice/${invoiceID}/pdf`, {
+        await fetch(`${window.location.origin}/api/invoice/${invoiceID}/pdf`, {
             method: "GET",
             credentials: 'same-origin',
             headers: {
                 "Accept": "application/ld+json",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + localStorage.getItem("token")
             }
-        }).then(apiResponse => apiResponse.json())
+        })
+        .then(response => response.blob())
+        .then(blob => {
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', decodeURI('invoice.pdf'));
+            document.body.appendChild(link);
+            link.click();
+            window.URL.revokeObjectURL(url);
+            link.remove();
+        })
+        .catch(error => {
+            console.log(error)
+            alert("An error has been encountered. The PDF invoice couldn't be downloded.")
+        })
     }
 
     return (

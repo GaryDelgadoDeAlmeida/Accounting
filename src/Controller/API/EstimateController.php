@@ -192,10 +192,12 @@ class EstimateController extends AbstractController
 
         try {
             $dompdf = $this->pdfManager->generatePdf(
-                $request->getScheme() . '://' . $request->getHttpHost() . $request->getBasePath(), 
                 "estimate", 
                 $estimate
             );
+
+            // After generating invoice PDF, send it to the client
+            // $this->contactManager->sendEmail($estimate->getLabel(), "gary.almeida.work@gmail.com");
         } catch(\Exception $e) {
             return $this->json(
                 $e->getMessage(), 
@@ -203,10 +205,11 @@ class EstimateController extends AbstractController
             );
         }
 
-        return $this->json($dompdf, Response::HTTP_OK, [
-            "Content-Type" => "application/pdf",
-            "Content-Disposition" => "filename={$estimate->getLabel()}.pdf"
-        ]);
+        return $this->json(
+            $dompdf->stream($estimate->getLabel(), ["Compress" => true, "Attachment" => false]), 
+            Response::HTTP_OK, 
+            ["Content-Type" => "application/pdf"]
+        );
     }
 
     /**
