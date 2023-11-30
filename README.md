@@ -87,3 +87,12 @@ Compile a SASS file into a CSS file
 ```bash
 symfony console security:hash-password
 ```
+
+### Mettre à jour la version de Symfony
+
+Dans le composer.json, dans toutes les dépendances de symfony (toutes celles qui commence par `symfony/*`), changer la version. A l'heure où j'écris ce message, la version actuelle de mon projet Symfony est la LTS `5.4`. Je vais la mettre à jour la version vers la `6.4`. Une fois changer toutes les dépendances commançant par `symfony/*`, il faut appliquer la modification sur tout le projet, pour ce faire, il faudra éxecuter la commande suivant :
+```bash
+composer update "symfony/*" --with-all-dependencies
+```
+
+Si une erreur est rencontrée, il faudra supprimer manuellement le cache et relancer la commande. De mon côté, c'est la seule erreur rencontrée.

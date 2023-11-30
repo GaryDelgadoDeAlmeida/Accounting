@@ -7,18 +7,18 @@ use App\Enum\UserEnum;
 use App\Manager\FormManager;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserManager {
 
     private EntityManagerInterface $em;
-    private UserPasswordEncoderInterface $encoder;
+    private UserPasswordHasherInterface $encoder;
     private FormManager $formManager;
     private UserRepository $userRepository;
 
     function __construct(
         EntityManagerInterface $em, 
-        UserPasswordEncoderInterface $encoder,
+        UserPasswordHasherInterface $encoder,
         FormManager $formManager,
         UserRepository $userRepository
     ) {
@@ -96,7 +96,7 @@ class UserManager {
             elseif($key === UserEnum::USER_LASTNAME) $user->setLastname($value);
             elseif($key === UserEnum::USER_BIRTH_DATE) $user->setBirthDate($value);
             elseif($key === UserEnum::USER_EMAIL) $user->setEmail($value);
-            elseif($key === UserEnum::USER_PASSWORD) $user->setPassword($value);
+            elseif($key === UserEnum::USER_PASSWORD) $user->setPassword($this->encoder->hashPassword($user, $value));
         }
 
         $this->em->flush();
@@ -132,7 +132,7 @@ class UserManager {
         ;
 
         $user->setPassword(
-            $this->encoder->encodePassword($user, $password)
+            $this->encoder->hashPassword($user, $password)
         );
 
         try {

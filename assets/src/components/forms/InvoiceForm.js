@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Notification from "../parts/Notification";
 import axios from "axios";
 import FormControl from "../utils/FormControl";
@@ -9,7 +9,7 @@ export default function InvoiceForm({companyID, invoice = null}) {
     const { loading, items: companies, load } = PrivateResources(`${window.location.origin}/api/companies`)
 
     let details = []
-    let rowCounting = 0
+    let rowCounting = useRef(0)
     const formControl = new FormControl()
     const [formResponse, setFormResponse] = useState({})
     const [credentials, setCredentials] = useState({
@@ -78,9 +78,10 @@ export default function InvoiceForm({companyID, invoice = null}) {
         buttonRemove.classList.add("btn", "btn-red")
 
         // Tr element to add all created td elements
+        rowCounting.current += 1
         let parentBody = findParent(e.target, "table-content")
         let trElement = document.createElement("tr")
-        trElement.id = parentBody.children.length
+        trElement.id = rowCounting.current
         trElement.classList.add("item-cell")
         trElement.appendChild(
             createTdElement(
@@ -113,15 +114,36 @@ export default function InvoiceForm({companyID, invoice = null}) {
         parentBody.insertBefore(trElement, parentBody.children[parentBody.children.length - 1])
     }
 
-    const handleRemoveRow = (e) => {
+    const handleRemoveRow = async (e) => {
+        let invoiceDetails = await {...credentials.details}
         let trElement = findParent(e.target, "item-cell")
         if(trElement == null) {
             setFormResponse({classname: "danger", message: "An error has been encountered. The row couldn't be removed"})
             return
         }
 
-        let rowID = trElement.id
-        credentials.details[rowID]
+        let rowID = parseInt(trElement.id)
+        trElement.remove()
+        
+        // console.log(
+        //     rowID, 
+        //     details,
+        //     invoiceDetails, 
+        //     credentials.details,
+        //     typeof details,
+        //     typeof credentials.details
+        // )
+        // return
+        
+        if(Object.keys(invoiceDetails).length > 0) {
+            delete credentials.details[rowID]
+            
+            setCredentials({
+                ...credentials,
+                details: {...credentials.details}
+            })
+        }
+        console.log(invoiceDetails)
     }
 
     const handleChange = (e, fieldName) => {
@@ -248,6 +270,12 @@ export default function InvoiceForm({companyID, invoice = null}) {
     const handleSubmit = (e) => {
         e.preventDefault()
 
+        console.log(
+            [null, ""].indexOf(credentials.company) === false,
+            credentials.invoice_date === "",
+            Object.keys(credentials.details).length < 1
+        )
+
         // check if all fields has been filled
         if(
             [null, ""].indexOf(credentials.company) === false ||
@@ -267,7 +295,8 @@ export default function InvoiceForm({companyID, invoice = null}) {
             .post(url, credentials, {
                 headers: {
                     "Content-Type": "application/json",
-                    "Accept": "application/json+ld"
+                    "Accept": "application/json+ld",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
                 }
             })
             .then(({data}) => {
