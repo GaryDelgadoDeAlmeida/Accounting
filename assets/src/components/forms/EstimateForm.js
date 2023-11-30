@@ -18,7 +18,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
         details: estimate != null ? {...estimate.estimateDetails} : {}
     })
     const [credentialDetails, setCredentialDetails] = useState({
-        title: "",
+        label: "",
         description: "",
         quantity: 1,
         nbr_days: 1,
@@ -45,7 +45,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
         })
         
         setCredentialDetails({
-            title: "",
+            label: "",
             description: "",
             quantity: 1,
             nbr_days: 1,
@@ -102,7 +102,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                 }
                 break
 
-            case "title":
+            case "label":
                 if(!formControl.checkMaxLength(fieldValue, 255)) {
                     setFormResponse({classname: "danger", message: "The title exceed 255 characters length"})
                     return
@@ -130,7 +130,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                 return
         }
 
-        if(["title", "description", "quantity", "nbr_days", "budget"].includes(fieldName)) {
+        if(["label", "description", "quantity", "nbr_days", "budget"].includes(fieldName)) {
             setCredentialDetails({
                 ...credentialDetails,
                 [fieldName]: fieldValue
@@ -174,7 +174,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
 
         // Send data to API
         axios
-            .post(`${window.location.origin}/api/estimate`, credentials, {
+            .post(url, credentials, {
                 headers: {
                     "Content-Type": "application/json"
                 }
@@ -182,7 +182,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
             .then(res => {
                 // Reset all fields to an empty value
                 setCredentialDetails({
-                    title: "",
+                    label: "",
                     description: "",
                     quantity: 1,
                     nbr_days: 1,
@@ -235,7 +235,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                             <div className="-content">
                                 <div className={"form-field"}>
                                     <label htmlFor={"title"}>Title</label>
-                                    <input type={"text"} maxLength={"255"} value={credentialDetails.title} onChange={(e) => handleChange(e, "title")} />
+                                    <input type={"text"} maxLength={"255"} value={credentialDetails.label} onChange={(e) => handleChange(e, "label")} />
                                 </div>
                                 
                                 <div className={"form-field"}>
@@ -278,7 +278,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                                     <tbody id={"estimate-details"}>
                                         {objectKeys.length > 0 && typeof credentials.details == "object" && Object.values(credentials.details).map((item, index) => (
                                             <tr id={objectKeys[index]} className={"-item-cell"} key={index}>
-                                                <td className={"-title"}>{item.title}</td>
+                                                <td className={"-title"}>{item.label}</td>
                                                 <td className={"-quantity txt-center"}>{item.quantity}</td>
                                                 <td className={"-price txt-center"}>{item.price}</td>
                                                 <td className={"-action txt-right"}>
