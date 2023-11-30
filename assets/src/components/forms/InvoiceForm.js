@@ -6,15 +6,15 @@ import PrivateResources from "../utils/PrivateResources";
 import { findChildren, findParent } from "../utils/DomElement";
 
 export default function InvoiceForm({companyID, invoice = null}) {
-    const { loading, items: companies, load } = PrivateResources(`${window.location.origin}/api/companies`)
-
-    let details = []
-    let rowCounting = useRef(0)
     const formControl = new FormControl()
     const [formResponse, setFormResponse] = useState({})
-    const [credentials, setCredentials] = useState({
+    const { loading, items: companies, load } = PrivateResources(`${window.location.origin}/api/companies`)
+
+    let rowCounting = useRef(1)
+    let credentials = useRef({
         company: parseInt(companyID),
         invoice_date: "",
+        due_date: "",
         details: invoice != null ? {...invoice.invoiceDetails} : {}
     })
 
@@ -78,44 +78,25 @@ export default function InvoiceForm({companyID, invoice = null}) {
         buttonRemove.classList.add("btn", "btn-red")
 
         // Tr element to add all created td elements
-        rowCounting.current += 1
-        let parentBody = findParent(e.target, "table-content")
         let trElement = document.createElement("tr")
         trElement.id = rowCounting.current
         trElement.classList.add("item-cell")
-        trElement.appendChild(
-            createTdElement(
-                createDivFieldElement(inputDescription), 
-                ["-description"]
-            )
-        )
-        trElement.appendChild(
-            createTdElement(
-                createDivFieldElement(inputQuantity), 
-                ["-quantity"]
-            )
-        )
-        trElement.appendChild(
-            createTdElement(
-                createDivFieldElement(inputPrice), 
-                ["-price", "txt-center"]
-            )
-        )
-        trElement.appendChild(
-            createTdElement(inputTva, ["-tva", "txt-center"])
-        )
-        trElement.appendChild(
-            createTdElement(0, ["-amount", "txt-center"])
-        )
-        trElement.appendChild(
-            createTdElement(buttonRemove, ["-action", "txt-center"])
-        )
+        trElement.appendChild(createTdElement(createDivFieldElement(inputDescription), ["-description"]))
+        trElement.appendChild(createTdElement(createDivFieldElement(inputQuantity), ["-quantity"]))
+        trElement.appendChild(createTdElement(createDivFieldElement(inputPrice), ["-price", "txt-center"]))
+        trElement.appendChild(createTdElement(inputTva, ["-tva", "txt-center"]))
+        trElement.appendChild(createTdElement(0, ["-amount", "txt-center"]))
+        trElement.appendChild(createTdElement(buttonRemove, ["-action", "txt-center"]))
 
+        // Increase counter
+        rowCounting.current += 1
+
+        // Add to table
+        let parentBody = findParent(e.target, "table-content")
         parentBody.insertBefore(trElement, parentBody.children[parentBody.children.length - 1])
     }
 
     const handleRemoveRow = async (e) => {
-        let invoiceDetails = await {...credentials.details}
         let trElement = findParent(e.target, "item-cell")
         if(trElement == null) {
             setFormResponse({classname: "danger", message: "An error has been encountered. The row couldn't be removed"})
@@ -123,27 +104,11 @@ export default function InvoiceForm({companyID, invoice = null}) {
         }
 
         let rowID = parseInt(trElement.id)
-        trElement.remove()
-        
-        // console.log(
-        //     rowID, 
-        //     details,
-        //     invoiceDetails, 
-        //     credentials.details,
-        //     typeof details,
-        //     typeof credentials.details
-        // )
-        // return
-        
-        if(Object.keys(invoiceDetails).length > 0) {
-            delete credentials.details[rowID]
-            
-            setCredentials({
-                ...credentials,
-                details: {...credentials.details}
-            })
+        if(Object.keys(credentials.current.details).length > 0) {
+            delete credentials.current.details[rowID]
         }
-        console.log(invoiceDetails)
+
+        trElement.remove()
     }
 
     const handleChange = (e, fieldName) => {
@@ -244,43 +209,32 @@ export default function InvoiceForm({companyID, invoice = null}) {
 
             // Update credentials to send it to database
             let parentID = parseInt(parent.id)
-            details = {
-                ...details,
-                [parentID]: {
-                    ...details[parentID],
-                    [fieldName]: fieldValue
+            credentials.current = {
+                ...credentials.current,
+                details: {
+                    ...credentials.current.details,
+                    [parentID]: {
+                        ...credentials.current.details[parentID],
+                        [fieldName]: fieldValue
+                    }
                 }
             }
-
-            setCredentials({
-                ...credentials,
-                details: {
-                    ...credentials.details,
-                    ...details
-                }
-            })
         } else {
-            setCredentials({
-                ...credentials,
+            credentials.current = {
+                ...credentials.current,
                 [fieldName]: fieldValue
-            })
+            }
         }
     }
 
     const handleSubmit = (e) => {
         e.preventDefault()
 
-        console.log(
-            [null, ""].indexOf(credentials.company) === false,
-            credentials.invoice_date === "",
-            Object.keys(credentials.details).length < 1
-        )
-
         // check if all fields has been filled
         if(
-            [null, ""].indexOf(credentials.company) === false ||
-            credentials.invoice_date === "" ||
-            Object.keys(credentials.details).length < 1
+            [null, ""].indexOf(credentials.current.company) === false ||
+            credentials.current.invoice_date === "" ||
+            Object.keys(credentials.current.details).length < 1
         ) {
             setFormResponse({classname: "danger", message: "Please, fill all required fields before submit"})
             return
@@ -292,7 +246,7 @@ export default function InvoiceForm({companyID, invoice = null}) {
         }
 
         axios
-            .post(url, credentials, {
+            .post(url, credentials.current, {
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json+ld",
@@ -316,6 +270,7 @@ export default function InvoiceForm({companyID, invoice = null}) {
         ;
     }
 
+    let objectKeys = Object.keys(credentials.current.details)
     return (
         <form className={"form"} onSubmit={(e) => handleSubmit(e)}>
             {Object.keys(formResponse).length > 0 && (
@@ -360,13 +315,13 @@ export default function InvoiceForm({companyID, invoice = null}) {
                         </tr>
                     </thead>
                     <tbody className={"table-content"}>
-                        {invoice != null && Object.keys(credentials.details).length > 0 ? (
-                            Object.values(credentials.details).map((item, index) => {
+                        {invoice != null && objectKeys.length > 0 ? (
+                            Object.values(credentials.current.details).map((item, index) => {
                                 let tva = (item.tva ? 1.2 : 1)
                                 let amount = (item.price * tva) * item.quantity
                                 
                                 return (
-                                    <tr key={index}>
+                                    <tr id={objectKeys[index]} key={index}>
                                         <td className={"-description"}>
                                             <div className={"form-field"}>
                                                 <input type={"text"} className={"no-radius h-30px"} value={item.description} onChange={(e) => handleChange(e, "description")} required />
