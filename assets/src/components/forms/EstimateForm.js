@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Notification from "../parts/Notification";
 import FormControl from "../utils/FormControl";
 import PrivateResources from "../utils/PrivateResources";
+import { findParent } from "../utils/DomElement";
 import axios from "axios";
 
 export default function EstimateForm({estimate = null, companyID = null}) {
@@ -10,6 +11,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
     const formControl = new FormControl()
     const {loading = true, items: companies, load} = PrivateResources(`${window.location.origin}/api/companies`)
     
+    let rowCounting = useRef(0)
     const [credentials, setCredentials] = useState({
         date: "",
         company: "",
@@ -30,8 +32,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
     }, [])
 
     const handleNew = (e) => {
-        let estimateDetails = document.getElementById("estimate-details")
-        let estimateDetailRow = estimateDetails.children.length
+        let estimateDetailRow = rowCounting.current
         setCredentials({
             ...credentials,
             details: {
@@ -50,11 +51,28 @@ export default function EstimateForm({estimate = null, companyID = null}) {
             nbr_days: 1,
             budget: 0
         })
+
+        rowCounting.current++
     }
 
     const handleRemove = (e) => {
-        console.log("Hi handleRemove")
-        let estimateID = e.target.getAttribute("data-estimateid")
+        let parent = findParent(e.currentTarget, "-item-cell")
+        if(!parent) {
+            setFormResponse({classname: "danger", message: "Une erreur a été rencontrée. La ligne n'a pas put être supprimée"})
+            return
+        }
+
+        let estimateID = parent.id
+        let estimateDetails = {...credentials.details}
+        if(estimateDetails[estimateID]) {
+            delete estimateDetails[estimateID]
+            setCredentials({
+                ...credentials,
+                details: {
+                    ...estimateDetails
+                }
+            })
+        }
     }
 
     const handleChange = (e, fieldName) => {
@@ -188,6 +206,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
         ;
     }
 
+    let objectKeys = Object.keys(credentials.details)
     return (
         <>
             {!loading ? (
@@ -257,13 +276,17 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                                         </tr>
                                     </thead>
                                     <tbody id={"estimate-details"}>
-                                        {Object.keys(credentials.details).length > 0 && typeof credentials.details == "object" && Object.values(credentials.details).map((item, index) => (
-                                            <tr key={index}>
-                                                <td className={"-title"}>{item.label}</td>
+                                        {objectKeys.length > 0 && typeof credentials.details == "object" && Object.values(credentials.details).map((item, index) => (
+                                            <tr id={objectKeys[index]} className={"-item-cell"} key={index}>
+                                                <td className={"-title"}>{item.title}</td>
                                                 <td className={"-quantity txt-center"}>{item.quantity}</td>
                                                 <td className={"-price txt-center"}>{item.price}</td>
                                                 <td className={"-action txt-right"}>
-                                                    <button type={"button"} className={"btn btn-red -inline-flex"} onClick={(e) => handleRemove(e)}>
+                                                    <button 
+                                                        type={"button"} 
+                                                        className={"btn btn-red -inline-flex"} 
+                                                        onClick={(e) => handleRemove(e)}
+                                                    >
                                                         <img src={`${window.location.origin}/content/svg/trash-white.svg`} />
                                                     </button>
                                                 </td>
