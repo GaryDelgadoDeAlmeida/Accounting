@@ -149,7 +149,7 @@ class InvoiceController extends AbstractController
     }
 
     /**
-     * @Route("/invoice/{invoiceID}/update", name="update_invoice", requirements={"invoiceID"="\d+"}, methods={"PUT", "UPDATE"})
+     * @Route("/invoice/{invoiceID}/update", name="update_invoice", requirements={"invoiceID"="\d+"}, methods={"POST", "PUT", "UPDATE"})
      */
     public function update_invoice(Request $request, int $invoiceID = 0): JsonResponse
     {
@@ -163,12 +163,32 @@ class InvoiceController extends AbstractController
             return $this->json(null, Response::HTTP_NOT_FOUND);
         }
 
-        $jsonContent = $request->getContent();
+        $jsonContent = json_decode($request->getContent(), true);
         if(!$jsonContent) {
             return $this->json(null, Response::HTTP_PRECONDITION_FAILED);
         }
 
         // udpate invoice
+        foreach($jsonContent["details"] as $index => $detail) {
+            if(isset($detail["id"])) {
+                $invoiceDetail = $this->invoiceDetailRepository->find($detail["id"]);
+                $invoiceDetail
+                    ->setDescription($detail["description"])
+                    ->setQuantity($detail["quantity"])
+                    ->setPrice(floatval($detail["price"]))
+                ;
+
+                $this->invoiceDetailRepository->save($invoiceDetail, true);
+            } else {
+                $this->invoiceManager->addInvoiceDetail(
+                    $invoice, 
+                    $detail["description"],
+                    $detail["quantity"],
+                    $detail["price"],
+                    $detail["tva"] ?? false
+                );
+            }
+        }
 
         // Return a response to the client
         return $this->json(null, Response::HTTP_ACCEPTED);

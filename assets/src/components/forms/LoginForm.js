@@ -67,11 +67,8 @@ export default function LoginForm() {
             })
             .then((response) => {
                 if(response.data.token != null) {
-                    if(["undefined", "null", null, undefined].indexOf(localStorage.getItem("token")) !== -1) {
-                        localStorage.setItem("token", response.data.token)
-                        setLogged(true)
-                    }
-
+                    localStorage.setItem("token", response.data.token)
+                    setLogged(true)
                     setFormResponse({classname: "success", message: "Successfully connected"})
                 } else {
                     setFormResponse({classname: "danger", message: response.data.error.messageKey})

@@ -10,10 +10,12 @@ import axios from "axios";
 
 export default function Invoice() {
 
-    const formControl = new FormControl()
-    const [ responseMessage, setResponseMessage ] = useState({})
     const [offset, setOffset] = useState(1)
     const [limit, setLimit] = useState(20)
+    const [nbrOffset, setNbrOffset] = useState(1)
+
+    const formControl = new FormControl()
+    const [ responseMessage, setResponseMessage ] = useState({})
     const { loading, items: invoices, load } = PrivateResources(`${window.location.origin}/api/invoices?offset=${offset}&limit=${limit}`)
     useEffect(() => {
         load()
@@ -135,7 +137,7 @@ export default function Invoice() {
                             </tbody>
                         </table>
 
-                        {invoices.length > 0 && typeof invoices === "object" && (
+                        {offset >= 1 && offset < nbrOffset && (
                             <div className={"pagination"}>
                                 {offset - 1 > 0 && (
                                     <div className={"item"}>

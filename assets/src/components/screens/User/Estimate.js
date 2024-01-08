@@ -8,8 +8,9 @@ import Notification from "../../parts/Notification";
 
 export default function Estimate() {
 
-    const [offset, setOffset] = useState(1)
     const limit = 20
+    const [offset, setOffset] = useState(1)
+    const [nbrOffset, setNbrOffset] = useState(1)
     const {loading, items: estimates, load} = PrivateResources(`${window.location.origin}/api/estimate?offset=${offset}&limit=${limit}`)
 
     useEffect(() => {
@@ -116,7 +117,7 @@ export default function Estimate() {
                             </tbody>
                         </table>
 
-                        {estimates.length > 0 && typeof estimates === "object" && (
+                        {offset >= 1 && offset < nbrOffset && (
                             <div className={"pagination"}>
                                 {offset - 1 > 0 && (
                                     <div className={"item"}>

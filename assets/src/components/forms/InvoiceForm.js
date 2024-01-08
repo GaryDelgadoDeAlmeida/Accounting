@@ -39,6 +39,10 @@ export default function InvoiceForm({companyID, invoice = null}) {
     }
 
     const handleNewRow = (e) => {
+        // Parent table
+        let parentBody = findParent(e.target, "table-content")
+        rowCounting.current = parentBody.children.length - 1
+
         // Description (1st column)
         let inputDescription = document.createElement("input")
         inputDescription.type = "text"
@@ -88,11 +92,7 @@ export default function InvoiceForm({companyID, invoice = null}) {
         trElement.appendChild(createTdElement(0, ["-amount", "txt-center"]))
         trElement.appendChild(createTdElement(buttonRemove, ["-action", "txt-center"]))
 
-        // Increase counter
-        rowCounting.current += 1
-
         // Add to table
-        let parentBody = findParent(e.target, "table-content")
         parentBody.insertBefore(trElement, parentBody.children[parentBody.children.length - 1])
     }
 

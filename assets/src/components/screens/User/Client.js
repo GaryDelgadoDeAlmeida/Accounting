@@ -10,6 +10,7 @@ export default function Client() {
 
     const [offset, setOffset] = useState(1)
     const [limit, setLimit] = useState(20)
+    const [nbrOffset, setNbrOffset] = useState(1)
     const { loading, items: clients, load } = PrivateResources(`${window.location.origin}/api/companies?offset=${offset}&limit=${limit}`)
     useEffect(() => {
         load()
@@ -95,23 +96,25 @@ export default function Client() {
                                     </div>
                                 ))}
 
-                                <div className={"pagination"}>
-                                    {offset - 1 > 0 && (
-                                        <div className={"item"}>
-                                            <button onClick={(e) => handlePagination(e)} value={offset - 1}>{offset - 1}</button>
-                                        </div>
-                                    )}
+                                {offset >= 1 && offset < nbrOffset && (
+                                    <div className={"pagination"}>
+                                        {offset - 1 > 0 && (
+                                            <div className={"item"}>
+                                                <button onClick={(e) => handlePagination(e)} value={offset - 1}>{offset - 1}</button>
+                                            </div>
+                                        )}
 
-                                    <div className={"item current-page"}>
-                                        <span>{offset}</span>
+                                        <div className={"item current-page"}>
+                                            <span>{offset}</span>
+                                        </div>
+
+                                        {offset + 1 < 100 && (
+                                            <div className={"item"}>
+                                                <button onClick={(e) => handlePagination(e)} value={offset + 1}>{offset + 1}</button>
+                                            </div>
+                                        )}
                                     </div>
-
-                                    {offset + 1 < 100 && (
-                                        <div className={"item"}>
-                                            <button onClick={(e) => handlePagination(e)} value={offset + 1}>{offset + 1}</button>
-                                        </div>
-                                    )}
-                                </div>
+                                )}
                             </>
                         ) : (
                             <Notification classname={"information"} message={"Vous n'avez aucun client enregistrer dans la base de données"} />
