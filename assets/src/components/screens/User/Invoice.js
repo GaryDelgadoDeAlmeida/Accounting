@@ -12,14 +12,14 @@ export default function Invoice() {
 
     const [offset, setOffset] = useState(1)
     const [limit, setLimit] = useState(20)
-    const [nbrOffset, setNbrOffset] = useState(1)
+    const [nbrOffset, setNbrOffset] = useState(100)
 
     const formControl = new FormControl()
     const [ responseMessage, setResponseMessage ] = useState({})
     const { loading, items: invoices, load } = PrivateResources(`${window.location.origin}/api/invoices?offset=${offset}&limit=${limit}`)
     useEffect(() => {
         load()
-    }, [])
+    }, [offset])
 
     const handlePagination = (e) => {
         setOffset(
