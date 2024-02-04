@@ -137,6 +137,7 @@ html, body, .page {
                 display: flex;
                 margin-top: 0;
                 position: fixed;
+                overflow: scroll;
                 transition: 0.7s;
                 text-align: left;
                 list-style: none;

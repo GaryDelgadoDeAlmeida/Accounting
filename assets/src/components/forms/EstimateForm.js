@@ -2,19 +2,19 @@ import React, { useEffect, useRef, useState } from "react";
 import Notification from "../parts/Notification";
 import FormControl from "../utils/FormControl";
 import PrivateResources from "../utils/PrivateResources";
-import { findParent } from "../utils/DomElement";
+import CompanyField from "./parts/CompanyField";
+import { findParent, formatDate } from "../utils/DomElement";
 import axios from "axios";
 
 export default function EstimateForm({estimate = null, companyID = null}) {
-    let details = {}
     const currentDate = new Date()
     const formControl = new FormControl()
     const {loading = true, items: companies, load} = PrivateResources(`${window.location.origin}/api/companies`)
     
     let rowCounting = useRef(0)
     const [credentials, setCredentials] = useState({
-        date: "",
-        company: "",
+        date: estimate ? estimate.createdAt : "",
+        company: estimate ? estimate.company : "",
         details: estimate != null ? {...estimate.estimateDetails} : {}
     })
     const [credentialDetails, setCredentialDetails] = useState({
@@ -212,21 +212,21 @@ export default function EstimateForm({estimate = null, companyID = null}) {
             {!loading ? (
                 <form className={"form"} onSubmit={(e) => handleSubmit(e)}>
                     {Object.keys(formResponse).length > 0 && (<Notification {...formResponse} />)}
-                    
                     <div className={"d-flex-row -g-15px"}>
                         <div className={"card item-row"}>
                             <div className={"-content"}>
-                                <div className={"form-field"}>
-                                    <label htmlFor={"company"}>Company</label>
-                                    <select id={"company"} name={"company"} onChange={(e) => handleChange(e, "company")}>
-                                        <option value={""}>Select a company</option>
-                                        {companies.length > 0 && companies.map((item, index) => <option key={index} value={item.id}>{item.name}</option>)}
-                                    </select>
-                                </div>
+                                <CompanyField 
+                                    handleChange={handleChange} 
+                                    companyID={estimate ? estimate.company.id : null} />
                                 
                                 <div className={"form-field"}>
                                     <label htmlFor={"date"}>Date</label>
-                                    <input type={"date"} min={currentDate.toLocaleDateString()} onChange={(e) => handleChange(e, "date")} />
+                                    <input 
+                                        type={"date"} 
+                                        min={currentDate.toLocaleDateString()} 
+                                        value={formatDate(credentials.date)}
+                                        onChange={(e) => handleChange(e, "date")} 
+                                    />
                                 </div>
                             </div>
                             <div className="-header">

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import FormControl from "../utils/FormControl";
 import Notification from "../parts/Notification";
 import axios from "axios";
+import SubjectField from "./parts/SubjectField";
 
 export default function ContactForm() {
 
@@ -77,14 +78,7 @@ export default function ContactForm() {
                 <Notification {...formResponse} />
             )}
 
-            <div className={"form-field"}>
-                <select onChange={(e) => handleChange(e, "subject")}>
-                    <option value={""}>Select a subject</option>
-                    <option value={"disclamer"}>Disclamer : Something happened ?</option>
-                    <option value={"report"}>Report : You did an error and you want to correct it ?</option>
-                    <option value={"help"}>Help : You need an information ?</option>
-                </select>
-            </div>
+            <SubjectField handleChange={handleChange} />
             
             <div className={"form-field"}>
                 <textarea className={"h-150px"} name={"message"} placeholder={"Votre message ..."} value={credentials.message} maxLength={1000} onChange={(e) => handleChange(e, "message")}></textarea>

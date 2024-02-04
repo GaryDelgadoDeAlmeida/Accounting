@@ -3,28 +3,11 @@ import axios from "axios";
 import Notification from "../parts/Notification";
 import FormControl from "../utils/FormControl";
 import PublicResources from "../utils/PublicResources";
+import JuridicalStatusField from "./parts/JuridicalStatusField";
 
 export default function UserCorporationForm({freelance}) {
 
     const { loading, items: countries, load } = PublicResources("https://restcountries.com/v3.1/all?fields=name")
-    const juridicalStatus = [
-        {
-            key: "sarl",
-            value: "SARL"
-        },
-        {
-            key: "eirl",
-            value: "EIRL",
-        },
-        {
-            key: "eurl",
-            value: "EURL",
-        }, 
-        {
-            key: "eu",
-            value: "EU"
-        }
-    ]
 
     // Form field
     const [credentials, setCredentials] = useState({
@@ -137,15 +120,7 @@ export default function UserCorporationForm({freelance}) {
                 <input id={"name"} type={"text"} value={credentials.name} maxLength={255} onChange={(e) => handleChange(e, "name")} />
             </div>
 
-            <div className={"form-field"}>
-                <label htmlFor={"status"}>Juridical status</label>
-                <select onChange={(e) => handleChange(e, "status")}>
-                    <option value={""}>Select a juridical status</option>
-                    {juridicalStatus.map((item, index) => (
-                        <option key={index} value={item.key}>{item.value}</option>
-                    ))}
-                </select>
-            </div>
+            <JuridicalStatusField handleChange={handleChange} juridicalStatus={credentials.status} />
 
             <div className={"form-field"}>
                 <label htmlFor={"address"}>Address</label>
