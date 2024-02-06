@@ -4,7 +4,7 @@ import UserHeader from "../../parts/UserHeader"
 import LinkButton from "../../parts/LinkButton"
 import Notification from "../../parts/Notification"
 import PrivateResources from "../../utils/PrivateResources"
-import { formatDate } from "../../utils/DomElement"
+import { formatDate, lastMonthDay } from "../../utils/DomElement"
 import axios from "axios"
 
 export default function EstimateSingle() {
@@ -71,8 +71,8 @@ export default function EstimateSingle() {
                             <div className={"w-50"}>
                                 <h2>{estimate.label}</h2>
                                 <div className={"d-column"}>
-                                    <span>Date d'émission : { formatDate(estimate.createdAt) }</span>
-                                    <span>Date d'échéance : { formatDate(estimate.createdAt) }</span>
+                                    <span>Date d'émission : { formatDate(estimate.estimateDate) }</span>
+                                    <span>Date d'échéance : { formatDate(lastMonthDay(estimate.estimateDate)) }</span>
                                 </div>
                             </div>
                             <div className={"w-50 txt-right"}>

@@ -8,23 +8,21 @@ export default function EstimateDetailField({update, setFormResponse}) {
     const [detail, setDetail] = useState({
         label: "",
         description: "",
-        quantity: 0,
-        nbr_days: 0,
+        quantity: 1,
+        nbr_days: 1,
         price: 0
     })
     let keys = Object.keys(details)
 
     useEffect(() => {
         updateCredentials()
-    }, details)
+    }, [details])
 
     const updateCredentials = () => {
         update("details", details)
     }
 
     const handleChange = (e, fieldName) => {
-        e.preventDefault()
-
         let fieldValue = e.target.value
         switch(fieldName) {
             case "label":
@@ -63,8 +61,6 @@ export default function EstimateDetailField({update, setFormResponse}) {
     }
 
     const handleNew = (e) => {
-        e.preventDefault()
-
         let $max = 0
         keys.map((item) => {
             if($max < parseInt(item)) {
@@ -72,7 +68,7 @@ export default function EstimateDetailField({update, setFormResponse}) {
             }
         })
         
-        if($max > 0) {
+        if(keys.length > 0) {
             $max += 1
         }
 
@@ -87,8 +83,8 @@ export default function EstimateDetailField({update, setFormResponse}) {
         setDetail({
             label: "",
             description: "",
-            quantity: 0,
-            nbr_days: 0,
+            quantity: 1,
+            nbr_days: 1,
             price: 0
         })
     }

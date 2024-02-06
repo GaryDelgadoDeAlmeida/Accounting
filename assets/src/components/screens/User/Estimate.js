@@ -5,6 +5,7 @@ import PrivateResources from "../../utils/PrivateResources";
 import LinkButton from "../../parts/LinkButton";
 import RemoveButton from "../../parts/RemoveButton";
 import Notification from "../../parts/Notification";
+import { formatDate } from "../../utils/DomElement";
 
 export default function Estimate() {
 
@@ -84,7 +85,7 @@ export default function Estimate() {
                                             <td className={"-id txt-center"}>{item.id}</td>
                                             <td className={"-client-name txt-center"}>{item.company.name}</td>
                                             <td className={"-estimate-name txt-center"}>{item.label}</td>
-                                            <td className={"-date txt-center"}>2023/05</td>
+                                            <td className={"-date txt-center"}>{item.estimateDate ? formatDate(item.estimateDate) : null}</td>
                                             <td className={"-action txt-right"}>
                                                 <SeeMoreButton url={"/user/estimate/" + item.id} />
 

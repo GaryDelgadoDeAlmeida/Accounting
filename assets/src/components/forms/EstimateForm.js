@@ -9,16 +9,25 @@ import { formatDate } from "../utils/DomElement";
 import axios from "axios";
 
 export default function EstimateForm({estimate = null, companyID = null}) {
+    const storageUser = localStorage.getItem("user") ?? []
+    const user = JSON.parse(storageUser)
     const currentDate = new Date()
     const formControl = new FormControl()
     const [formResponse, setFormResponse] = useState({})
     const {loading = true, items: companies, load} = PrivateResources(`${window.location.origin}/api/companies`)
-    const [credentials, setCredentials] = useState({
-        date: estimate ? estimate.createdAt : currentDate,
+    const [credentials, setCredentials] = useState(estimate ? {
+        id: estimate.id,
+        estimateDate: formatDate(estimate.estimateDate),
+        company: estimate.company ? estimate.company.id : null,
+        applyTVA: estimate.applyTVA,
+        tva: estimate.tva,
+        details: estimate.estimateDetails
+    } : {
+        estimateDate: currentDate,
+        company: null,
         applyTVA: false,
         tva: 0,
-        company: estimate ? estimate.company : "",
-        details: estimate != null ? {...estimate.estimateDetails} : {}
+        details: []
     })
 
     useEffect(() => {
@@ -26,16 +35,6 @@ export default function EstimateForm({estimate = null, companyID = null}) {
     }, [])
 
     const updateCredentials = (fieldName, fieldValue) => {
-        console.log(
-            fieldValue,
-            {
-                ...credentials,
-                [fieldName]: {
-                    ...credentials[fieldName],
-                    ...fieldValue
-                }
-            }
-        )
         setCredentials({
             ...credentials,
             [fieldName]: fieldValue
@@ -56,7 +55,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                 fieldValue = parseInt(fieldValue)
                 break
 
-            case "date":
+            case "estimateDate":
                 break
 
             case "applyTVA":
@@ -94,7 +93,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        if(!formControl.checkMinLength(credentials.date, 1) || !formControl.checkMinLength(credentials.company, 1)) {
+        if(!formControl.checkMinLength(credentials.estimateDate, 1) || !formControl.checkMinLength(credentials.company, 1)) {
             setFormResponse({classname: "danger", message: "The date or the company is missing, please fill all missing fields."})
             return
         }
@@ -115,7 +114,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json+ld",
-                    "Authorization": "Bearer " + localStorage.getItem("token")
+                    "Authorization": "Bearer " + user.token
                 }
             })
             .then(res => {
@@ -145,15 +144,15 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                             <div className={"-content"}>
                                 <CompanyField 
                                     handleChange={handleChange} 
-                                    companyID={estimate && Object.keys(estimate).length > 0 ? estimate.company.id : null} />
+                                    companyID={credentials.company} />
                                 
                                 <div className={"form-field"}>
                                     <label htmlFor={"date"}>Date</label>
                                     <input 
                                         type={"date"} 
                                         min={currentDate.toLocaleDateString()} 
-                                        value={formatDate(credentials.date)}
-                                        onChange={(e) => handleChange(e, "date")} 
+                                        value={formatDate(credentials.estimateDate)}
+                                        onChange={(e) => handleChange(e, "estimateDate")} 
                                     />
                                 </div>
 

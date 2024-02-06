@@ -10,12 +10,20 @@ export default function EstimateDetailTable({estimate_details, update}) {
         updateCredentials()
     }, [estimateDetails])
 
+    useEffect(() => {
+        handleChange()
+    }, [estimate_details])
+
     const updateCredentials = () => {
         update("details", estimateDetails)
     }
 
+    const handleChange = () => {
+        setEstimateDetails(estimate_details)
+    }
+
     const handleRemove = (e) => {
-        let parent = findParent(e.currentTarget, "form-field-inline")
+        let parent = findParent(e.currentTarget, "-item-cell")
         let row = parent.id
 
         let details = {...estimateDetails}

@@ -5,6 +5,7 @@ namespace App\Controller\API;
 use App\Entity\User;
 use App\Entity\Estimate;
 use App\Enum\StatusEnum;
+use App\Enum\EstimateEnum;
 use App\Manager\PdfManager;
 use App\Manager\TokenManager;
 use App\Manager\EstimateManager;
@@ -70,26 +71,32 @@ class EstimateController extends AbstractController
     {
         $jsonContent = json_decode($request->getContent(), true);
         if(empty($jsonContent)) {
-            return $this->json("Empty body", Response::HTTP_FORBIDDEN);
+            return $this->json(
+                ["message" => "Empty body"], 
+                Response::HTTP_FORBIDDEN
+            );
         }
 
         try {
             $fields = $this->estimateManager->checkFields($jsonContent);
             if(empty($fields)) {
-                return $this->json("Empty body", Response::HTTP_FORBIDDEN);
+                return $this->json(
+                    ["message" => "Empty body"], 
+                    Response::HTTP_FORBIDDEN
+                );
             }
 
-            $nbrEstimate = $this->estimateRepository->countEstimatesByCompanyAndUser($fields["company"], $this->user) + 1;
+            $fields[EstimateEnum::ESTIMATE_LABEL] = "Estimate n°" . ($this->estimateRepository->countEstimatesByCompanyAndUser($fields["company"], $this->user) + 1);
+            $fields[EstimateEnum::ESTIMATE_STATUS] = StatusEnum::STATUS_SEND;
+            $fields[EstimateEnum::ESTIMATE_USER] = $this->user;
 
-            $estimate = (new Estimate())
-                ->setUser($this->user)
-                ->setCompany($fields["company"])
-                ->setLabel("Estimate n°{$nbrEstimate}")
-                ->setStatus(StatusEnum::STATUS_SEND) // Shouldn't be in Invoice ???
-                ->setCreatedAt(new \DateTimeImmutable())
-            ;
-
-            $this->estimateRepository->save($estimate, true);
+            $estimate = $this->estimateManager->fillEstimate($fields);
+            if(is_string($estimate)) {
+                return $this->json(
+                    ["message" => $estimate],
+                    Response::HTTP_INTERNAL_SERVER_ERROR
+                );
+            }
 
             foreach($fields["details"] as $detail) {
                 $this->estimateDetailRepository->save(
@@ -99,10 +106,11 @@ class EstimateController extends AbstractController
             }
         } catch(\Exception $e) {
             return $this->json(
-                $e->getMessage(), 
+                ["message" => $e->getMessage()], 
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
+        
         return $this->json(null, Response::HTTP_ACCEPTED);
     }
 
@@ -127,7 +135,7 @@ class EstimateController extends AbstractController
     }
 
     /**
-     * @Route("/estimate/{estimateID}/update", requirements={"estimateID"="\d+"}, name="update_estimate", methods={"UPDATE", "PUT"})
+     * @Route("/estimate/{estimateID}/update", requirements={"estimateID"="\d+"}, name="update_estimate", methods={"POST", "UPDATE", "PUT"})
      */
     public function update_estimate(Request $request, int $estimateID) : JsonResponse 
     {
@@ -147,14 +155,53 @@ class EstimateController extends AbstractController
         try {
             $fields = $this->estimateManager->checkFields($jsonContent);
             if(empty($fields)) {
-                return $this->json("Empty body", Response::HTTP_PRECONDITION_FAILED);
+                return $this->json([
+                    "message" => "Empty body"
+                ], Response::HTTP_PRECONDITION_FAILED);
             }
+
+            // Update estimate
+            $estimate = $this->estimateManager->fillEstimate($fields, $estimate);
+            if(is_string($estimate)) {
+                return $this->json([
+                    "message" => $estimate
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
+            // Update estimate details
+            $estimateDetailsID = array_map(function($element) {
+                return $element->getId();
+            }, $estimate->getEstimateDetails()->toArray());
+            $existingDetails = [];
+
+            foreach($fields[EstimateEnum::ESTIMATE_DETAILS] as $detailRow) {
+                if(isset($detailRow["id"]) && in_array($detailRow["id"], $estimateDetailsID)) {
+                    $existingDetails[] = $detailRow["id"];
+                }
+
+                $this->estimateManager->fillEstimateDetail(
+                    $detailRow, 
+                    isset($detailRow["id"]) ? $this->estimateDetailRepository->find($detailRow["id"]) : null
+                );
+            }
+
+            // Remove all deleted details
+            $diff = array_diff($estimateDetailsID, $existingDetails);
+            if(count($diff) > 0) {
+                foreach($diff as $detailID) {
+                    $estimateDetail = $this->estimateDetailRepository->find($detailID);
+                    $this->estimateDetailRepository->remove($estimateDetail, true);
+                }
+            }
+
         } catch(\Exception $e) {
-            return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->json([
+                "message" => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         // Return a response to the client
-        return $this->json("Route under construction", Response::HTTP_OK);
+        return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
     /**

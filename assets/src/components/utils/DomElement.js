@@ -79,3 +79,12 @@ export function formatDate(date) {
 
     return [year, month, day].join('-');
 }
+
+export function lastMonthDay(date) {
+    var d = new Date(date),
+        month = d.getMonth(),
+        year = d.getFullYear()
+    ;
+
+    return new Date(year, month + 1, 0)
+}

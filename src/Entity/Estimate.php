@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\EstimateRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EstimateRepository::class)]
@@ -21,6 +22,9 @@ class Estimate
     #[ORM\ManyToOne(inversedBy: 'estimates')]
     private ?Company $company = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $estimate_date = null;
+
     #[ORM\Column(length: 255)]
     private ?string $label = null;
 
@@ -35,6 +39,9 @@ class Estimate
 
     #[ORM\OneToMany(mappedBy: 'estimate', targetEntity: EstimateDetail::class)]
     private Collection $estimateDetails;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -73,14 +80,14 @@ class Estimate
         return $this;
     }
 
-    public function removeEstimateDetail(EstimateDetail $estimateDetail): self
+    public function getEstimateDate(): ?\DateTimeInterface
     {
-        if ($this->estimateDetails->removeElement($estimateDetail)) {
-            // set the owning side to null (unless already changed)
-            if ($estimateDetail->getEstimate() === $this) {
-                $estimateDetail->setEstimate(null);
-            }
-        }
+        return $this->estimate_date;
+    }
+
+    public function setEstimateDate(\DateTimeInterface $estimate_date): static
+    {
+        $this->estimate_date = $estimate_date;
 
         return $this;
     }
@@ -97,7 +104,7 @@ class Estimate
         return $this;
     }
 
-    public function applyTVA(): ?bool
+    public function isApplyTVA(): ?bool
     {
         return $this->applyTVA;
     }
@@ -147,6 +154,30 @@ class Estimate
             $this->estimateDetails->add($estimateDetail);
             $estimateDetail->setEstimate($this);
         }
+
+        return $this;
+    }
+
+    public function removeEstimateDetail(EstimateDetail $estimateDetail): self
+    {
+        if ($this->estimateDetails->removeElement($estimateDetail)) {
+            // set the owning side to null (unless already changed)
+            if ($estimateDetail->getEstimate() === $this) {
+                $estimateDetail->setEstimate(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
