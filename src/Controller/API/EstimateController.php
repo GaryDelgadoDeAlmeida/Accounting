@@ -24,7 +24,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class EstimateController extends AbstractController
 {
-    private ?User $user;
+    private User $user;
     private PdfManager $pdfManager;
     private TokenManager $tokenManager;
     private EstimateManager $estimateManager;
@@ -38,11 +38,10 @@ class EstimateController extends AbstractController
         TokenManager $tokenManager,
         EstimateManager $estimateManager, 
         SerializeManager $serializeManager, 
-        UserRepository $userRepository, // Temporary => To delete after the login process has been implemented
         EstimateRepository $estimateRepository, 
         EstimateDetailRepository $estimateDetailRepository
     ) {
-        $this->user = $security->getUser() ?? null; // Temporary : To delete after the login system has been implemented
+        $this->user = $security->getUser();
         $this->pdfManager = $pdfManager;
         $this->tokenManager = $tokenManager;
         $this->estimateManager = $estimateManager;
@@ -56,11 +55,6 @@ class EstimateController extends AbstractController
      */
     public function get_estimates(Request $request): JsonResponse
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         return $this->json(
             $this->serializeManager->serializeContent(
                 $this->estimateRepository->findBy(["user" => $this->user])
@@ -72,13 +66,8 @@ class EstimateController extends AbstractController
     /**
      * @Route("/estimate", name="post_estimate", methods={"POST"})
      */
-    public function post_estimate(Request $request) : JsonResponse 
+    public function post_estimate(Request $request, UserRepository $userRepository) : JsonResponse 
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         $jsonContent = json_decode($request->getContent(), true);
         if(empty($jsonContent)) {
             return $this->json("Empty body", Response::HTTP_FORBIDDEN);
@@ -109,7 +98,10 @@ class EstimateController extends AbstractController
                 );
             }
         } catch(\Exception $e) {
-            return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->json(
+                $e->getMessage(), 
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
         return $this->json(null, Response::HTTP_ACCEPTED);
     }
@@ -119,11 +111,6 @@ class EstimateController extends AbstractController
      */
     public function get_estimate(Request $request, int $estimateID) : JsonResponse 
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         if(empty($estimateID)) {
             return $this->json("The estimate identifier is missing", Response::HTTP_FORBIDDEN);
         }
@@ -144,11 +131,6 @@ class EstimateController extends AbstractController
      */
     public function update_estimate(Request $request, int $estimateID) : JsonResponse 
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         // Get the body request
         $jsonContent = json_decode($request->getContent(), true);
         if(!$jsonContent) {
@@ -180,11 +162,6 @@ class EstimateController extends AbstractController
      */
     public function get_estimate_pdf(Request $request, int $estimateID) 
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         $estimate = $this->estimateRepository->find($estimateID);
         if(empty($estimate)) {
             return $this->json(null, Response::HTTP_NOT_FOUND);
@@ -217,12 +194,7 @@ class EstimateController extends AbstractController
      */
     public function remove_estimate(Request $request, int $estimateID) : JsonResponse 
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
-        $estimate = $this->estimateRepository->findOneBy(["estimate" => $estimateID, "user" => $this->user]);
+        $estimate = $this->estimateRepository->findOneBy(["id" => $estimateID, "user" => $this->user]);
         if(empty($estimate)) {
             return $this->json(["message" => "Not found estimate"], Response::HTTP_NOT_FOUND);
         }
@@ -230,7 +202,7 @@ class EstimateController extends AbstractController
         try {
             // Remove all details of the estimate
             foreach($estimate->getEstimateDetails() as $estimateDetail) {
-                $this->estimateDetailRepository->remove($estimateDetail);
+                $this->estimateDetailRepository->remove($estimateDetail, true);
             }
 
             // Remove the estimate

@@ -17,7 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class GraphicAccountingController extends AbstractController
 {
-    private ?User $user;
+    private User $user;
     private TokenManager $tokenManager;
     private InvoiceRepository $invoiceRepository;
 
@@ -26,7 +26,7 @@ class GraphicAccountingController extends AbstractController
         TokenManager $tokenManager,
         InvoiceRepository $invoiceRepository
     ) {
-        $this->user = $security->getUser() ?? null;
+        $this->user = $security->getUser();
         $this->tokenManager = $tokenManager;
         $this->invoiceRepository = $invoiceRepository;
     }
@@ -36,11 +36,6 @@ class GraphicAccountingController extends AbstractController
      */
     public function index(Request $request): JsonResponse
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         $yearAmount = [];
         $year = $request->get("year", (new \DateTime())->format("Y"));
         $invoices = $this->invoiceRepository->getDetailYearBenefit($this->user, $year);

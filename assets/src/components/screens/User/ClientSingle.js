@@ -1,59 +1,29 @@
 import React, { useEffect, useState } from "react";
-import UserHeader from "../../parts/UserHeader";
 import { Navigate, useParams } from "react-router-dom";
-import ReturnButton from "../../parts/ReturnButton";
-import LinkButton from "../../parts/LinkButton";
 import Badge from "../../parts/Badge";
-import axios from "axios";
+import UserHeader from "../../parts/UserHeader";
+import LinkButton from "../../parts/LinkButton";
+import ReturnButton from "../../parts/ReturnButton";
 import RemoveButton from "../../parts/RemoveButton";
 import Notification from "../../parts/Notification";
 
 export default function ClientSingle() {
 
     const { clientID } = useParams()
-    const [loading, setLoading] = useState(false)
-    const [client, setClient] = useState({})
+    if(isNaN()) {
+        return <Navigate to={"/user/client"} replace={true} />
+    }
+
     const [invoices, setInvoices] = useState({})
     const [estimates, setEstimates] = useState({})
-    const [error, setError] = useState(false)
 
-    // const { loading, items: client, load } = PrivateRessources(`${window.location.origin}/api/company/${clientID}`)
-    
+    const { loading, items: client, load, error } = PrivateRessources(`${window.location.origin}/api/company/${clientID}`)
     useEffect(() => {
-        setLoading(true)
-        axios
-            .get(`${window.location.origin}/api/company/${clientID}`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`
-                }
-            })
-            .then(res => {
-                let {company, estimates, invoices} = res.data
-                
-                setClient(
-                    JSON.parse(JSON.stringify(company))
-                )
-                setInvoices(
-                    JSON.parse(JSON.stringify(invoices))
-                )
-                setEstimates(
-                    JSON.parse(JSON.stringify(estimates))    
-                )
-            })
-            .catch(err => {
-                let message = err.response.data.message ?? err.response.data.detail
-                alert(message)
-                setError(true)
-            })
-        ;
-        setLoading(false)
+        load()
     }, [])
     
     return (
         <UserHeader>
-            {error && <Navigate to={"/user/client"} replace={true} />}
-            
             <ReturnButton path={"/user/client"} />
             
             {loading === false && client != null ? (

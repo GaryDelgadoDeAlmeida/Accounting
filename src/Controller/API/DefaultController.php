@@ -21,7 +21,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class DefaultController extends AbstractController
 {
-    private ?User $user;
+    private User $user;
     private TokenManager $tokenManager;
     private SerializeManager $serializerManager;
     private CompanyRepository $companyRepository;
@@ -36,7 +36,7 @@ class DefaultController extends AbstractController
         InvoiceRepository $invoiceRepository,
         EstimateRepository $estimateRepository
     ) {
-        $this->user = $security->getUser() ?? null;
+        $this->user = $security->getUser();
         $this->tokenManager = $tokenManager;
         $this->serializeManager = $serializeManager;
         $this->companyRepository = $companyRepository;
@@ -49,11 +49,6 @@ class DefaultController extends AbstractController
      */
     public function index(Request $request): JsonResponse
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         $userID = $this->user->getId();
         $currentDate = new \DateTime();
 

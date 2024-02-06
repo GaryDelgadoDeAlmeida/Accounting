@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import PrivateResources from "../../utils/PrivateResources";
+import React, { useEffect } from "react";
+import { Navigate, useParams } from "react-router-dom";
 import UserHeader from "../../parts/UserHeader";
 import LinkButton from "../../parts/LinkButton";
-import axios from "axios";
 import Notification from "../../parts/Notification";
+import PrivateResources from "../../utils/PrivateResources";
+import InvoiceStatus from "../../parts/InvoiceStatus";
 
 export default function InvoiceSingle() {
     const { invoiceID } = useParams()
+    if(isNaN(invoiceID)) {
+        return <Navigate to={"/user/invoice"} />
+    }
 
-    // const { loading: userLoading, items: user, load: userLoad } = PrivateResources(window.location.origin + "/api/user/" + invoiceID)
-    const { loading: invoiceLoading, items: invoice, load } = PrivateResources(window.location.origin + "/api/invoice/" + invoiceID)
-
+    const { loading: invoiceLoading, items: invoice, load } = PrivateResources(`${window.location.origin}/api/invoice/${invoiceID}`)
     useEffect(() => {
         load()
     }, [])
@@ -70,20 +71,7 @@ export default function InvoiceSingle() {
                     </div>
 
                     <div className={"mt-25px"}>
-                        <div className={"sending-status"}>
-                            <div className={"item -active"}>
-                                <span className={"txt-bold"}>Envoyer</span>
-                            </div>
-                            <div className={"item -ongoing"}>
-                                <span className={"txt-bold"}>En cours</span>
-                            </div>
-                            <div className={"item"}>
-                                <span className={"txt-bold"}>En cours de paiement</span>
-                            </div>
-                            <div className={"item"}>
-                                <span className={"txt-bold"}>Payer</span>
-                            </div>
-                        </div>
+                        <InvoiceStatus />
                     </div>
 
                     <div className={"mt-25px"}>

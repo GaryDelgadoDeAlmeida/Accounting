@@ -1,91 +1,128 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import FormControl from "../../utils/FormControl";
 
-export default function estimateDetailField({update}) {
+export default function EstimateDetailField({update, setFormResponse}) {
 
-    const [estimateDetails, setEstimateDetails] = useState([])
-    let keys = estimateDetails.length
+    const formControl = new FormControl()
+    const [details, setDetails] = useState([])
+    const [detail, setDetail] = useState({
+        label: "",
+        description: "",
+        quantity: 0,
+        nbr_days: 0,
+        price: 0
+    })
+    let keys = Object.keys(details)
+
+    useEffect(() => {
+        updateCredentials()
+    }, details)
 
     const updateCredentials = () => {
-        update("details", estimateDetails)
+        update("details", details)
+    }
+
+    const handleChange = (e, fieldName) => {
+        e.preventDefault()
+
+        let fieldValue = e.target.value
+        switch(fieldName) {
+            case "label":
+                if(!formControl.checkMaxLength(fieldValue, 255)) {
+                    setFormResponse({classname: "danger", message: "The title exceed 255 characters length"})
+                    return
+                }
+                break
+
+            case "description":
+                if(!formControl.checkMaxLength(fieldValue, 1000)) {
+                    setFormResponse({classname: "danger", message: "The description exceed 1000 characters length"})
+                    return
+                }
+                break
+
+            case "quantity":
+            case "price":
+            case "nbr_days":
+                if(!formControl.checkNumber(fieldValue)) {
+                    setFormResponse({classname: "danger", message: `The field name ${fieldName}`})
+                    return
+                }
+                fieldValue = parseFloat(fieldValue)
+                break
+
+            default:
+                setFormResponse({classname: "danger", message: `The field name '${fieldName}' isn't allowed`})
+                break
+        }
+
+        setDetail({
+            ...detail,
+            [fieldName]: fieldValue
+        })
     }
 
     const handleNew = (e) => {
+        e.preventDefault()
+
         let $max = 0
         keys.map((item) => {
             if($max < parseInt(item)) {
                 $max = parseInt(item)
             }
         })
-        $max += 1
+        
+        if($max > 0) {
+            $max += 1
+        }
 
-        setEstimateDetails({
-            ...estimateDetails,
+        setDetails({
+            ...details,
             [$max]: {
-                title: "",
-                quantity: 0,
-                price: 0
+                ...details[$max],
+                ...detail
             }
         })
-    }
 
-    const handleChange = (e, fieldName) => {
-        let parent = findParent(e.currentTarget, "form-field-inline")
-        let fieldValue = e.currentTarget.value
-        let row = parent.id
-
-        setEstimateDetails({
-            ...estimateDetails,
-            [row]: {
-                ...estimateDetails[row],
-                [fieldName]: fieldValue
-            }
-        })
-    }
-
-    const handleRemove = (e) => {
-        let parent = findParent(e.currentTarget, "form-field-inline")
-        let row = parent.id
-
-        let answers = {...credentialAnswers}
-        delete answers[row]
-
-        setCredentialAnswers({
-            ...answers
+        setDetail({
+            label: "",
+            description: "",
+            quantity: 0,
+            nbr_days: 0,
+            price: 0
         })
     }
 
     return (
-        <div className={"card item-row"}>
-            <div className={"-content"}>
-                <table className={"table"}>
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Quantity</th>
-                            <th>Amount Unit. (€)</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id={"estimate-details"}>
-                        {objectKeys.length > 0 && typeof credentials.details == "object" && Object.values(credentials.details).map((item, index) => (
-                            <tr id={objectKeys[index]} className={"-item-cell"} key={index}>
-                                <td className={"-title"}>{item.label}</td>
-                                <td className={"-quantity txt-center"}>{item.quantity}</td>
-                                <td className={"-price txt-center"}>{item.price}</td>
-                                <td className={"-action txt-right"}>
-                                    <button 
-                                        type={"button"} 
-                                        className={"btn btn-red -inline-flex"} 
-                                        onClick={(e) => handleRemove(e)}
-                                    >
-                                        <img src={`${window.location.origin}/content/svg/trash-white.svg`} />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+        <>
+            <div className={"form-field"}>
+                <label htmlFor={"title"}>Title</label>
+                <input type={"text"} maxLength={"255"} value={detail.label} onChange={(e) => handleChange(e, "label")} />
             </div>
-        </div>
+            
+            <div className={"form-field"}>
+                <label htmlFor={"description"}>Description</label>
+                <textarea id={"description"} onChange={(e) => handleChange(e, "description")}>{detail.description}</textarea>
+            </div>
+
+            <div className={"form-field"}>
+                <label htmlFor={"quantity"}>Quantity</label>
+                <input id={"quantity"} type={"number"} min={1} value={detail.quantity} onChange={(e) => handleChange(e, "quantity")} />
+            </div>
+
+            <div className={"form-field"}>
+                <label htmlFor={"daystime"}>Number of days</label>
+                <input id={"daystime"} type={"number"} min={1} value={detail.nbr_days} onChange={(e) => handleChange(e, "nbr_days")} />
+            </div>
+            
+            <div className={"form-field"}>
+                <label htmlFor={"budget"}>Budget</label>
+                <input id={"budget"} type={"number"} min={0} value={detail.price} onChange={(e) => handleChange(e, "price")} />
+            </div>
+            
+            <div className={"form-button"}>
+                <button className={"btn btn-blue"} type={"button"} onClick={(e) => handleNew(e)}>Ajouter</button>
+            </div>
+        </>
     )
 }

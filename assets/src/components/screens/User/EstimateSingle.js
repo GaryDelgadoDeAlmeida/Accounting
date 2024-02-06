@@ -44,10 +44,9 @@ export default function EstimateSingle() {
                 link.click();
                 window.URL.revokeObjectURL(url);
                 link.remove();
+                setError(false)
             })
         } catch(error) {
-            console.log(error)
-            // alert("An error has been encountered. The PDF estimate couldn't be downloded.")
             setError(true)
         }
     }
@@ -66,7 +65,7 @@ export default function EstimateSingle() {
                 {!loading && Object.keys(estimate).length > 0 ? (
                     <>
                         {error && (
-                            <Notification classname={"danger"} message={"An error has been encountered. Please retry downloading the estimate later."} />
+                            <Notification classname={"danger"} message={"An error has been encountered. The PDF estimate couldn't be downloded."} />
                         )}
                         <div className={"d-flex"}>
                             <div className={"w-50"}>

@@ -41,6 +41,19 @@ Une fois les fichiers de migration générer, il faut les executer. Pour faire c
     symfony console doctrine:migration:migrate
 ```
 
+## Authentification
+
+Une fois que la dépendance a été ajouté, il faudra maintenant générer une clé. Cette clé sera ensuite utilisé pour générer les token qui seront envoyer aux utilisateurs de la plateforme. Voici la commande pour générer ces clés :
+```bash
+    php bin/console lexik:jwt:generate-keypair
+```
+
+Une fois la commande ci-dessus lancée, elle va créer un sous-dossier jwt dans le dossier config. Dans ce sous-dossier, on aura 2 fichiers, ces 2 fichiers sont les clés privés et publics qui seront utlisé dans les actions de génération du token. A ce niveau, on a rien de plus.
+
+Il faudra maintenant configurer le fichier `packages/security.yaml`. Je recommande d'utiliser la doc de symfony pour configurer la connexion par token ou de regarder la configuration dans mes autres projets utilisant cette méthode de connexion
+
+<a href="https://symfony.com/bundles/LexikJWTAuthenticationBundle/current/index.html" target="_blank">LexikJWTAuthenticationBundle</a>
+
 ## Commandes utiles
 
 Voici ci-joint les commandes qui débloque quand le besoin ce présente

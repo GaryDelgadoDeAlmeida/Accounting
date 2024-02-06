@@ -117,10 +117,16 @@ class EstimateManager extends AbstractController {
         return $fields;
     }
 
+    /**
+     * @param array fields
+     * @param Estimate estimate
+     * @param EstimateDetail
+     * @return EstimateDetail
+     */
     public function fillEstimateDetail(array $fields, Estimate $estimate, EstimateDetail $estimateDetail = new EstimateDetail()) : EstimateDetail {
         return $estimateDetail
             ->setEstimate($estimate)
-            ->setLabel($fields["title"])
+            ->setLabel($fields["label"])
             ->setDescription($fields["description"])
             ->setQuantity($fields["quantity"])
             ->setNbrDays($fields["nbr_days"])
@@ -129,6 +135,9 @@ class EstimateManager extends AbstractController {
         ;
     }
 
+    /**
+     * 
+     */
     public function generateEstimate(Shop $shop)
     {
         return;

@@ -222,7 +222,11 @@
                                         <td class="txt-center">{{ estimateDetail.nbrDays }}</td>
                                         <td class="txt-center">{{ estimateDetail.price }}</td>
                                         <td class="txt-center">{{ (estimateDetail.price * estimateDetail.nbrDays) * estimateDetail.quantity }}</td>
-                                        <td class="txt-center">{{ ((estimateDetail.price * estimateDetail.nbrDays) * estimateDetail.quantity) * 1.2 }}</td>
+                                        {# With TVA #}
+                                        {# <td class="txt-center">{{ ((estimateDetail.price * estimateDetail.nbrDays) * estimateDetail.quantity) * 1.2 }}</td> #}
+                                        
+                                        {# Without TVA #}
+                                        <td class="txt-center">{{ ((estimateDetail.price * estimateDetail.nbrDays) * estimateDetail.quantity) }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

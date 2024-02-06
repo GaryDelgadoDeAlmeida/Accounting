@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import PublicResources from "../../utils/PublicResources";
 
-export default function CountryField({handleChange}) {
+export default function CountryField({credentials = null, company = null, handleChange}) {
 
     const { loading, items: countries, load } = PublicResources("https://restcountries.com/v3.1/all?fields=name")
     useEffect(() => {
@@ -17,7 +17,7 @@ export default function CountryField({handleChange}) {
                     <option 
                         key={index} 
                         value={item.name.common} 
-                        selected={(credentiels.country != "" && credentiels.country === item.name.common) || (company.country === item.name.common) ? "selected" : false}
+                        selected={(credentials.country && credentials.country === item.name.common) || (company && company.country === item.name.common) ? "selected" : false}
                     >{item.name.common}</option>
                 ))}
             </select>

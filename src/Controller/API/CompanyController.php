@@ -25,7 +25,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class CompanyController extends AbstractController {
 
-    private ?User $user = null;
+    private User $user;
     private EntityManagerInterface $em;
     private TokenManager $tokenManager;
     private CompanyManager $companyManager;
@@ -49,7 +49,7 @@ class CompanyController extends AbstractController {
         EstimateDetailRepository $estimateDetailRepository
     ) {
         $this->em = $em;
-        $this->user = $security->getUser() ?? null;
+        $this->user = $security->getUser();
         $this->tokenManager = $tokenManager;
         $this->serializeManager = $serializeManager;
         $this->companyManager = $companyManager;
@@ -65,11 +65,6 @@ class CompanyController extends AbstractController {
      */
     public function get_companies(Request $request): JsonResponse
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-        
         $limit = 20;
         $offset = $request->get("offset", 1);
         $offset = is_numeric($offset) && $offset > 1 ? $offset : 1;
@@ -87,11 +82,6 @@ class CompanyController extends AbstractController {
      */
     public function post_company(Request $request): JsonResponse
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         // Decode the JSON content into array
         $jsonContent = json_decode($request->getContent(), true);
         if(!$jsonContent) {
@@ -119,11 +109,6 @@ class CompanyController extends AbstractController {
      */
     public function get_company(Request $request, int $companyID): JsonResponse
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         $company = $this->user->getCompany($companyID);
         if(empty($company)) {
             return $this->json(null, Response::HTTP_NOT_FOUND);
@@ -139,12 +124,8 @@ class CompanyController extends AbstractController {
     /**
      * @Route("/company/{companyID}/estimates", requirements={"companyID"="\d+"}, name="get_estimates_form_company", methods={"GET"})
      */
-    public function get_estimates_form_company(Request $request, int $companyID) : JsonResponse {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
+    public function get_estimates_form_company(Request $request, int $companyID) : JsonResponse 
+    {
         $company = $this->companyRepository->find($companyID);
         if(empty($company)) {
             return $this->json(null, Response::HTTP_NOT_FOUND);
@@ -164,11 +145,6 @@ class CompanyController extends AbstractController {
      */
     public function update_estimate_form_company(Request $resquest, int $companyID, int $estimateID) : JsonResponse
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         $jsonContent = json_decode($request->getContent());
         if(empty($jsonContent)) {
             return $this->json("Empty body", Response::HTTP_PRECONDITION_FAILED);
@@ -196,11 +172,6 @@ class CompanyController extends AbstractController {
      */
     public function put_company(Request $request, int $companyID): JsonResponse
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-        
         $company = $this->companyRepository->find($companyID);
         if(empty($company)) {
             return $this->json("The company couldn't be found.", Response::HTTP_NOT_FOUND);
@@ -232,12 +203,6 @@ class CompanyController extends AbstractController {
      */
     public function remove_company(Request $request, int $companyID): JsonResponse
     {
-        // Check the cache or the token is cache don't exist
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         $company = $this->user->getCompany($companyID);
         if(empty($company)) {
             return $this->json("The company couldn't be found", Response::HTTP_NOT_FOUND);

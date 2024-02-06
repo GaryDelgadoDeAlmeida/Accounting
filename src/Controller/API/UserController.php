@@ -27,7 +27,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class UserController extends AbstractController
 {
-    private ?User $user;
+    private User $user;
     
     private UserManager $userManager;
     private TokenManager $tokenManager;
@@ -56,7 +56,7 @@ class UserController extends AbstractController
         InvoiceDetailRepository $invoiceDetailRepository,
         EstimateDetailRepository $estimateDetailRepository
     ) {
-        $this->user = $security->getUser() ?? null;
+        $this->user = $security->getUser();
         $this->userManager = $userManager;
         $this->tokenManager = $tokenManager;
         $this->freelanceManager = $freelanceManager;
@@ -93,8 +93,8 @@ class UserController extends AbstractController
     /**
      * @Route("/user", name="post_user", methods={"POST"})
      */
-    public function post_user(Request $request) : JsonResponse {
-
+    public function post_user(Request $request) : JsonResponse 
+    {
         // If the JSON couldn't be decoded then return an error to the client
         $jsonContent = json_decode($request->getContent(), true);
         if(!$jsonContent) {
@@ -133,12 +133,8 @@ class UserController extends AbstractController
     /**
      * @Route("/profile", name="get_profile", methods={"GET"})
      */
-    public function get_profile(Request $request) : JsonResponse {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json(null, Response::HTTP_FORBIDDEN);
-        }
-        
+    public function get_profile(Request $request) : JsonResponse 
+    {
         return $this->json(
             $this->serializeManager->serializeContent($this->user), 
             Response::HTTP_OK
@@ -150,11 +146,6 @@ class UserController extends AbstractController
      */
     public function update_profile(Request $request) : JsonResponse
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         $jsonContent = json_decode($request->getContent(), true);
         if(empty($jsonContent)) {
             return $this->json("An error has been encoutered with the sended body", Response::HTTP_PRECONDITION_FAILED);
@@ -196,11 +187,6 @@ class UserController extends AbstractController
      */
     public function profile_post_freelance(Request $request) : JsonResponse
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         $jsonContent = json_decode($request->getContent(), true);
         if(empty($jsonContent)) {
             return $this->json("", Response::HTTP_PRECONDITION_FAILED);
@@ -223,12 +209,8 @@ class UserController extends AbstractController
     /**
      * @Route("/user/{userID}", name="single_user", requirements={"userID"="\d+"}, methods={"GET"})
      */
-    public function get_user(Request $request, int $userID) : JsonResponse {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
+    public function get_user(Request $request, int $userID) : JsonResponse 
+    {
         if(!$this->user->isAdmin()) {
             return $this->json(null, Response::HTTP_FORBIDDEN);
         }
@@ -250,11 +232,6 @@ class UserController extends AbstractController
      */
     public function update_user(Request $request, int $userID) : JsonResponse
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         if(!$this->user->isAdmin()) {
             return $this->json("The user don't have the necessary rigths to process an update on another user than himself", Response::HTTP_FORBIDDEN);
         }
@@ -283,7 +260,12 @@ class UserController extends AbstractController
     /**
      * @Route("/user/{userID}/freelance", name="user_post_freelance", requirements={"userID"="\d+"}, methods={"POST"})
      */
-    public function user_post_freelance(Request $request, int $userID) : JsonResponse {
+    public function user_post_freelance(Request $request, int $userID) : JsonResponse 
+    {
+        if(!$this->user->isAdmin()) {
+            return $this->json("The user don't have the necessary rigths to process an update on another user than himself", Response::HTTP_FORBIDDEN);
+        }
+
         $user = $this->userRepository->find($userID);
         if(!$user) {
             return $this->json("The user coundn't be found", Response::HTTP_FORBIDDEN);
@@ -299,7 +281,12 @@ class UserController extends AbstractController
     /**
      * @Route("/user/{userID}/company", name="user_post_company", requirements={"userID"="\d+"}, methods={"POST"})
      */
-    public function user_post_company(Request $request, int $userID) : JsonResponse {
+    public function user_post_company(Request $request, int $userID) : JsonResponse 
+    {
+        if(!$this->user->isAdmin()) {
+            return $this->json("The user don't have the necessary rigths to process an update on another user than himself", Response::HTTP_FORBIDDEN);
+        }
+
         $user = $this->userRepository->find($userID);
         if(!$user) {
             return $this->json("Unknown user", Response::HTTP_FORBIDDEN);
@@ -316,7 +303,11 @@ class UserController extends AbstractController
             return $this->json("A company already exist with the same siret number", Response::HTTP_FORBIDDEN);
         }
 
-        // Process to the insert
+        try {
+            // Process to the insert
+        } catch(\Exception $e) {
+            return $this->json(["message" => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
 
         return $this->json("Route under construction", Response::HTTP_OK);
     }
@@ -324,12 +315,8 @@ class UserController extends AbstractController
     /**
      * @Route("/profile/remove", name="user_profile_remove", methods={"DELETE"})
      */
-    public function user_profile_remove(Request $request) : JsonResponse {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
+    public function user_profile_remove(Request $request) : JsonResponse 
+    {
         try {
             // Remove all companies linked to the client
             foreach($this->user->getCompanies() as $company) {
@@ -376,12 +363,12 @@ class UserController extends AbstractController
     /**
      * @Route("/user/{userID}/remove", name="user_remove", requirements={"userID"="\d+"}, methods={"DELETE"})
      */
-    public function user_remove_account(Request $request, int $userID) : JsonResponse {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
+    public function user_remove_account(Request $request, int $userID) : JsonResponse 
+    {
+        if(!$this->user->isAdmin()) {
+            return $this->json("The user don't have the necessary rigths to process an update on another user than himself", Response::HTTP_FORBIDDEN);
         }
-
+        
         try {
             // 
         } catch(\Exception $e) {

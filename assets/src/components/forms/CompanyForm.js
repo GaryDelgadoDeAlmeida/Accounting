@@ -9,7 +9,7 @@ import CountryField from "./parts/CountryField";
 export default function CompanyForm({userID, company = {}}) {
     const formControl = new FormControl()
     const [formResponse, setFormResponse] = useState({})
-    const [credentiels, setCredentials] = useState({
+    const [credentials, setCredentials] = useState({
         name: "", 
         siren: "", 
         siret: "", 
@@ -118,7 +118,7 @@ export default function CompanyForm({userID, company = {}}) {
         }
 
         setCredentials({
-            ...credentiels,
+            ...credentials,
             [fieldName]: fieldValue
         })
     }
@@ -126,13 +126,13 @@ export default function CompanyForm({userID, company = {}}) {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        // if(Object.values(credentiels).indexOf("") !== -1) {
+        // if(Object.values(credentials).indexOf("") !== -1) {
         //     setFormResponse({classname: "danger", message: "Une erreur a été rencontrée, veuillez vérifier que tous les champs soient bien renseigner."})
         //     return
         // }
 
         axios
-            .post(`${window.location.origin}/api/company`, credentiels, {
+            .post(`${window.location.origin}/api/company`, credentials, {
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json+ld",
@@ -155,55 +155,55 @@ export default function CompanyForm({userID, company = {}}) {
             
             <div className={"form-field"}>
                 <label htmlFor={"company_name"}>Corporation name</label>
-                <input id={"company_name"} type={"text"} value={credentiels.name !== "" ? credentiels.name : company.name } maxLength={255} onChange={(e) => handleChange(e, "name")} />
+                <input id={"company_name"} type={"text"} value={credentials.name !== "" ? credentials.name : company.name } maxLength={255} onChange={(e) => handleChange(e, "name")} />
             </div>
 
-            <JuridicalStatusField handleChange={handleChange} juridicalStatus={credentiels.status} />
+            <JuridicalStatusField handleChange={handleChange} juridicalStatus={credentials.status} />
             
             <div className={"form-field-inline"}>
                 <div className={"form-field"}>
                     <label htmlFor={"siren"}>N°SIREN</label>
-                    <input id={"siren"} type={"number"} placeholder={"EX : 914 002 308"} value={credentiels.siren !== "" ? credentiels.siren : company.siren } maxLength={9} onChange={(e) => handleChange(e, "siren")} />
+                    <input id={"siren"} type={"number"} placeholder={"EX : 914 002 308"} value={credentials.siren !== "" ? credentials.siren : company.siren } maxLength={9} onChange={(e) => handleChange(e, "siren")} />
                 </div>
                 
                 <div className={"form-field"}>
                     <label htmlFor={"siret"}>N°SIRET</label>
-                    <input id={"siret"} type={"number"} placeholder={"EX : 914 002 308 00015"} value={credentiels.siret !== "" ? credentiels.siret : company.siret} maxLength={14} onChange={(e) => handleChange(e, "siret")} />
+                    <input id={"siret"} type={"number"} placeholder={"EX : 914 002 308 00015"} value={credentials.siret !== "" ? credentials.siret : company.siret} maxLength={14} onChange={(e) => handleChange(e, "siret")} />
                 </div>
             </div>
             
             <div className={"form-field"}>
                 <label htmlFor={"duns_number"}>N°DUNS</label>
-                <input id={"duns_number"} type={"number"} placeholder={"EX : 15-048-3782"} value={credentiels.duns_number !== "" ? credentiels.duns_number : company.dunsNumber} maxLength={14} onChange={(e) => handleChange(e, "duns_number")} />
+                <input id={"duns_number"} type={"number"} placeholder={"EX : 15-048-3782"} value={credentials.duns_number !== "" ? credentials.duns_number : company.dunsNumber} maxLength={14} onChange={(e) => handleChange(e, "duns_number")} />
             </div>
             
             <div className={"form-field"}>
                 <label htmlFor={"address"}>Address</label>
-                <input id={"address"} type={"text"} value={credentiels.address !== "" ? credentiels.address : company.address} maxLength={255} onChange={(e) => handleChange(e, "address")} />
+                <input id={"address"} type={"text"} value={credentials.address !== "" ? credentials.address : company.address} maxLength={255} onChange={(e) => handleChange(e, "address")} />
             </div>
             
             <div className={"form-field-inline"}>
                 <div className={"form-field"}>
                     <label htmlFor={"city"}>City</label>
-                    <input id={"city"} type={"text"} value={credentiels.city !== "" ? credentiels.city : company.city} maxLength={255} onChange={(e) => handleChange(e, "city")} />
+                    <input id={"city"} type={"text"} value={credentials.city !== "" ? credentials.city : company.city} maxLength={255} onChange={(e) => handleChange(e, "city")} />
                 </div>
                 
                 <div className={"form-field"}>
                     <label htmlFor={"zip_code"}>Zip code</label>
-                    <input id={"zip_code"} type={"text"} value={credentiels.zip_code !== "" ? credentiels.zip_code : company.zipCode} maxLength={10} onChange={(e) => handleChange(e, "zip_code")} />
+                    <input id={"zip_code"} type={"text"} value={credentials.zip_code !== "" ? credentials.zip_code : company.zipCode} maxLength={10} onChange={(e) => handleChange(e, "zip_code")} />
                 </div>
                 
-                <CountryField handleChange={handleChange} />
+                <CountryField credentials={credentials} handleChange={handleChange} />
             </div>
             
             <div className={"form-field"}>
                 <label htmlFor={"email"}>Email</label>
-                <input id={"email"} type={"email"} value={credentiels.email !== "" ? credentiels.email : company.email} maxLength={255} onChange={(e) => handleChange(e, "email")} />
+                <input id={"email"} type={"email"} value={credentials.email !== "" ? credentials.email : company.email} maxLength={255} onChange={(e) => handleChange(e, "email")} />
             </div>
             
             <div className={"form-field"}>
                 <label htmlFor={"phone"}>Phone number</label>
-                <input id={"phone"} type={"tel"} value={credentiels.phone !== "" ? credentiels.phone : company.phone} maxLength={10} onChange={(e) => handleChange(e, "phone")} />
+                <input id={"phone"} type={"tel"} value={credentials.phone !== "" ? credentials.phone : company.phone} maxLength={10} onChange={(e) => handleChange(e, "phone")} />
             </div>
             
             <div className={"form-button mt-15px"}>

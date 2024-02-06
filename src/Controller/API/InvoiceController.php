@@ -8,7 +8,6 @@ use App\Manager\FormManager;
 use App\Manager\TokenManager;
 use App\Manager\InvoiceManager;
 use App\Manager\SerializeManager;
-use App\Repository\UserRepository;
 use App\Repository\CompanyRepository;
 use App\Repository\InvoiceRepository;
 use App\Repository\InvoiceDetailRepository;
@@ -43,12 +42,11 @@ class InvoiceController extends AbstractController
         // ContactManager $contactManager,
         InvoiceManager $invoiceManager, 
         SerializeManager $serializeManager,
-        UserRepository $userRepository,
         CompanyRepository $companyRepository,
         InvoiceRepository $invoiceRepository,
         InvoiceDetailRepository $invoiceDetailRepository
     ) {
-        $this->user = $security->getUser() ?? null; // Temporary : To delete after the login system has been implemented
+        $this->user = $security->getUser();
         $this->pdfManager = $pdfManager;
         $this->formManager = $formManager;
         $this->tokenManager = $tokenManager;
@@ -87,11 +85,6 @@ class InvoiceController extends AbstractController
      */
     public function post_invoice(Request $request)
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         $jsonContent = json_decode($request->getContent(), true);
         if(empty($jsonContent)) {
             return $this->json(null, Response::HTTP_FORBIDDEN);
@@ -132,11 +125,6 @@ class InvoiceController extends AbstractController
      */
     public function get_invoice(Request $request, int $invoiceID = 0): JsonResponse
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         $invoice = $this->invoiceRepository->findOneBy(["id" => $invoiceID, "user" => $this->user]);
         if(empty($invoice)) {
             return $this->json(null, Response::HTTP_NOT_FOUND);
@@ -153,11 +141,6 @@ class InvoiceController extends AbstractController
      */
     public function update_invoice(Request $request, int $invoiceID = 0): JsonResponse
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         $invoice = $this->invoiceRepository->find($invoiceID);
         if(!$invoice) {
             return $this->json(null, Response::HTTP_NOT_FOUND);
@@ -199,11 +182,6 @@ class InvoiceController extends AbstractController
      */
     public function get_invoice_pdf(Request $request, int $invoiceID)
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         $invoice = $this->invoiceRepository->findOneBy(["id" => $invoiceID, "user" => $this->user]);
         if(empty($invoice)) {
             return $this->json(null, Response::HTTP_NOT_FOUND);
@@ -236,11 +214,6 @@ class InvoiceController extends AbstractController
      */
     public function remove_invoice(Request $request, int $invoiceID = 0) : JsonResponse 
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         if(empty($invoiceID)) {
             return $this->json(["message" => "Unknown invoice identification"], Response::HTTP_FORBIDDEN);
         }

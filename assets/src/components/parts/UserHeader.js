@@ -4,39 +4,17 @@ import { Link, Navigate } from "react-router-dom";
 
 export default function UserHeader(props) {
 
-    const [logged, setLogged] = useState(
-        localStorage.getItem("token") && ["undefined", "null", null, undefined].indexOf(localStorage.getItem("token")) === -1 ? true : false
-    )
+    const storageUser = localStorage.getItem("user") ?? {}
+    const [logged, setLogged] = useState(storageUser.length > 0 ? true : false)
 
     const handleLogout = (e) => {
         e.preventDefault()
-        
-        if(localStorage.getItem("token")) {
-            axios
-                .get(`${window.location.origin}/api/logout`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Accept": "application/json+ld"
-                    }
-                })
-                .then(response => {
-                    if(response.status == 200) {
-                        localStorage.setItem("token", null)
-                        setLogged(false)
-                    } else {
-                        alert("An error has been encountered during the logout process")
-                    }
-                })
-                .catch(({response}) => {
-                    alert(response.data)
-                })
-            ;
-        }
+        localStorage.setItem("user", "")
     }
 
     return (
         <>
-            {!logged && (<Navigate to={"/"} />)}
+            {!logged && (<Navigate to={"/login"} />)}
             
             <div className={"page -admin"}>
                 <div className={"page-header -admin"}>

@@ -152,4 +152,27 @@ export default class FormControl {
 
         return isValid
     }
+
+    /**
+     * Check if the sended date is inferior to the current date
+     * 
+     * @param {*} value 
+     * @returns 
+     */
+    checkDateInferiorToNow(value) {
+        let isValid = true
+        let currentDate = new Date()
+        let diff = new Date( new Date(value) - currentDate )
+        let 
+            year = diff.getUTCFullYear() - 1970,
+            month = diff.getUTCMonth(),
+            day = diff.getUTCDay() - 1
+        ;
+        
+        if(year < 0 && (month > 0 || day > 0)) {
+            isValid = false
+        }
+    
+        return isValid
+    }
 }

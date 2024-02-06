@@ -1,78 +1,45 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Notification from "../parts/Notification";
 import FormControl from "../utils/FormControl";
-import PrivateResources from "../utils/PrivateResources";
 import CompanyField from "./parts/CompanyField";
-import { findParent, formatDate } from "../utils/DomElement";
+import EstimateDetailTable from "./parts/EstimateDetailTable";
+import EstimateDetailField from "./parts/EstimateDetailField";
+import PrivateResources from "../utils/PrivateResources";
+import { formatDate } from "../utils/DomElement";
 import axios from "axios";
 
 export default function EstimateForm({estimate = null, companyID = null}) {
     const currentDate = new Date()
     const formControl = new FormControl()
+    const [formResponse, setFormResponse] = useState({})
     const {loading = true, items: companies, load} = PrivateResources(`${window.location.origin}/api/companies`)
-    
-    let rowCounting = useRef(0)
     const [credentials, setCredentials] = useState({
-        date: estimate ? estimate.createdAt : "",
+        date: estimate ? estimate.createdAt : currentDate,
+        applyTVA: false,
+        tva: 0,
         company: estimate ? estimate.company : "",
         details: estimate != null ? {...estimate.estimateDetails} : {}
     })
-    const [credentialDetails, setCredentialDetails] = useState({
-        label: "",
-        description: "",
-        quantity: 1,
-        nbr_days: 1,
-        budget: 0
-    })
-
-    const [formResponse, setFormResponse] = useState({})
 
     useEffect(() => {
         load()
     }, [])
 
-    const handleNew = (e) => {
-        let estimateDetailRow = rowCounting.current
-        setCredentials({
-            ...credentials,
-            details: {
-                ...credentials.details,
-                [estimateDetailRow]: {
-                    ...credentials.details[estimateDetailRow],
-                    ...credentialDetails
+    const updateCredentials = (fieldName, fieldValue) => {
+        console.log(
+            fieldValue,
+            {
+                ...credentials,
+                [fieldName]: {
+                    ...credentials[fieldName],
+                    ...fieldValue
                 }
             }
+        )
+        setCredentials({
+            ...credentials,
+            [fieldName]: fieldValue
         })
-        
-        setCredentialDetails({
-            label: "",
-            description: "",
-            quantity: 1,
-            nbr_days: 1,
-            budget: 0
-        })
-
-        rowCounting.current++
-    }
-
-    const handleRemove = (e) => {
-        let parent = findParent(e.currentTarget, "-item-cell")
-        if(!parent) {
-            setFormResponse({classname: "danger", message: "Une erreur a été rencontrée. La ligne n'a pas put être supprimée"})
-            return
-        }
-
-        let estimateID = parent.id
-        let estimateDetails = {...credentials.details}
-        if(estimateDetails[estimateID]) {
-            delete estimateDetails[estimateID]
-            setCredentials({
-                ...credentials,
-                details: {
-                    ...estimateDetails
-                }
-            })
-        }
     }
 
     const handleChange = (e, fieldName) => {
@@ -90,39 +57,18 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                 break
 
             case "date":
-                let diff = new Date(new Date(fieldValue) - currentDate)
-                let 
-                    year = diff.getUTCFullYear() - 1970,
-                    month = diff.getUTCMonth(),
-                    day = diff.getUTCDate() - 1
-                ;
-                if(year < 0 && (month > 0 || day < 0)) {
-                    setFormResponse({classname: "danger", message: "The date must be superior to the current date"})
-                    return
-                }
                 break
 
-            case "label":
-                if(!formControl.checkMaxLength(fieldValue, 255)) {
-                    setFormResponse({classname: "danger", message: "The title exceed 255 characters length"})
-                    return
-                }
-                break
-            
-            case "description":
-                if(!formControl.checkMaxLength(fieldValue, 1000)) {
-                    setFormResponse({classname: "danger", message: "The description exceed 1000 characters length"})
-                    return
-                }
+            case "applyTVA":
+                fieldValue = e.target.checked
                 break
 
-            case "quantity":
-            case "nbr_days":
-            case "budget":
-                if(!formControl.checkNumber(fieldValue)) {
-                    setFormResponse({classname: "danger", message: `The field name ${fieldName}`})
-                    return
+            case "tva":
+                if(!formControl.checkPositifNumber(fieldValue)) {
+                    setFormResponse({classname: "danger", message: `The value in the field '${fieldName}' must be superior or equal to 0`})
                 }
+
+                fieldValue = parseFloat(fieldValue)
                 break
             
             default:
@@ -130,32 +76,23 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                 return
         }
 
-        if(["label", "description", "quantity", "nbr_days", "budget"].includes(fieldName)) {
-            setCredentialDetails({
-                ...credentialDetails,
-                [fieldName]: fieldValue
-            })
-        } else {
-            setCredentials({
-                ...credentials, 
-                [fieldName]: fieldValue
-            })
+        let $datas = {
+            ...credentials, 
+            [fieldName]: fieldValue
         }
+        if(fieldName == "applyTVA" && fieldValue == false) {
+            $datas = {
+                ...credentials, 
+                [fieldName]: fieldValue,
+                tva: 0
+            }
+        }
+
+        setCredentials($datas)
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-
-        let diff = new Date( new Date(credentials.date) - currentDate )
-        let 
-            year = diff.getUTCFullYear() - 1970,
-            month = diff.getUTCMonth(),
-            day = diff.getUTCDay() - 1
-        ;
-        if(year < 0 && (month > 0 || day > 0)) {
-            setFormResponse({classname: "danger", message: "The date must be superior to the current date"})
-            return
-        }
 
         if(!formControl.checkMinLength(credentials.date, 1) || !formControl.checkMinLength(credentials.company, 1)) {
             setFormResponse({classname: "danger", message: "The date or the company is missing, please fill all missing fields."})
@@ -176,20 +113,12 @@ export default function EstimateForm({estimate = null, companyID = null}) {
         axios
             .post(url, credentials, {
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Accept": "application/json+ld",
+                    "Authorization": "Bearer " + localStorage.getItem("token")
                 }
             })
             .then(res => {
-                // Reset all fields to an empty value
-                setCredentialDetails({
-                    label: "",
-                    description: "",
-                    quantity: 1,
-                    nbr_days: 1,
-                    budget: 0
-                })
-
-                // Return a response to the user
                 setFormResponse({classname: "success", message: "Successfully added"})
             })
             .catch(({response}) => {
@@ -206,7 +135,6 @@ export default function EstimateForm({estimate = null, companyID = null}) {
         ;
     }
 
-    let objectKeys = Object.keys(credentials.details)
     return (
         <>
             {!loading ? (
@@ -217,7 +145,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                             <div className={"-content"}>
                                 <CompanyField 
                                     handleChange={handleChange} 
-                                    companyID={estimate ? estimate.company.id : null} />
+                                    companyID={estimate && Object.keys(estimate).length > 0 ? estimate.company.id : null} />
                                 
                                 <div className={"form-field"}>
                                     <label htmlFor={"date"}>Date</label>
@@ -228,74 +156,36 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                                         onChange={(e) => handleChange(e, "date")} 
                                     />
                                 </div>
+
+                                <div className={"form-field"}>
+                                    <label>
+                                        <input type={"checkbox"} value={credentials.applyTVA} onChange={(e) => handleChange(e, "applyTVA")} />
+                                        <span>Apply TVA</span>
+                                    </label>
+                                </div>
+                                
+                                {credentials.applyTVA && (
+                                    <div className={"form-field"}>
+                                        <label htmlFor={"tva"}>TVA (%)</label>
+                                        <input 
+                                            id={"tva"} 
+                                            type={"number"} 
+                                            min={0}
+                                            value={credentials.tva} 
+                                            onChange={(e) => handleChange(e, "tva")} 
+                                        />
+                                    </div>
+                                )}
                             </div>
                             <div className="-header">
                                 <label>Invoice details</label>
                             </div>
                             <div className="-content">
-                                <div className={"form-field"}>
-                                    <label htmlFor={"title"}>Title</label>
-                                    <input type={"text"} maxLength={"255"} value={credentialDetails.label} onChange={(e) => handleChange(e, "label")} />
-                                </div>
-                                
-                                <div className={"form-field"}>
-                                    <label htmlFor={"description"}>Description</label>
-                                    <textarea id={"description"} onChange={(e) => handleChange(e, "description")}>{credentialDetails.description}</textarea>
-                                </div>
-
-                                <div className={"form-field"}>
-                                    <label htmlFor={"quantity"}>Quantity</label>
-                                    <input id={"quantity"} type={"number"} min={1} value={credentialDetails.quantity} onChange={(e) => handleChange(e, "quantity")} />
-                                </div>
-
-                                <div className={"form-field"}>
-                                    <label htmlFor={"daystime"}>Number of days</label>
-                                    <input id={"daystime"} type={"number"} min={1} value={credentialDetails.nbr_days} onChange={(e) => handleChange(e, "nbr_days")} />
-                                </div>
-                                
-                                <div className={"form-field"}>
-                                    <label htmlFor={"budget"}>Budget</label>
-                                    <input id={"budget"} type={"number"} min={0} value={credentialDetails.budget} onChange={(e) => handleChange(e, "budget")} />
-                                </div>
-                                
-                                <div className={"form-button"}>
-                                    <button className={"btn btn-blue"} type={"button"} onClick={(e) => handleNew(e)}>Ajouter</button>
-                                </div>
+                                <EstimateDetailField update={updateCredentials} setFormResponse={setFormResponse} />
                             </div>
                         </div>
-                        
-                        <div className={"card item-row"}>
-                            <div className={"-content"}>
-                                <table className={"table"}>
-                                    <thead>
-                                        <tr>
-                                            <th>Title</th>
-                                            <th>Quantity</th>
-                                            <th>Amount Unit. (€)</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id={"estimate-details"}>
-                                        {objectKeys.length > 0 && typeof credentials.details == "object" && Object.values(credentials.details).map((item, index) => (
-                                            <tr id={objectKeys[index]} className={"-item-cell"} key={index}>
-                                                <td className={"-title"}>{item.label}</td>
-                                                <td className={"-quantity txt-center"}>{item.quantity}</td>
-                                                <td className={"-price txt-center"}>{item.price}</td>
-                                                <td className={"-action txt-right"}>
-                                                    <button 
-                                                        type={"button"} 
-                                                        className={"btn btn-red -inline-flex"} 
-                                                        onClick={(e) => handleRemove(e)}
-                                                    >
-                                                        <img src={`${window.location.origin}/content/svg/trash-white.svg`} />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+
+                        <EstimateDetailTable estimate_details={credentials.details} update={updateCredentials} />
                     </div>
 
                     <button className={"btn btn-blue mt-15px w-100 h-40px"} type={"submit"}>Register the estimate</button>

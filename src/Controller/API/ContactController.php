@@ -19,7 +19,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
  */
 class ContactController extends AbstractController
 {
-    private ?User $user;
+    private User $user;
     private FormManager $formManager;
     private ContactManager $contactManager;
     private SerializeManager $serializerManager;
@@ -32,7 +32,7 @@ class ContactController extends AbstractController
         SerializeManager $serializerManager,
         ContactRepository $contactRepository
     ) {
-        $this->user = $security->getUser() ?? null;
+        $this->user = $security->getUser();
         $this->formManager = $formManager;
         $this->contactManager = $contactManager;
         $this->serializerManager = $serializerManager;
@@ -44,11 +44,6 @@ class ContactController extends AbstractController
      */
     public function get_contact(Request $request) : JsonResponse 
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         $offset = $request->get("offset", 1);
         $offset = is_numeric($offset) && $offset > 1 ? $offset : 1;
         $limit = 20;
@@ -136,11 +131,6 @@ class ContactController extends AbstractController
      */
     public function remove_single_contact(Request $request, int $contactID) : JsonResponse 
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         if(!$this->user->isAdmin()) {
             return $this->json("The user don't have the necessary rights", Response::HTTP_FORBIDDEN);
         }

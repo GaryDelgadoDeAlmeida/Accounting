@@ -24,6 +24,12 @@ class Estimate
     #[ORM\Column(length: 255)]
     private ?string $label = null;
 
+    #[ORM\Column]
+    private ?bool $applyTVA = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $tva = null;
+
     #[ORM\Column(length: 30)]
     private ?string $status = null;
 
@@ -87,6 +93,30 @@ class Estimate
     public function setLabel(string $label): self
     {
         $this->label = $label;
+
+        return $this;
+    }
+
+    public function applyTVA(): ?bool
+    {
+        return $this->applyTVA;
+    }
+
+    public function setApplyTVA(bool $applyTVA): static
+    {
+        $this->applyTVA = $applyTVA;
+
+        return $this;
+    }
+
+    public function getTva(): ?float
+    {
+        return $this->tva;
+    }
+
+    public function setTva(?float $tva): static
+    {
+        $this->tva = $tva;
 
         return $this;
     }
