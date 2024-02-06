@@ -4,7 +4,7 @@ namespace App\Controller\API;
 
 use App\Entity\User;
 use App\Entity\Estimate;
-use App\Enum\EstimateEnum;
+use App\Enum\StatusEnum;
 use App\Manager\PdfManager;
 use App\Manager\TokenManager;
 use App\Manager\EstimateManager;
@@ -85,7 +85,7 @@ class EstimateController extends AbstractController
                 ->setUser($this->user)
                 ->setCompany($fields["company"])
                 ->setLabel("Estimate n°{$nbrEstimate}")
-                ->setStatus(EstimateEnum::STATUS_SEND) // Shouldn't be in Invoice ???
+                ->setStatus(StatusEnum::STATUS_SEND) // Shouldn't be in Invoice ???
                 ->setCreatedAt(new \DateTimeImmutable())
             ;
 

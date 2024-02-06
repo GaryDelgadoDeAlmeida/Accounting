@@ -7,6 +7,7 @@ use Dompdf\Options;
 use App\Entity\User;
 use App\Entity\Company;
 use App\Entity\Invoice;
+use App\Enum\StatusEnum;
 use App\Enum\InvoiceEnum;
 use App\Manager\FormManager;
 use App\Entity\InvoiceDetail;
@@ -155,6 +156,8 @@ class InvoiceManager extends AbstractController {
             if($fieldName === InvoiceEnum::INVOICE_DATE) $invoice->setInvoiceDate(\DateTimeImmutable::createFromFormat("Y-m-d", $fieldValue));
             elseif($fieldName === InvoiceEnum::INVOICE_FILENAME) $invoice->setFilename($fieldValue);
             elseif($fieldName === InvoiceEnum::INVOICE_STATUS) $invoice->setStatus($fieldValue);
+            elseif($fieldName === InvoiceEnum::INVOICE_APPLY_TVA) $invoice->setApplyTVA($fieldValue);
+            elseif($fieldName === InvoiceEnum::INVOICE_TVA) $invoice->setTva($fieldValue);
         }
 
         return $invoice;
@@ -193,7 +196,7 @@ class InvoiceManager extends AbstractController {
             ->setUser($user)
             ->setCompany($company)
             ->setFilename($filename)
-            ->setStatus(InvoiceEnum::STATUS_ONGOING)
+            ->setStatus(StatusEnum::STATUS_ONGOING)
             ->setInvoiceDate($invoiceDate)
             ->setCreatedAt(new \DateTimeImmutable())
         ;

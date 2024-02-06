@@ -4,54 +4,37 @@ namespace App\Enum;
 
 abstract class InvoiceEnum {
 
-    // Status choices
-    public const STATUS_UNPAID = "unpaid";
-    public const STATUS_ONGOING = "ongoing";
-    public const STATUS_ONGOING_PAIEMENT = "paiement_ongoing";
-    public const STATUS_PAID = "paid";
-
     public const INVOICE_FILENAME = "filename";
     public const INVOICE_FILEPATH = "filepath";
     public const INVOICE_DATE = "invoice_date";
     public const INVOICE_STATUS = "status";
-
+    public const INVOICE_APPLY_TVA = "apply_tva";
+    public const INVOICE_TVA = "tva";
+    
     protected static $typeName = [
-        self::STATUS_UNPAID => "Unpaid",
-        self::STATUS_ONGOING => "Ongoing",
-        self::STATUS_ONGOING_PAIEMENT => "Paiement Ongoing",
-        self::STATUS_PAID => "Paid"
+        self::INVOICE_FILENAME => "Filename",
+        self::INVOICE_FILEPATH => "Filepath",
+        self::INVOICE_DATE => "Date",
+        self::INVOICE_STATUS => "Status",
+        self::INVOICE_APPLY_TVA => "Apply TVA",
+        self::INVOICE_TVA => "TVA",
     ];
-
-    public function getInvoiceStatus(string $status) {
-        if (!isset(static::$typeName[$status])) {
-            return "Unknown type ($status)";
-        }
-
-        return static::$typeName[$status];
-    }
-
-    public static function getAvailableStatus() {
-        return [
-            self::STATUS_UNPAID,
-            self::STATUS_ONGOING,
-            self::STATUS_ONGOING_PAIEMENT,
-            self::STATUS_PAID
-        ];
-    }
 
     public static function getInvoiceAvailableChoices() {
         return [
             self::INVOICE_FILENAME,
             self::INVOICE_FILEPATH,
             self::INVOICE_DATE,
-            self::INVOICE_STATUS
+            self::INVOICE_STATUS,
+            self::INVOICE_APPLY_TVA,
+            self::INVOICE_TVA,
         ];
     }
 
-    public static function getChoices() {
+    public static function getInvoiceChoices() {
         $choices = [];
 
-        foreach(self::getAvailableStatus() as $choice) {
+        foreach(self::getInvoiceAvailableChoices() as $choice) {
             $choices[static::$typeName[$choice]] = $choice;
         }
 
