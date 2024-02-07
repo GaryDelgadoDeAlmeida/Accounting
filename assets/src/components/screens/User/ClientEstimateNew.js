@@ -6,16 +6,16 @@ import ReturnButton from "../../parts/ReturnButton"
 
 export default function ClientEstimateNew() {
     const { clientID } = useParams()
-    const [error, setError] = useState(false)
+    if(isNaN(clientID)) {
+        return <Navigate to={"/user/client"} replace={true} />
+    }
 
     return (
         <UserHeader>
-            {error && <Navigate to={"/user/client/" + clientID} replace={true} />}
-
             <ReturnButton path={"/user/client/" + clientID} />
 
             <div className={"mt-25px"}>
-                <EstimateForm />
+                <EstimateForm companyID={clientID} />
             </div>
         </UserHeader>
     )

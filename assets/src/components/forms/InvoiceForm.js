@@ -116,7 +116,7 @@ export default function InvoiceForm({companyID, invoice = null}) {
                     id={"invoice_date"} 
                     type={"date"} 
                     min={Date.now()} 
-                    value={formatDate(credentials.invoice_date)}
+                    value={ formatDate(credentials.invoice_date) }
                     onChange={(e) => handleChange(e, "invoice_date")} 
                     required 
                 />
@@ -127,7 +127,7 @@ export default function InvoiceForm({companyID, invoice = null}) {
                 <input 
                     id={"due_date"} 
                     type={"date"} 
-                    value={formatDate(credentials.due_date)}
+                    value={ formatDate(credentials.due_date) }
                     onChange={(e) => handleChange(e, "due_date")} 
                 />
             </div>

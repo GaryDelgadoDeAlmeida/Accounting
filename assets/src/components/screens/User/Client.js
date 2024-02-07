@@ -8,13 +8,14 @@ import { findParent } from "../../utils/DomElement";
 
 export default function Client() {
 
+    const storageUser = localStorage.getItem("user") ?? []
+    const user = JSON.parse(storageUser)
     const [offset, setOffset] = useState(1)
-    const [limit, setLimit] = useState(20)
-    const [nbrOffset, setNbrOffset] = useState(1)
-    const { loading, items: clients, load } = PrivateResources(`${window.location.origin}/api/companies?offset=${offset}&limit=${limit}`)
+    const { loading, items: clients, load } = PrivateResources(`${window.location.origin}/api/companies?offset=${offset}`)
+    
     useEffect(() => {
         load()
-    }, [])
+    }, [offset])
 
     const handlePagination = (e) => {
         setOffset(
@@ -30,7 +31,7 @@ export default function Client() {
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json+ld",
-                    "Authorization": "Bearer " + localStorage.getItem("token")
+                    "Authorization": "Bearer " + user.token
                 }
             })
             .then((response) => {
@@ -61,9 +62,9 @@ export default function Client() {
             <div className={"page-section"}>
                 {!loading ? (
                     <div className={"d-flex-col -g-15px -no-reverse"}>
-                        {clients.length > 0 ? (
+                        {clients.results ? (
                             <>
-                                {clients.map((item, index) => (
+                                {clients.results.map((item, index) => (
                                     <div key={index} className={"card"}>
                                         <div className={"-content"}>
                                             <div className={"d-flex-col -g-5px"}>
@@ -96,7 +97,7 @@ export default function Client() {
                                     </div>
                                 ))}
 
-                                {offset >= 1 && offset < nbrOffset && (
+                                {offset > 0 && offset <= clients.maxOffset && clients.maxOffset > 1 && (
                                     <div className={"pagination"}>
                                         {offset - 1 > 0 && (
                                             <div className={"item"}>
@@ -108,7 +109,7 @@ export default function Client() {
                                             <span>{offset}</span>
                                         </div>
 
-                                        {offset + 1 < 100 && (
+                                        {offset + 1 <= clients.maxOffset && (
                                             <div className={"item"}>
                                                 <button onClick={(e) => handlePagination(e)} value={offset + 1}>{offset + 1}</button>
                                             </div>
@@ -121,7 +122,7 @@ export default function Client() {
                         )}
                     </div>
                 ) : (
-                    <span>Loading ...</span>
+                    <Notification classname={"information"} message={"Loading ..."} />
                 )}
             </div>
         </UserHeader>

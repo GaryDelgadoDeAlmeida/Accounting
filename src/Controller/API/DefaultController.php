@@ -49,7 +49,6 @@ class DefaultController extends AbstractController
      */
     public function index(Request $request): JsonResponse
     {
-        $userID = $this->user->getId();
         $currentDate = new \DateTime();
 
         return $this->json($this->serializeManager->serializeContent([
@@ -57,7 +56,7 @@ class DefaultController extends AbstractController
             "lastMonthAmount" => $this->invoiceRepository->getMonthBenefit($this->user, (new \DateTime())->modify("-1 month")->format("m")),
             "ongoingMonthAmout" => $this->invoiceRepository->getMonthBenefit($this->user, $currentDate->format("Y")),
             "currentYearBenefit" => $this->invoiceRepository->getYearBenefit($this->user, $currentDate->format("Y")),
-            "clients" => $this->companyRepository->getCompaniesByUser($userID, 1, 3),
+            "clients" => $this->companyRepository->getCompaniesByUser($this->user, 1, 3),
             "invoices" => $this->invoiceRepository->getInvoices($this->user, 1, 3),
             "estimates" => $this->estimateRepository->getEstimates($this->user, 1, 3)
         ]), Response::HTTP_OK);

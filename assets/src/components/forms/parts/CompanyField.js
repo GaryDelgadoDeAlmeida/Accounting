@@ -3,8 +3,7 @@ import PrivateResources from "../../utils/PrivateResources";
 
 export default function CompanyField({handleChange, companyID = null}) {
 
-    const { loading, items: companies, load } = PrivateResources(`${window.location.origin}/api/companies`)
-
+    const { loading, items: companies, load } = PrivateResources(`${window.location.origin}/api/companies?results=all`)
     useEffect(() => {
         load()
     }, [])
@@ -14,8 +13,8 @@ export default function CompanyField({handleChange, companyID = null}) {
             <label htmlFor={"invoice_company"}>Company</label>
             <select id={"invoice_company"} name={"company"} onChange={(e) => handleChange(e, "company")} required>
                 <option value={""}>Select an organization</option>
-                {!loading && companies.length > 0 && (
-                    companies.map((item, index) => (
+                {!loading && companies.results && (
+                    companies.results.map((item, index) => (
                         <option 
                             key={index} 
                             value={item.id} 

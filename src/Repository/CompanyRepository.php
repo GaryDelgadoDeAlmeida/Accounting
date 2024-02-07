@@ -2,9 +2,10 @@
 
 namespace App\Repository;
 
+use App\Entity\User;
 use App\Entity\Company;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<Company>
@@ -66,16 +67,17 @@ class CompanyRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param User user
      * @param int offset
      * @param int limit
      * @return array
      */
-    public function getCompaniesByUser(int $userID, int $offset = 1, int $limit = 10)
+    public function getCompaniesByUser(User $user, int $offset = 1, int $limit = 10)
     {
         return $this->createQueryBuilder("company")
             ->leftJoin("company.users", "user")
-            ->where("user.id = :userID")
-            ->setParameter("userID", $userID)
+            ->where("user = :user")
+            ->setParameter("user", $user)
             ->setMaxResults($limit)
             ->setFirstResult(($offset - 1) * $limit)
             ->orderBy("company.name", "ASC")
@@ -90,12 +92,11 @@ class CompanyRepository extends ServiceEntityRepository
      * @param int user
      * @return void
      */
-    public function countCompanies(int $userID) {
+    public function countCompanies(User $user) {
         return $this->createQueryBuilder("company")
             ->select("COUNT(company.id) as nbrCompanies")
-            ->leftJoin("company.users", "user")
-            ->where("user.id = :userID")
-            ->setParameter("userID", $userID)
+            ->where("company.user = :user")
+            ->setParameter("user", $user)
             ->getQuery()
             ->getSingleResult()["nbrCompanies"]
         ;

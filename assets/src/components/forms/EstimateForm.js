@@ -18,7 +18,7 @@ export default function EstimateForm({estimate = null, companyID = null}) {
     const [credentials, setCredentials] = useState(estimate ? {
         id: estimate.id,
         estimateDate: formatDate(estimate.estimateDate),
-        company: estimate.company ? estimate.company.id : null,
+        company: estimate.company ? estimate.company.id : (companyID ?? null),
         applyTVA: estimate.applyTVA,
         tva: estimate.tva,
         details: estimate.estimateDetails

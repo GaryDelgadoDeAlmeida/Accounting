@@ -10,7 +10,6 @@ use App\Manager\SerializeManager;
 use App\Repository\CompanyRepository;
 use App\Repository\InvoiceRepository;
 use App\Repository\EstimateRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\InvoiceDetailRepository;
 use App\Repository\EstimateDetailRepository;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,7 +25,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class CompanyController extends AbstractController {
 
     private User $user;
-    private EntityManagerInterface $em;
     private TokenManager $tokenManager;
     private CompanyManager $companyManager;
     private SerializeManager $serializeManager;
@@ -38,7 +36,6 @@ class CompanyController extends AbstractController {
 
     function __construct(
         Security $security,
-        EntityManagerInterface $em,
         TokenManager $tokenManager,
         CompanyManager $companyManager,
         SerializeManager $serializeManager,
@@ -48,7 +45,6 @@ class CompanyController extends AbstractController {
         InvoiceDetailRepository $invoiceDetailRepository,
         EstimateDetailRepository $estimateDetailRepository
     ) {
-        $this->em = $em;
         $this->user = $security->getUser();
         $this->tokenManager = $tokenManager;
         $this->serializeManager = $serializeManager;
@@ -65,16 +61,30 @@ class CompanyController extends AbstractController {
      */
     public function get_companies(Request $request): JsonResponse
     {
-        $limit = 20;
-        $offset = $request->get("offset", 1);
-        $offset = is_numeric($offset) && $offset > 1 ? $offset : 1;
+        $parameters = [];
 
-        return $this->json(
-            $this->serializeManager->serializeContent(
-                $this->companyRepository->getCompaniesByUser($this->user->getId(), $offset, $limit)
-            ), 
-            Response::HTTP_OK
-        );
+        if($request->get("results", null) == "all") {
+            $parameters = [
+                "results" => $this->serializeManager->serializeContent(
+                    $this->companyRepository->findAll()
+                )
+            ];
+        } else {
+            $limit = 20;
+            $offset = $request->get("offset", 1);
+            $offset = is_numeric($offset) && $offset > 1 ? $offset : 1;
+
+            $parameters = [
+                "offset" => $offset,
+                "limit" => $limit,
+                "maxOffset" => ceil($this->user->countCompanies() / $limit),
+                "results" => $this->serializeManager->serializeContent(
+                    $this->companyRepository->getCompaniesByUser($this->user, $offset, $limit)
+                )
+            ];
+        }
+
+        return $this->json($parameters, Response::HTTP_OK);
     }
 
     /**
@@ -229,11 +239,8 @@ class CompanyController extends AbstractController {
                 $this->estimateRepository->remove($estimate, true);
             }
 
-            // Unlink the user and the company
             $company->removeUser($this->user);
-            
-            // Save change in the entity
-            $this->em->flush();
+            $this->companyRepository->remove($company, true);
         } catch(\Exception $e) {
             return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
