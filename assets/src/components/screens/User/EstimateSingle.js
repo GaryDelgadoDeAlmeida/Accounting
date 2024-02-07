@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { Navigate, useParams } from "react-router-dom"
 import UserHeader from "../../parts/UserHeader"
 import LinkButton from "../../parts/LinkButton"
 import Notification from "../../parts/Notification"
@@ -9,6 +9,12 @@ import axios from "axios"
 
 export default function EstimateSingle() {
     const { estimateID } = useParams()
+    if(isNaN(estimateID)) {
+        return <Navigate to={"/user/estimate"} />
+    }
+
+    const storageUser = localStorage.getItem("user") ?? []
+    const user = JSON.parse(storageUser)
     const [error, setError] = useState(false)
     const { loading, items: estimate, load } = PrivateResources(`${window.location.origin}/api/estimate/${estimateID}`)
 
@@ -31,7 +37,7 @@ export default function EstimateSingle() {
                 headers: {
                     "Accept": "application/ld+json",
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + localStorage.getItem("token")
+                    "Authorization": "Bearer " + user.token
                 }
             })
             .then(response => response.blob())
@@ -47,6 +53,7 @@ export default function EstimateSingle() {
                 setError(false)
             })
         } catch(error) {
+            console.log(error)
             setError(true)
         }
     }
@@ -71,8 +78,8 @@ export default function EstimateSingle() {
                             <div className={"w-50"}>
                                 <h2>{estimate.label}</h2>
                                 <div className={"d-column"}>
-                                    <span>Date d'émission : { formatDate(estimate.estimateDate) }</span>
-                                    <span>Date d'échéance : { formatDate(lastMonthDay(estimate.estimateDate)) }</span>
+                                    <span>Date d'émission : { formatDate(estimate.estimateDate, "fr") }</span>
+                                    <span>Date d'échéance : { formatDate(lastMonthDay(estimate.estimateDate), "fr") }</span>
                                 </div>
                             </div>
                             <div className={"w-50 txt-right"}>
@@ -98,8 +105,8 @@ export default function EstimateSingle() {
                                                     <span className={"txt-bold"}>{estimate.user.fullname}</span>
                                                     {estimate.user.freelance != null && (
                                                         <>
-                                                            <span>SIREN : {estimate.user.freelance.siren}</span>
-                                                            <span>SIRET : {estimate.user.freelance.siret}</span>
+                                                            <span>SIREN : {estimate.user.freelance ? estimate.user.freelance.siren : null}</span>
+                                                            <span>SIRET : {estimate.user.freelance? estimate.user.freelance.siret : null}</span>
                                                         </>
                                                     )}
                                                 </div>
@@ -135,8 +142,12 @@ export default function EstimateSingle() {
                                                     }</span>
                                                 </div>
                                                 <div className={"-contact"}>
-                                                    {estimate.company.phone != "" && (<span className={"-phone"}>{estimate.company.phone}</span>)}
-                                                    {estimate.company.email != "" && (<span className={"-email"}>{estimate.company.email}</span>)}
+                                                    {estimate.company && (
+                                                        <>
+                                                            <span className={"-phone"}>{estimate.company.phone}</span>
+                                                            <span className={"-email"}>{estimate.company.email}</span>
+                                                        </>
+                                                    )}
                                                 </div>
                                             </div>
                                         </td>
@@ -158,19 +169,15 @@ export default function EstimateSingle() {
                                 </thead>
                                 <tbody>
                                     {estimate.estimateDetails != undefined && estimate.estimateDetails.length > 0 ?
-                                        estimate.estimateDetails.map((item, index) => {
-                                            let budget = (item.price * item.nbrDays) * item.quantity
-
-                                            return (
-                                                <tr key={index}>
-                                                    <td className={"-title"}>{item.label}</td>
-                                                    <td className={"-nbr-days txt-center"}>{item.nbrDays}</td>
-                                                    <td className={"-price txt-center"}>{item.price}</td>
-                                                    <td className={"-tva txt-center"}>20</td>
-                                                    <td className={"-amount txt-center"}>{budget * 1.2}</td>
-                                                </tr>
-                                            )
-                                        })
+                                        estimate.estimateDetails.map((item, index) => (
+                                            <tr key={index}>
+                                                <td className={"-title"}>{ item.label }</td>
+                                                <td className={"-nbr-days txt-center"}>{ item.nbrDays }</td>
+                                                <td className={"-price txt-center"}>{ item.price }</td>
+                                                <td className={"-tva txt-center"}>{ estimate.applyTVA ? estimate.tva : 0 }</td>
+                                                <td className={"-amount txt-center"}>{ item.totalAmount }</td>
+                                            </tr>
+                                        ))
                                     : (
                                         <tr className={"txt-center"}>
                                             <td colSpan={5}>There is no details for this estimate</td>

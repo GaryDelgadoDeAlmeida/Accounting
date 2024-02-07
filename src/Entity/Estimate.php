@@ -207,8 +207,10 @@ class Estimate
     public function getTvaAmount() : float {
         $amount = 0;
 
-        foreach($this->estimateDetails as $estimateDetail) {
-            $amount += (($estimateDetail->getPrice() * $estimateDetail->getNbrDays()) * $estimateDetail->getQuantity()) * 0.2;
+        if($this->applyTVA) {
+            foreach($this->estimateDetails as $estimateDetail) {
+                $amount += (($estimateDetail->getPrice() * $estimateDetail->getNbrDays()) * $estimateDetail->getQuantity()) * ($this->tva / 100);
+            }
         }
 
         return $amount;
@@ -218,7 +220,12 @@ class Estimate
         $amount = 0;
 
         foreach($this->estimateDetails as $estimateDetail) {
-            $amount += (($estimateDetail->getPrice() * $estimateDetail->getNbrDays()) * $estimateDetail->getQuantity()) * 1.2;
+            $price = ($estimateDetail->getPrice() * $estimateDetail->getNbrDays()) * $estimateDetail->getQuantity();
+            $amount += $price;
+            
+            if($this->applyTVA) {
+                $amount += $price * ($this->tva / 100);
+            }
         }
 
         return $amount;

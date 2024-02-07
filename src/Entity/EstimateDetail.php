@@ -112,6 +112,16 @@ class EstimateDetail
         return $this;
     }
 
+    public function getTotalAmount(): float {
+        $amount = ($this->price * $this->nbrDays) * $this->quantity;
+
+        if($this->estimate->isApplyTVA()) {
+            $amount += ($amount * ($this->estimate->getTVA() / 100));
+        }
+
+        return $amount;
+    }
+
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;

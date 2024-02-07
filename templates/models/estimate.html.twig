@@ -222,11 +222,7 @@
                                         <td class="txt-center">{{ estimateDetail.nbrDays }}</td>
                                         <td class="txt-center">{{ estimateDetail.price }}</td>
                                         <td class="txt-center">{{ (estimateDetail.price * estimateDetail.nbrDays) * estimateDetail.quantity }}</td>
-                                        {# With TVA #}
-                                        {# <td class="txt-center">{{ ((estimateDetail.price * estimateDetail.nbrDays) * estimateDetail.quantity) * 1.2 }}</td> #}
-                                        
-                                        {# Without TVA #}
-                                        <td class="txt-center">{{ ((estimateDetail.price * estimateDetail.nbrDays) * estimateDetail.quantity) }}</td>
+                                        <td class="txt-center">{{ estimateDetail.totalAmount }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -242,15 +238,15 @@
                                             <tbody>
                                                 <tr>
                                                     <td>Amount</td>
-                                                    <td class="txt-center">{{ estimate.getAmount() }}</td>
+                                                    <td class="txt-center">{{ estimate.amount() }}</td>
                                                 </tr>
                                                 <tr>
                                                     <td>TVA</td>
-                                                    <td class="txt-center">{{ estimate.getTvaAmount() }}</td>
+                                                    <td class="txt-center">{{ estimate.tvaAmount() }}</td>
                                                 </tr>
                                                 <tr>
                                                     <td class="txt-bold">Total amount</td>
-                                                    <td class="txt-center">{{ estimate.getTotalAmount() }}</td>
+                                                    <td class="txt-center">{{ estimate.totalAmount() }}</td>
                                                 </tr>
                                             </tbody>
                                         </table>

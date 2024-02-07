@@ -239,8 +239,8 @@
                                         <td class="txt-left">{{ invoiceDetail.description }}</td>
                                         <td class="txt-center">{{ invoiceDetail.quantity }}</td>
                                         <td class="txt-center">{{ invoiceDetail.price }}</td>
-                                        <td class="txt-center">{{ invoiceDetail.tva ? "Yes" : "No" }}</td>
-                                        <td class="txt-center">{{ (invoiceDetail.price * invoiceDetail.quantity) * (invoiceDetail.tva ? 1.2 : 1) }}</td>
+                                        <td class="txt-center">{{ invoice.applyTVA ? invoice.tva : 0 }}</td>
+                                        <td class="txt-center">{{ invoiceDetail.totalAmount }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

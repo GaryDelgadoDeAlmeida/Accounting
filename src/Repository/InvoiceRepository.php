@@ -145,4 +145,18 @@ class InvoiceRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+    /**
+     * @param User user
+     * @return int
+     */
+    public function countInvoiceByUser(User $user) {
+        return $this->createQueryBuilder("invoice")
+            ->select("COUNT(invoice.id) as nbrInvoice")
+            ->where("invoice.user = :user")
+            ->setParameter("user", $user)
+            ->getQuery()
+            ->getOneOrNullResult()["nbrInvoice"] ?? 0
+        ;
+    }
 }

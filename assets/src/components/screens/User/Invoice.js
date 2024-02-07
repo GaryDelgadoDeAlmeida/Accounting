@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from "react";
+import Badge from "../../parts/Badge";
 import UserHeader from "../../parts/UserHeader";
-import SeeMoreButton from "../../parts/SeeMoreButton";
-import PrivateResources from "../../utils/PrivateResources";
-import Notification from "../../parts/Notification";
-import FormControl from "../../utils/FormControl";
 import LinkButton from "../../parts/LinkButton";
 import RemoveButton from "../../parts/RemoveButton";
-import axios from "axios";
+import Notification from "../../parts/Notification";
+import SeeMoreButton from "../../parts/SeeMoreButton";
+import FormControl from "../../utils/FormControl";
+import PrivateResources from "../../utils/PrivateResources";
 
 export default function Invoice() {
 
+    const storageUser = localStorage.getItem("user") ?? []
+    const user = JSON.parse(storageUser)
     const [offset, setOffset] = useState(1)
-    const [limit, setLimit] = useState(20)
-    const [nbrOffset, setNbrOffset] = useState(100)
-
     const formControl = new FormControl()
     const [ responseMessage, setResponseMessage ] = useState({})
-    const { loading, items: invoices, load } = PrivateResources(`${window.location.origin}/api/invoices?offset=${offset}&limit=${limit}`)
+    const { loading, items: invoices, load } = PrivateResources(`${window.location.origin}/api/invoices?offset=${offset}`)
+    
     useEffect(() => {
         load()
     }, [offset])
@@ -28,7 +28,6 @@ export default function Invoice() {
     }
 
     const handleDownload = async (e) => {
-        // console.log("Hi handleDownload")
         setResponseMessage({})
 
         let invoiceID = e.currentTarget.getAttribute("data-invoice")
@@ -49,7 +48,7 @@ export default function Invoice() {
                 headers: {
                     "Accept": "application/ld+json",
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + localStorage.getItem("token")
+                    "Authorization": "Bearer " + user.token
                 }
             })
             .then(response => response.blob())
@@ -78,6 +77,10 @@ export default function Invoice() {
             />
 
             <div className={"page-section"}>
+                {Object.keys(responseMessage).length > 0 && (
+                    <Notification {...responseMessage} />
+                )}
+
                 {!loading ? (
                     <>
                         <table className={"table"}>
@@ -91,13 +94,15 @@ export default function Invoice() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {invoices.length > 0 && typeof invoices === "object" ? (
-                                    invoices.map((item, index) => (
+                                {invoices.results ? (
+                                    invoices.results.map((item, index) => (
                                         <tr id={`-invoice-row-${index + 1}`} key={index}>
                                             <td className={"-invoice-date txt-center"}>{item.filename}</td>
                                             <td className={"-client-name txt-center"}>{item.company.name}</td>
                                             <td className={"-status txt-center"}>
-                                                <span className={"badge badge-success"}>Paid</span>
+                                                {item.status && (
+                                                    <Badge txtContent={item.status} />
+                                                )}
                                             </td>
                                             <td className={"-amount txt-center"}>{item.totalAmount}</td>
                                             <td className={"-action txt-right"}>
@@ -137,7 +142,7 @@ export default function Invoice() {
                             </tbody>
                         </table>
 
-                        {offset >= 1 && offset < nbrOffset && (
+                        {offset > 0 && offset <= invoices.maxOffset && invoices.maxOffset > 1 && (
                             <div className={"pagination"}>
                                 {offset - 1 > 0 && (
                                     <div className={"item"}>
@@ -149,7 +154,7 @@ export default function Invoice() {
                                     <span>{offset}</span>
                                 </div>
 
-                                {offset + 1 < 100 && (
+                                {offset + 1 <= invoices.maxOffset && (
                                     <div className={"item"}>
                                         <button onClick={(e) => handlePagination(e)} value={offset + 1}>{offset + 1}</button>
                                     </div>

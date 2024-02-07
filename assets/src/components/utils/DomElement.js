@@ -62,7 +62,7 @@ export function findChildren(element, className, tagName = null) {
  * @param {*} date 
  * @returns 
  */
-export function formatDate(date) {
+export function formatDate(date, format = "en") {
     var d = new Date(date),
         month = "" + (d.getMonth() + 1),
         day = "" + d.getDate(),
@@ -77,7 +77,14 @@ export function formatDate(date) {
         day = '0' + day;
     }
 
-    return [year, month, day].join('-');
+    let formatedDate = "";
+    if(format == "en") {
+        formatedDate = [year, month, day].join('-')
+    } else if(format == "fr") {
+        formatedDate = [day, month, year].join('/')
+    }
+
+    return formatedDate;
 }
 
 export function lastMonthDay(date) {

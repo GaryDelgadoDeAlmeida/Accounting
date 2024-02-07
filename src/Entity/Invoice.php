@@ -32,7 +32,7 @@ class Invoice
     private ?bool $applyTVA = null;
 
     #[ORM\Column(nullable: true)]
-    private ?float $tva = null;
+    private ?float $tva = 0;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $invoiceDate = null;
@@ -101,7 +101,7 @@ class Invoice
         return $this;
     }
 
-    public function applyTVA(): ?bool
+    public function isApplyTVA(): ?bool
     {
         return $this->applyTVA;
     }
@@ -192,9 +192,9 @@ class Invoice
     public function getTvaAmount() : float {
         $amount = 0;
 
-        foreach($this->invoiceDetails as $invoiceDetail) {
-            if($invoiceDetail->isTva()) {
-                $amount += $invoiceDetail->getPrice() * 0.20;
+        if($this->applyTVA) {
+            foreach($this->invoiceDetails as $invoiceDetail) {
+                $amount += $invoiceDetail->getPrice() * ($this->tva / 100);
             }
         }
 
@@ -205,12 +205,10 @@ class Invoice
         $amount = 0;
 
         foreach($this->invoiceDetails as $invoiceDetail) {
-            $percent = 1;
-            if($invoiceDetail->isTva()) {
-                $percent = 1.20;
+            $amount += $invoiceDetail->getPrice();
+            if($this->applyTVA) {
+                $amount += $invoiceDetail->getPrice() * ($this->tva / 100);
             }
-
-            $amount += $invoiceDetail->getPrice() * $percent;
         }
 
         return $amount;

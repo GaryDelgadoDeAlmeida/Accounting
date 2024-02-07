@@ -56,12 +56,18 @@ class EstimateController extends AbstractController
      */
     public function get_estimates(Request $request): JsonResponse
     {
-        return $this->json(
-            $this->serializeManager->serializeContent(
-                $this->estimateRepository->findBy(["user" => $this->user])
-            ), 
-            Response::HTTP_OK
-        );
+        $limit = 20;
+        $offset = $request->get("offset");
+        $offset = is_numeric($offset) && $offset > 1 ? (int)$offset : 1;
+
+        return $this->json([
+            "offset" => $offset,
+            "limit" => $limit,
+            "maxOffset" => ceil( $this->estimateRepository->countEstimatesByUser($this->user)/$limit ),
+            "results" => $this->serializeManager->serializeContent(
+                $this->estimateRepository->findBy(["user" => $this->user], [], $limit, ($offset - 1) * $limit)
+            )
+        ], Response::HTTP_OK);
     }
 
     /**
@@ -205,7 +211,7 @@ class EstimateController extends AbstractController
     }
 
     /**
-     * @Route("/estimate/{estimateID}/pdf", requirements={"estimateID"="\d+"}, name="pdf_estimate", methods={"GEt"})
+     * @Route("/estimate/{estimateID}/pdf", requirements={"estimateID"="\d+"}, name="get_estimate_pdf", methods={"GET"})
      */
     public function get_estimate_pdf(Request $request, int $estimateID) 
     {

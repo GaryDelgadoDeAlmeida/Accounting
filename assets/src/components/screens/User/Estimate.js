@@ -9,10 +9,10 @@ import { formatDate } from "../../utils/DomElement";
 
 export default function Estimate() {
 
-    const limit = 20
+    const storageUser = localStorage.getItem("user") ?? []
+    const user = JSON.parse(storageUser)
     const [offset, setOffset] = useState(1)
-    const [nbrOffset, setNbrOffset] = useState(1)
-    const {loading, items: estimates, load} = PrivateResources(`${window.location.origin}/api/estimate?offset=${offset}&limit=${limit}`)
+    const {loading, items: estimates, load} = PrivateResources(`${window.location.origin}/api/estimate?offset=${offset}`)
 
     useEffect(() => {
         load()
@@ -37,7 +37,7 @@ export default function Estimate() {
                 headers: {
                     "Accept": "application/ld+json",
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + localStorage.getItem("token")
+                    "Authorization": "Bearer " + user.token
                 }
             })
             .then(response => response.blob())
@@ -79,8 +79,8 @@ export default function Estimate() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {estimates.length > 0 && typeof estimates === "object" ? (
-                                    estimates.map((item, index) => (
+                                {estimates.results && typeof estimates === "object" ? (
+                                    estimates.results.map((item, index) => (
                                         <tr id={`-estimate-row-${index + 1}`} key={index}>
                                             <td className={"-id txt-center"}>{item.id}</td>
                                             <td className={"-client-name txt-center"}>{item.company.name}</td>
@@ -118,7 +118,7 @@ export default function Estimate() {
                             </tbody>
                         </table>
 
-                        {offset >= 1 && offset < nbrOffset && (
+                        {offset > 0 && offset <= estimates.maxOffset && estimates.maxOffset > 1 && (
                             <div className={"pagination"}>
                                 {offset - 1 > 0 && (
                                     <div className={"item"}>
@@ -130,7 +130,7 @@ export default function Estimate() {
                                     <span>{offset}</span>
                                 </div>
                                 
-                                {offset + 1 < 100 && (
+                                {offset + 1 <= estimates.maxOffset && (
                                     <div className={"item"}>
                                         <button onClick={(e) => handlePagination(e)} value={offset + 1}>{offset + 1}</button>
                                     </div>

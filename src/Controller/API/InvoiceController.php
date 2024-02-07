@@ -63,21 +63,18 @@ class InvoiceController extends AbstractController
      */
     public function get_invoices(Request $request): JsonResponse
     {
-        $this->user = $this->user ?? $this->tokenManager->checkToken($request);
-        if(empty($this->user)) {
-            return $this->json("User unauthentified", Response::HTTP_FORBIDDEN);
-        }
-
         $limit = 20;
         $offset = $request->get("offset", 1);
-        $offset = is_numeric($offset) && $offset >= 1 ? $offset : 1;
+        $offset = is_numeric($offset) && $offset >= 1 ? intval($offset) : 1;
 
-        return $this->json(
-            $this->serializeManager->serializeContent(
+        return $this->json([
+            "offset" => $offset,
+            "limit" => $limit,
+            "maxOffset" => ceil( $this->invoiceRepository->countInvoiceByUser($this->user) / $limit ),
+            "results" => $this->serializeManager->serializeContent(
                 $this->invoiceRepository->findBy(["user" => $this->user], ["id" => "ASC"], $limit, ($offset - 1) * $limit)
-            ),
-            Response::HTTP_OK
-        );
+            )
+        ], Response::HTTP_OK);
     }
 
     /**
@@ -109,8 +106,7 @@ class InvoiceController extends AbstractController
                     $invoice, 
                     $detail["description"],
                     $detail["quantity"],
-                    $detail["price"],
-                    $detail["tva"] ?? false
+                    $detail["price"]
                 );
             }
         } catch(\Exception $e) {
@@ -167,8 +163,7 @@ class InvoiceController extends AbstractController
                     $invoice, 
                     $detail["description"],
                     $detail["quantity"],
-                    $detail["price"],
-                    $detail["tva"] ?? false
+                    $detail["price"]
                 );
             }
         }
