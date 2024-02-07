@@ -131,12 +131,6 @@ class InvoiceManager extends AbstractController {
                         str_replace("[FIELD_NAME]", $fieldName, "The field value of '[FIELD_NAME]' isn't numeric")
                     );
                 }
-            } elseif($fieldName === InvoiceDetailEnum::INVOICE_DETAIL_TVA) {
-                if(!$this->formManager->isBool($fieldValue)) {
-                    throw new \Error(
-                        str_replace("[FIELD_NAME]", $fieldName, "The field value of '[FIELD_NAME]' isn't a boolean")
-                    );
-                }
             }
 
             $fields[$fieldName] = $fieldValue;
@@ -174,7 +168,6 @@ class InvoiceManager extends AbstractController {
             if($fieldName === InvoiceDetailEnum::INVOICE_DETAIL_DESCRIPTION) $invoiceDetail->setDescription($fieldValue);
             elseif($fieldName === InvoiceDetailEnum::INVOICE_DETAIL_QUANTITY) $invoiceDetail->setQuantity($fieldValue);
             elseif($fieldName === InvoiceDetailEnum::INVOICE_DETAIL_PRICE) $invoiceDetail->setPrice($fieldValue);
-            elseif($fieldName === InvoiceDetailEnum::INVOICE_DETAIL_TVA) $invoiceDetail->setTva($fieldValue);
         }
 
         return $invoiceDetail;
@@ -214,13 +207,12 @@ class InvoiceManager extends AbstractController {
      * @param bool apply tva or not
      * @return InvoiceDetail
      */
-    public function addInvoiceDetail(Invoice $invoice, string $description, int $quantity, float $price, bool $tva) : InvoiceDetail {
+    public function addInvoiceDetail(Invoice $invoice, string $description, int $quantity, float $price) : InvoiceDetail {
         $invoiceDetail = (new InvoiceDetail())
             ->setInvoice($invoice)
             ->setDescription($description)
             ->setQuantity($quantity)
             ->setPrice($price)
-            ->setTva($tva)
             ->setUpdatedAt(new \DateTimeImmutable())
             ->setCreatedAt(new \DateTimeImmutable())
         ;

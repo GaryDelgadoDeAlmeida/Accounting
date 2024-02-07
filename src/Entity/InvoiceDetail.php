@@ -27,9 +27,6 @@ class InvoiceDetail
     private ?string $price = null;
 
     #[ORM\Column]
-    private ?bool $tva = null;
-
-    #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column]
@@ -88,18 +85,6 @@ class InvoiceDetail
         return $this;
     }
 
-    public function isTva(): ?bool
-    {
-        return $this->tva;
-    }
-
-    public function setTva(bool $tva): self
-    {
-        $this->tva = $tva;
-
-        return $this;
-    }
-
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
@@ -122,5 +107,15 @@ class InvoiceDetail
         $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    public function getTotalAmount(): float {
+        $amount = $this->price * $this->quantity;
+
+        if($this->invoice->isApplyTVA()) {
+            $amount += $amount * ($this->invoice->getTVA() / 100);
+        }
+
+        return $amount;
     }
 }
