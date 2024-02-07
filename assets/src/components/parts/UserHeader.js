@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 
@@ -10,6 +9,7 @@ export default function UserHeader(props) {
     const handleLogout = (e) => {
         e.preventDefault()
         localStorage.setItem("user", "")
+        setLogged(false)
     }
 
     return (
