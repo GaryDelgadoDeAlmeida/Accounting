@@ -11,6 +11,7 @@ export default function Estimate() {
 
     const storageUser = localStorage.getItem("user") ?? []
     const user = JSON.parse(storageUser)
+    
     const [offset, setOffset] = useState(1)
     const {loading, items: estimates, load} = PrivateResources(`${window.location.origin}/api/estimate?offset=${offset}`)
 

@@ -8,6 +8,7 @@ use App\Enum\StatusEnum;
 use App\Enum\EstimateEnum;
 use App\Manager\PdfManager;
 use App\Manager\TokenManager;
+use App\Entity\EstimateDetail;
 use App\Manager\EstimateManager;
 use App\Manager\SerializeManager;
 use App\Repository\UserRepository;
@@ -105,10 +106,14 @@ class EstimateController extends AbstractController
             }
 
             foreach($fields["details"] as $detail) {
-                $this->estimateDetailRepository->save(
-                    $this->estimateManager->fillEstimateDetail($detail, $estimate), 
-                    true
-                );
+                $estimateDetail = $this->estimateManager->fillEstimateDetail($detail, new EstimateDetail(), $estimate);
+                if(is_string($estimateDetail)) {
+                    return $this->json([
+                        "message" => $estimateDetail
+                    ],Response::HTTP_INTERNAL_SERVER_ERROR);
+                }
+                
+                $this->estimateDetailRepository->save($estimateDetail, true);
             }
         } catch(\Exception $e) {
             return $this->json(

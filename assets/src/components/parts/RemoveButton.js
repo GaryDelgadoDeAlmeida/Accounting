@@ -4,6 +4,9 @@ import { findChildren } from "../utils/DomElement"
 
 export default function RemoveButton({removeUrl, parentElementId, smallSizeBtn = false}) {
 
+    const storageUser = localStorage.getItem("user") ?? []
+    const user = JSON.parse(storageUser)
+
     const handleMouseEnter = (e) => {
         let child = findChildren(e.target, undefined, "IMG")
         if(child) {
@@ -33,7 +36,7 @@ export default function RemoveButton({removeUrl, parentElementId, smallSizeBtn =
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json+ld",
-                    "Authorization": "Bearer " + localStorage.getItem("token")
+                    "Authorization": "Bearer " + user.token
                 }
             })
             .then(response => {
@@ -41,7 +44,14 @@ export default function RemoveButton({removeUrl, parentElementId, smallSizeBtn =
                 parent.remove()
             })
             .catch(({response}) => {
-                alert(response.data)
+                let errorMessage = "An error has been encountered. Please, retry later."
+                if(response.data.message) {
+                    errorMessage = response.data.message
+                } else if(response.data.detail) {
+                    errorMessage = response.data.detail
+                }
+
+                alert(errorMessage)
             })
         ;
     }
