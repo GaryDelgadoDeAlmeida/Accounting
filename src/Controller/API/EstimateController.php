@@ -192,7 +192,8 @@ class EstimateController extends AbstractController
 
                 $this->estimateManager->fillEstimateDetail(
                     $detailRow, 
-                    isset($detailRow["id"]) ? $this->estimateDetailRepository->find($detailRow["id"]) : null
+                    isset($detailRow["id"]) ? $this->estimateDetailRepository->find($detailRow["id"]) : new EstimateDetail(),
+                    $estimate
                 );
             }
 

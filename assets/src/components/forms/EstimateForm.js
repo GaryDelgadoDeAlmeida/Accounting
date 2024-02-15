@@ -180,7 +180,11 @@ export default function EstimateForm({estimate = null, companyID = null}) {
                                 <label>Invoice details</label>
                             </div>
                             <div className="-content">
-                                <EstimateDetailField update={updateCredentials} setFormResponse={setFormResponse} />
+                                <EstimateDetailField 
+                                    credentialsDetails={credentials.details}
+                                    update={updateCredentials} 
+                                    setFormResponse={setFormResponse} 
+                                />
                             </div>
                         </div>
 

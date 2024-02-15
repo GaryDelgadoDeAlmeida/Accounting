@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import FormControl from "../../utils/FormControl";
 
-export default function EstimateDetailField({update, setFormResponse}) {
+export default function EstimateDetailField({credentialsDetails, update, setFormResponse}) {
 
     const formControl = new FormControl()
-    const [details, setDetails] = useState([])
+    const [details, setDetails] = useState(credentialsDetails ?? [])
     const [detail, setDetail] = useState({
         label: "",
         description: "",
