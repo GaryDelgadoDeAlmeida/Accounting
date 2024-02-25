@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import UserHeader from "../../parts/UserHeader";
+import Notification from "../../parts/Notification";
+import PrivateResources from "../../utils/PrivateResources";
 import UserForm from "../../forms/UserForm";
 import PasswordForm from "../../forms/PasswordForm";
 import UserCorporationForm from "../../forms/UserCorporationForm";
-import Notification from "../../parts/Notification";
-import PrivateResources from "../../utils/PrivateResources";
 import axios from "axios";
-import { Navigate } from "react-router-dom";
+import RemoveAccountButton from "../../parts/RemoveAccountButton";
 
 export default function Settings() {
 
-    const [logged, setLogged] = useState(
-        localStorage.getItem("token") && ["undefined", "null", null, undefined].indexOf(localStorage.getItem("token")) === -1 ? true : false
-    )
+    const storageUser = localStorage.getItem("user") ?? {}
+    const [logged, setLogged] = useState(storageUser.length > 0 ? true : false)
+
     const allowedOgnlet = ["my-account", "corporation", "security"]
     const [onglet, setOnglet] = useState("my-account")
     const { loading, items: user, load } = PrivateResources(`${window.location.origin}/api/profile`)
@@ -21,40 +22,9 @@ export default function Settings() {
         load()
     }, [])
 
-    const handleRemoveAccount = (e) => {
-        if(confirm("Are you sure you want to remove your account and all datas associeted to your account ?") === false) {
-            return
-        }
-
-        axios
-            .delete(`${window.location.origin}/api/profile/remove`, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json+ld",
-                    "Authorization": "Bearer " + localStorage.getItem("token")
-                }
-            })
-            .then((response) => {
-                if(response.status == 202) {
-                    localStorage.setItem("token", null)
-                    setLogged(false)
-                }
-            })
-            .catch(({response}) => {
-                let errorMessage = "An error has been encountered. Please retry later"
-                if(response.data != "") {
-                    errorMessage = response.data
-                }
-                alert(errorMessage)
-            })
-        ;
-    }
-
     return (
         <UserHeader>
-            {!logged && (
-                <Navigate to={"/"} />
-            )}
+            {!logged && (<Navigate to={"/login"} />)}
 
             <div className={"page-section"}>
                 {!loading ? (
@@ -100,10 +70,7 @@ export default function Settings() {
                                     </div>
 
                                     <div className={"mt-15px"}>
-                                        <button className={"btn btn-red -inline-flex"} onClick={(e) => handleRemoveAccount(e)}>
-                                            <img src={`${window.location.origin}/content/svg/trash-white.svg`} alt={"trash"} />
-                                            <span>Remove your account</span>
-                                        </button>
+                                        <RemoveAccountButton setLogged={setLogged} />
                                     </div>
                                 </>
                             )}
